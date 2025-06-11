@@ -12,6 +12,7 @@ import { IftaLabelModule } from 'primeng/iftalabel';
   template: ` <header class="header">
     <div class="header__toolbar">
       <div class="header__container">
+        <div class="">Team name + Logo</div>
         <div class="header__avatar-container">
           <div class="header__avatar">
             <i
