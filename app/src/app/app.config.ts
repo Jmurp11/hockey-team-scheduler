@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
         preset: Lara,
         options: {
           prefix: 'p',
-          darkModeSelector: 'system',
+          darkModeSelector: 'false',
           cssLayer: false,
         }, // TODO: create custom preset
       },

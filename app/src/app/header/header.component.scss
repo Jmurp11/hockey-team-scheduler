@@ -14,13 +14,12 @@
 
   &__container {
     height: inherit;
-    @include flex(flex-end, space-between);
+    @include flex(space-between, center);
   }
 
   &__search-container {
-
   }
-  
+
   &__avatar-container {
     @include flex();
     gap: 5px;
