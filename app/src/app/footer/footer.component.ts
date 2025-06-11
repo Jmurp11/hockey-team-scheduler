@@ -3,14 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-footer',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: ` 
-    <div>Dashboard Component</div>`,
-  styleUrl: './dashboard.component.scss',
+  template: ` <div class="footer">Footer Component</div>`,
+  styleUrl: './footer.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class FooterComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}

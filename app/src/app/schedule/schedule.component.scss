@@ -1,0 +1,8 @@
+@use "../scss/mixins/_mixins.scss" as *;
+
+.container {
+  @include flex();
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}

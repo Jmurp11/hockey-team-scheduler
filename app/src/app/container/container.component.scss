@@ -1,0 +1,25 @@
+@use "../scss/mixins/_mixins.scss" as *;
+
+.container {
+  @include flex(center, stretch, row);
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 14vw;
+  height: 100%;
+}
+.content {
+  @include flex(center, space-between, column);
+  width: 80vw;
+  height: 100%;
+  overflow: hidden;
+}
+
+.router-content {
+  padding: 0.5rem;
+  @include flex(center, stretch, column);
+  width: 100%;
+}
