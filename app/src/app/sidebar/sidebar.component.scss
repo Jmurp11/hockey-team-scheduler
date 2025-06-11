@@ -1,13 +1,9 @@
-.layout-sidebar {
-  top: 0;
-  inset-inline-start: 0;
-  position: fixed;
-  z-index: 1102;
-  height: 100%;
-  transform: translate(-100%);
-  background-color: var(--mobile-menu-background);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  width: 300px;
-  opacity: 0;
+.items {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 }

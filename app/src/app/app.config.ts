@@ -4,12 +4,12 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { providePrimeNG } from 'primeng/config';
 import { provideRouter } from '@angular/router';
-import Aura from '@primeng/themes/aura';
+import Lara from '@primeng/themes/lara';
+import { FilterMatchMode, MessageService } from 'primeng/api';
+import { providePrimeNG } from 'primeng/config';
+import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
-import { FilterMatchMode } from 'primeng/api';
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura,
+        preset: Lara,
         options: {
           prefix: 'p',
           darkModeSelector: 'system',
@@ -51,5 +51,7 @@ export const appConfig: ApplicationConfig = {
         ],
       },
     }),
+    MessageService,
+    DialogService,
   ],
 };
