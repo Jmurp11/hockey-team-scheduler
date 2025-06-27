@@ -18,9 +18,3 @@ p-card {
   height: 100%;
   width: 100%;
 }
-
-.card-wrapper {
-  @include flex(center, center, column);
-  width: 80vw;
-  height: 17vh;
-}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
@@ -20,25 +20,17 @@ import { MenuItemComponent } from './menu-items/menu-item.component';
     MenuHeaderComponent,
     MenuItemComponent,
   ],
-  // template: `<p-drawer
-  //   class="sidebar"
-  //   [(visible)]="sidebarVisible"
-  //   position="left"
-  //   closable="false"
-  //   dismissible="false"
-  //   closeOnEscape="false"
-  //   [style]="{ width: '15rem' }"
-  // >
-  template: `<div style="width: 12rem; height: 100vh; position: fixed; left: 0; top: 0;">
-    <p-menu [model]="items" [style]="{ width: '100%', height: '100%' }">
+  template: `<div class="sidebar-container">
+    <p-menu [model]="items" [style]="{height: '100%' }">
       <ng-template #start><app-menu-header [title]="title" /></ng-template>
-      <ng-template #item let-item>
+      <ng-template #item let-item class="items">
         <app-menu-item [item]="item" />
       </ng-template>
       <ng-template #end></ng-template>
     </p-menu>
   </div> `,
   styleUrl: './sidebar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent implements OnInit {
   sidebarVisible = true;

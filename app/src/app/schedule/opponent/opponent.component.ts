@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -8,9 +8,6 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   template: `<div>Opponent Component</div>`,
   styleUrl: './opponent.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpponentComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
-}
+export class OpponentComponent {}
