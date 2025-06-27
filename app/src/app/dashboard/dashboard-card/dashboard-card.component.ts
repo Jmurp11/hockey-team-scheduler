@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
+import { CardComponent } from '../../shared/components/card/card.component';
 @Component({
   selector: 'app-dashboard-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardModule, ButtonModule],
-  template: ` <p-card>
+  imports: [CommonModule, RouterModule, CardComponent, ButtonModule],
+  template: ` <app-card>
     <ng-template #title>Upload Ice Slots</ng-template>
     <ng-template #content>
       <p-button
@@ -17,11 +17,20 @@ import { CardModule } from 'primeng/card';
         [outlined]="true"
         size="large"
     /></ng-template>
-  </p-card>`,
-  styleUrl: './dashboard-card.component.scss',
+  </app-card>`,
+  styles: [
+    `
+      :host {
+        & ::ng-deep p-card {
+          height: 150px;
+          width: 300px;
+          border-style: dashed;
+          border-color: lightgray;
+        }
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardCardComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
+export class DashboardCardComponent {
 }

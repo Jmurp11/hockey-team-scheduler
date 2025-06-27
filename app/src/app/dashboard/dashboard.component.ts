@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DashboardCardComponent } from './dashboard-card/dashboard-card.component';
 @Component({
@@ -9,6 +9,7 @@ import { DashboardCardComponent } from './dashboard-card/dashboard-card.componen
   template: ` 
     <div><app-dashboard-card /></div>`,
   styleUrl: './dashboard.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
   constructor() {}

@@ -1,0 +1,21 @@
+@use "../../../scss/mixins/flex" as *;
+
+:host {
+  & ::ng-deep p-card {
+    @include flex(center, center, column);
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 5px 5px 5px lightgray;
+    gap: 0.75em;
+  }
+
+  & ::ng-deep .p-card {
+    box-shadow: none;
+  }
+
+  & ::ng-deep .p-card-content {
+    @include flex(center, center, column);
+  }
+}

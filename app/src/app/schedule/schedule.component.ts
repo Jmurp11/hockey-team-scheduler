@@ -1,25 +1,172 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ListComponent } from '../shared/components/list/list.component';
+import { TableComponent } from '../shared/components/table/table.component';
+import { ExportColumn } from '../shared/types/export-column.type';
+import { TableOptions } from '../shared/types/table-options.type';
 
 @Component({
   selector: 'app-schedule',
   standalone: true,
-  imports: [CommonModule, RouterModule, ListComponent],
-  template: `
-    <div>Schedule Component</div>
-    <app-list [listItems]="listItems" />`,
-  styleUrl: './schedule.component.scss',
+  imports: [CommonModule, RouterModule, TableComponent],
+  template: ` <div>
+    <app-table
+      [tableOpts]="tableOpts"
+      [tableData]="tableData"
+      [exportColumns]="exportColumns"
+    >
+      <ng-template #header>
+        <tr>
+          @for (col of columns; track col.field) {
+          <th style="width: 20%">
+            {{ col.header | titlecase }}
+          </th>
+          }
+        </tr></ng-template
+      >
+      <ng-template #body let-rowData>
+        <tr>
+          @for (col of columns; track col.field) {
+          <td>
+            {{ rowData[col.field] }}
+          </td>
+          }
+        </tr></ng-template
+      >
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">No data found.</td>
+        </tr>
+      </ng-template>
+      ></app-table
+    >
+  </div>`,
+  styles: [
+    `
+      @use '../scss/mixins/flex' as *;
+
+      div {
+        @include flex(center, center, column);
+        height: 100%;
+        width: 100%;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScheduleComponent implements OnInit {
-  listItems = [
-    { id: 1, data: { title: 'Schedule 1', description: 'Description 1' } },
-    { id: 2, data: { title: 'Schedule 2', description: 'Description 2' } },
-    { id: 3, data: { title: 'Schedule 3', description: 'Description 3' } },
+export class ScheduleComponent {
+  exportColumns: ExportColumn[];
+
+  tableOpts: TableOptions = {
+    paginator: true,
+    rows: 10,
+    rowsPerPageOptions: [5, 10, 20, 50],
+    sortField: 'date',
+    sortOrder: 1,
+    loading: false,
+    globalFilterFields: ['date', 'location', 'opponent', 'gameType'],
+    scrollable: true,
+    scrollHeight: '500px',
+    frozenValue: undefined,
+    stateStorage: 'session',
+    stateKey: 'hs-schedule-session',
+    datakey: undefined,
+  };
+
+  columns = [
+    { field: 'date', header: 'Date' },
+    { field: 'time', header: 'Time' },
+    { field: 'location', header: 'Location' },
+    { field: 'opponent', header: 'Opponent' },
+    { field: 'gameType', header: 'Game Type' },
+  ];
+  tableData = [
+    {
+      id: 1,
+      date: '2025-09-15',
+      time: '19:30',
+      location: 'Scotiabank Arena',
+      opponent: 'Toronto Marauders',
+      gameType: 'Exhibition',
+    },
+    {
+      id: 2,
+      date: '2025-09-22',
+      time: '20:00',
+      location: 'Valley Ice Center',
+      opponent: 'Oakville Blades',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 3,
+      date: '2025-09-29',
+      time: '18:45',
+      location: 'Riverside Community Rink',
+      opponent: 'Hamilton Hawks',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 4,
+      date: '2025-10-06',
+      time: '19:00',
+      location: 'Memorial Sports Complex',
+      opponent: 'Mississauga Monarchs',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 5,
+      date: '2025-10-13',
+      time: '17:30',
+      location: 'Scotiabank Arena',
+      opponent: 'Burlington Bulldogs',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 6,
+      date: '2025-10-20',
+      time: '20:15',
+      location: 'East End Ice Palace',
+      opponent: 'Brampton Bears',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 7,
+      date: '2025-10-27',
+      time: '19:30',
+      location: 'Scotiabank Arena',
+      opponent: 'Vaughan Vikings',
+      gameType: 'Regular Season',
+    },
+    {
+      id: 8,
+      date: '2025-11-03',
+      time: '18:00',
+      location: 'West Hill Arena',
+      opponent: 'Etobicoke Eagles',
+      gameType: 'Cup Tournament',
+    },
+    {
+      id: 9,
+      date: '2025-11-10',
+      time: '19:45',
+      location: 'Scotiabank Arena',
+      opponent: 'Richmond Hill Raiders',
+      gameType: 'Cup Tournament',
+    },
+    {
+      id: 10,
+      date: '2025-11-17',
+      time: '20:30',
+      location: 'Northern Community Center',
+      opponent: 'Markham Mustangs',
+      gameType: 'Cup Final',
+    },
   ];
 
-  constructor() {}
-
-  ngOnInit(): void {}
+  constructor() {
+    this.exportColumns = this.columns.map((col) => ({
+      title: col.header,
+      dataKey: col.field,
+    }));
+  }
 }
