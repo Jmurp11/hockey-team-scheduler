@@ -4,7 +4,17 @@ import { ScheduleComponent } from './schedule/schedule.component';
 import { ContainerComponent } from './container/container.component';
 import { ProfileComponent } from './profile/profile.component';
 
+import { LandingComponent } from './landing/landing.component';
+import { PricingComponent } from './landing/pricing/pricing.component';
 export const routes: Routes = [
+  {
+    path: 'landing',
+    component: LandingComponent,
+  },
+  {
+    path: 'pricing',
+    component: PricingComponent,
+  },
   {
     path: '',
     component: ContainerComponent,

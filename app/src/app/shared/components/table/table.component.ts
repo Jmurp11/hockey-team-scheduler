@@ -93,6 +93,10 @@ import { TableOptions } from '../../types/table-options.type';
         gap: 1rem;
         width: 100%;
       }
+
+      ::ng-deep .p-datatable-table-container {
+        height: calc(100vh - 22rem);
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -105,7 +109,6 @@ export class TableComponent<T> {
   @Input() tableOpts: TableOptions;
   @Input() tableData: T[];
   @Input() exportColumns: ExportColumn[];
-
 
   onFilterInput(dt: Table, event: Event): void {
     const target = event.target as HTMLInputElement;

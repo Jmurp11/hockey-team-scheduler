@@ -1,0 +1,9 @@
+@use "../../../scss/mixins/_mixins.scss" as *;
+
+p-menubar-item {
+  --p-menubar-item-color: #020329;
+}
+
+.title {
+  font-weight: bold;
+}

@@ -1,6 +1,18 @@
+@use "./app/scss/mixins/_mixins.scss" as *;
+
 /* You can add global styles to this file, and also import other style files */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
 @import "primeicons/primeicons.css";
+
+.container {
+  @include flex(center, stretch, column);
+  height: 97.5vh;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  font-family: "Space Grotesk", "Noto Sans", sans-serif;
+}
