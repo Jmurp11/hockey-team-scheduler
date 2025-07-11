@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="white"/>
+
+  <!-- Hockey rink outline with rounded corners -->
+  <rect x="100" y="50" width="200" height="200" rx="50" ry="50" fill="none" stroke="#0B3D91" stroke-width="8"/>
+
+  <!-- Center circle / clock -->
+  <circle cx="200" cy="150" r="40" fill="#A8EFFF" stroke="#0B3D91" stroke-width="8"/>
+
+  <!-- Clock hands -->
+  <line x1="200" y1="150" x2="200" y2="125" stroke="#0B3D91" stroke-width="6" stroke-linecap="round"/>
+  <line x1="200" y1="150" x2="215" y2="165" stroke="#0B3D91" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Horizontal rink line -->
+  <line x1="100" y1="150" x2="300" y2="150" stroke="#0B3D91" stroke-width="8"/>
+
+  <!-- Bottom fill area to suggest ice -->
+  <path d="M100 200 Q200 250 300 200 L300 250 L100 250 Z" fill="#A8EFFF"/>
+
+</svg>

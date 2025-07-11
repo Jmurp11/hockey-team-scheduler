@@ -1,29 +1,19 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
-.container {
-  @include flex(center, stretch, column);
-  height: 97.5vh;
-  width: 100%;
-  overflow: hidden;
-  font-family: "Space Grotesk", "Noto Sans", sans-serif;
-  background-color: rgb(83, 143, 163);
-}
-
 .content-container {
   @include flex(center, stretch, row);
   height: 100%;
   width: 100%;
   overflow: hidden;
+  margin-top: .5rem;
+  padding-bottom: 5vh;
 }
 
 .sidebar {
   width: 13.5%;
   height: 100%;
-  overflow: hidden;
-  padding-right: 1rem;
-  margin-left: 10px;
+  overflow: hidden;  
   box-shadow: 0px 4px 6px -4px lightgray;
-  background-color: lightblue;
 }
 .content {
   @include flex(flex-start, space-between, column);
@@ -31,4 +21,16 @@
   height: 100%;
   overflow: hidden;
   box-shadow: 0px 4px 6px -4px lightgray;
+}
+
+.header {
+  &__avatar {
+    @include flex();
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
 }

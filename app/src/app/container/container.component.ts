@@ -5,9 +5,10 @@ import { RouterModule } from '@angular/router';
 import { BlockUIModule } from 'primeng/blockui';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
-import { HeaderComponent } from '../header/header.component';
+import { HeaderComponent } from '../shared/components/header/header.component';
 import { LoadingService } from '../shared/services/loading.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { FooterComponent } from '../shared/components/footer/footer.component';
 @Component({
   selector: 'app-container',
   standalone: true,
@@ -19,10 +20,23 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
     ProgressSpinnerModule,
     SidebarComponent,
     HeaderComponent,
+    FooterComponent
   ],
   providers: [LoadingService],
   template: ` <div class="container">
-      <app-header></app-header>
+      <app-header [title]="teamName">
+        <ng-template #start> </ng-template>
+        <ng-template #end>
+          <div class="header__avatar">
+            <i
+              class="bi bi-person-circle"
+              style="font-size: 1.5rem; color: #002C77;"
+            ></i>
+          </div>
+          <div class="header__name">{{ username }}</div>
+        </ng-template>
+      </app-header>
+
       <div class="content-container">
         <div class="sidebar">
           <app-sidebar></app-sidebar>
@@ -31,6 +45,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
           <router-outlet></router-outlet>
         </div>
       </div>
+      <app-footer />
     </div>
 
     <p-blockUI [blocked]="loadingService.isLoading()">
@@ -47,4 +62,6 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 })
 export class ContainerComponent {
   loadingService = inject(LoadingService);
+  username = 'John Doe';
+  teamName = 'My Team';
 }
