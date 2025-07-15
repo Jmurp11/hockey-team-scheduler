@@ -2,6 +2,13 @@
 
 @import "primeicons/primeicons.css";
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0; /* Also remove default padding if present */
+}
+
 :root {
   --primary-50: #41a2e9;
   --primary-100: #2f99e6;
