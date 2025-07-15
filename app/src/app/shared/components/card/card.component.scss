@@ -12,9 +12,21 @@
   }
 
   & ::ng-deep .p-card {
+    width: 100%;
     box-shadow: none;
   }
 
+  & ::ng-deep .p-component {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-body {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-footer {
+    width: 100%;
+  }
   & ::ng-deep .p-card-content {
     @include flex(center, center, column);
   }

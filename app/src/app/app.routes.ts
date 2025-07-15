@@ -4,19 +4,31 @@ import { ScheduleComponent } from './schedule/schedule.component';
 import { ContainerComponent } from './container/container.component';
 import { ProfileComponent } from './profile/profile.component';
 
-import { LandingComponent } from './landing/landing.component';
+import { HomeComponent } from './landing/home/home.component';
 import { PricingComponent } from './landing/pricing/pricing.component';
+import { LandingComponent } from './landing/landing.component';
+import { LoginComponent } from './auth/login/login.component';
 export const routes: Routes = [
   {
-    path: 'landing',
-    component: LandingComponent,
-  },
-  {
-    path: 'pricing',
-    component: PricingComponent,
-  },
-  {
     path: '',
+    component: LandingComponent,
+    children: [
+      {
+        path: '',
+        component: HomeComponent,
+      },
+      {
+        path: 'pricing',
+        component: PricingComponent,
+      },
+      {
+        path: 'login',
+        component: LoginComponent,
+      },
+    ],
+  },
+  {
+    path: 'app',
     component: ContainerComponent,
     children: [
       {

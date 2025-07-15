@@ -4,14 +4,10 @@
   @include flex(space-around, center, column);
   width: 100%;
   padding: 1rem;
-  background-image: url("../../assets/summary.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   min-height: 275px; /* Adjust as needed */
 
   &__content {
     text-align: center;
-    color: white;
+    color: var(--primary-500);
   }
 }

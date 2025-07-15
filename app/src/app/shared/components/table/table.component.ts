@@ -62,6 +62,7 @@ import { TableOptions } from '../../types/table-options.type';
         <div class="text-end pb-4">
           <p-button
             icon="pi pi-external-link"
+            
             label="Export"
             (click)="exportCSV(dt)"
           />

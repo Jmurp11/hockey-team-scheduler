@@ -1,5 +1,14 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
+.container {
+  aspect-ratio: 900/600;
+  width: 100%;
+  background-repeat: no;
+  background-position: center;
+  background-size: cover;
+  background-image: url("../assets/wave.svg");
+}
+
 .header {
   &__name {
     margin-right: 3px;
@@ -15,19 +24,15 @@
 }
 
 .main-content {
-    @include flex(space-between, center, column);
-    height: 97.5vh;
-    flex: 1;
-    width: 100%;
-    overflow: auto;
-    font-family: "Space Grotesk", "Noto Sans", sans-serif;
-    padding-bottom: 5vh;
-    &__section {
-        margin-top: 2rem;
-        width: 70%;
-    }
+  @include flex(flex-start, center, column);
+  height: 100%;
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  font-family: "Space Grotesk", "Noto Sans", sans-serif;
+  padding-bottom: 5vh;
+}
 
-    &__get-started {
-      text-align: center;
-    }
+.right-header {
+  @include flex(center, center, row);
 }
