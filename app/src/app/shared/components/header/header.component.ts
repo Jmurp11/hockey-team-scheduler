@@ -14,6 +14,7 @@ import { MenuItem } from 'primeng/api';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MenubarModule } from 'primeng/menubar';
 import { RippleModule } from 'primeng/ripple';
+import { NavigationService } from '../../services/navigation.service';
 
 @Component({
   selector: 'app-header',
@@ -26,14 +27,23 @@ import { RippleModule } from 'primeng/ripple';
     FormsModule,
     RippleModule,
   ],
+  providers: [NavigationService],
   template: ` <p-menubar [model]="items">
     <ng-template pTemplate="start">
-      <a pRipple class="title flex items-center p-menubar-item-link">
+      <a
+        pRipple
+        class="title flex items-center p-menubar-item-link"
+        (click)="navigation.navigateToLink('/')"
+      >
         <span>{{ title }}</span>
       </a>
     </ng-template>
     <ng-template #item let-item let-root="root">
-      <a pRipple class="flex items-center p-menubar-item-link">
+      <a
+        pRipple
+        class="flex items-center p-menubar-item-link"
+        (click)="navigation.navigateToLink(item.routerLink)"
+      >
         <span>{{ item.label }}</span>
       </a>
     </ng-template>
@@ -54,6 +64,7 @@ export class HeaderComponent {
   @ContentChild('start') start: TemplateRef<any> | undefined;
   @ContentChild('end') end: TemplateRef<any> | undefined;
 
-  private router = inject(Router)
+  navigation = inject(NavigationService);
+
   constructor() {}
 }

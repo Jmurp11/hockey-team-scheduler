@@ -8,7 +8,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
   imports: [CommonModule, CardComponent],
   template: `
     <div class="features-container">
-      <h3>Key Features</h3>
+      <h2>Key Features</h2>
       <div class="features-container__cards">
         <app-card class="features-container__card">
           <ng-template #title>Ice Slot Management</ng-template>

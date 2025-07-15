@@ -1,7 +1,14 @@
-@use "../../../scss/mixins/_mixins.scss" as *;
+p-menubar {
+  --p-menubar-color: var(--primary-500) !important;
+  --p-menubar-background: transparent;
+}
 
 p-menubar-item {
-  --p-menubar-item-color: #020329;
+  --p-menubar-item-color: var(--primary-500);
+}
+
+p-menubar-item-link {
+  --p-menubar-item-link-color: var(--primary-500);
 }
 
 .title {

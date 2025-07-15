@@ -1,14 +1,8 @@
 @use "../../scss/mixins/_mixins.scss" as *;
 
-.pricing-container {
-  @include flex(center, center, column);
-  width: 100%;
-  padding: 1rem;
-}
-
 .main-content {
   height: 97.5vh;
   flex: 1;
-  width: 100%;
+  width: 100vw;
   overflow: auto;
 }

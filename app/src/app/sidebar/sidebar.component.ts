@@ -21,7 +21,7 @@ import { MenuItemComponent } from './menu-items/menu-item.component';
     MenuItemComponent,
   ],
   template: `<div class="sidebar-container">
-    <p-menu [model]="items" [style]="{height: '100%' }">
+    <p-menu [model]="items" [style]="{ height: '100%' }">
       <ng-template #start><app-menu-header [title]="title" /></ng-template>
       <ng-template #item let-item class="items">
         <app-menu-item [item]="item" />
@@ -36,22 +36,23 @@ export class SidebarComponent implements OnInit {
   sidebarVisible = true;
 
   title = 'IceTime.ai';
+  logo = 'assets/logo.svg';
   //logo = null;
   items = [
     {
       label: 'Dashboard',
       icon: 'pi pi-fw pi-home',
-      routerLink: '/dashboard',
+      routerLink: '/app/dashboard',
     },
     {
       label: 'Schedule',
       icon: 'pi pi-fw pi-calendar',
-      routerLink: '/schedule',
+      routerLink: '/app/schedule',
     },
     {
       label: 'Profile',
       icon: 'pi pi-fw pi-user',
-      routerLink: '/profile',
+      routerLink: '/app/profile',
     },
   ];
   constructor() {}

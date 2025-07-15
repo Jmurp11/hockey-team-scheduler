@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../shared/components/header/header.component';
-import { SummaryComponent } from './summary/summary.component';
-import { FeaturesComponent } from './features/features.component';
 import { FooterComponent } from '../shared/components/footer/footer.component';
-import { GetStartedComponent } from './get-started.component.ts/get-started.component';
 import { MenuItem } from 'primeng/api';
+import { GetStartedComponent } from './get-started.component.ts/get-started.component';
+import { NavigationService } from '../shared/services/navigation.service';
 
 @Component({
   selector: 'app-landing',
@@ -15,31 +14,33 @@ import { MenuItem } from 'primeng/api';
     CommonModule,
     RouterModule,
     HeaderComponent,
-    SummaryComponent,
-    FeaturesComponent,
     FooterComponent,
     GetStartedComponent,
   ],
+  providers: [NavigationService],
   template: `<div class="container">
     <app-header [items]="items" [title]="appTitle">
       <ng-template #start></ng-template>
       <ng-template #end>
-        <div>
-          <app-get-started size="small" />
+        <div class="right-header">
+          <div>
+            <a
+              pRipple
+              class="flex items-center p-menubar-item-link"
+              (click)="navigation.navigateToLink('login')"
+            >
+              <span>Login</span>
+            </a>
+          </div>
+          <div>
+            <app-get-started size="small" />
+          </div>
         </div>
       </ng-template>
     </app-header>
 
     <div class="main-content">
-      <div class="main-content__section landing-content">
-        <app-summary />
-      </div>
-
-      <div class="main-content__section key-features"><app-features /></div>
-
-      <div class="main-content__section main-content__get-started">
-        <app-get-started size="large" />
-      </div>
+      <router-outlet />
     </div>
 
     <app-footer />
@@ -48,6 +49,8 @@ import { MenuItem } from 'primeng/api';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingComponent {
+  navigation = inject(NavigationService);
+
   appTitle = 'IceTime.ai';
 
   items: MenuItem[] = [

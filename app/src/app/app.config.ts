@@ -5,11 +5,12 @@ import {
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
-import Lara from '@primeng/themes/lara';
 import { FilterMatchMode, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
+import Lara from '@primeng/themes/lara';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -21,9 +22,9 @@ export const appConfig: ApplicationConfig = {
         preset: Lara,
         options: {
           prefix: 'p',
-          darkModeSelector: 'false',
+          darkModeSelector: false,
           cssLayer: false,
-        }, // TODO: create custom preset
+        },
       },
       ripple: true,
       filterMatchModeOptions: {

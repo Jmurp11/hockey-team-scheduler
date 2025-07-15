@@ -6,12 +6,11 @@ import { RouterModule } from '@angular/router';
   selector: 'app-menu-header',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: `<h1>{{title}}</h1>`,
+  template: `<div class="logo"></div>`,
   styleUrl: './menu-header.component.scss',
 })
 export class MenuHeaderComponent implements OnInit {
-    @Input() title: string;
-   // @Input() logo: string;
+  @Input() title: string;
   constructor() {}
 
   ngOnInit(): void {}

@@ -13,8 +13,9 @@ import { Button } from 'primeng/button';
         class="btn-1"
         icon="pi pi-external-link"
         label="Add Game"
+        
       />
-      <p-button icon="pi pi-external-link" label="Upload CSV" />
+      <p-button icon="pi pi-external-link"  label="Upload CSV" />
     </div>
   `,
   styleUrls: ['./schedule-actions.component.scss'],

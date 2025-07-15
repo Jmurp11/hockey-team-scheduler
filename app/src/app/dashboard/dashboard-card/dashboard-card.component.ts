@@ -13,7 +13,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
       <p-button
         icon="pi pi-plus"
         [rounded]="true"
-        severity="success"
+        
         [outlined]="true"
         size="large"
     /></ng-template>

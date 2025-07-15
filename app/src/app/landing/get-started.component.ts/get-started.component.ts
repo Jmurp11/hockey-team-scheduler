@@ -6,18 +6,20 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { Router } from '@angular/router';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 @Component({
   selector: 'app-get-started',
   standalone: true,
   imports: [CommonModule, ButtonModule],
+  providers: [NavigationService],
   template: `
     <p-button
       [rounded]="true"
       [size]="size"
       label="Get Started"
-      (onClick)="navigateToPricing()"
+      
+      (onClick)="navigation.navigateToLink('/pricing')"
     />
   `,
   styles: [''],
@@ -27,11 +29,7 @@ export class GetStartedComponent {
   @Input()
   size: 'small' | 'large' | undefined;
 
-  private router = inject(Router);
+  navigation = inject(NavigationService);
 
   constructor() {}
-
-  navigateToPricing(): void {
-    this.router.navigate(['/pricing']);
-  }
 }

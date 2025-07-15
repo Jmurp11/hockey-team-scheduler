@@ -1,12 +1,44 @@
 @use "./app/scss/mixins/_mixins.scss" as *;
 
-/* You can add global styles to this file, and also import other style files */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
 @import "primeicons/primeicons.css";
+
+:root {
+  --primary-50: #41a2e9;
+  --primary-100: #2f99e6;
+  --primary-200: #1985d4;
+  --primary-300: #156eaf;
+  --primary-400: #10578b;
+  --primary-500: #0c4066;
+  --primary-600: #062134;
+  --primary-700: #000102;
+  --primary-800: #000000;
+  --primary-900: #000000;
+  --primary-950: #000000;
+
+  --secondary-50: #fce1d6;
+  --secondary-100: #fbd3c3;
+  --secondary-200: #f8b79d;
+  --secondary-300: #f59a77;
+  --secondary-400: #f37e51;
+  --secondary-500: #f0622b;
+  --secondary-600: #d4460f;
+  --secondary-700: #a0350b;
+  --secondary-800: #6b2308;
+  --secondary-900: #371204;
+  --secondary-950: #1d0902;
+
+  --tertiary-50: #ffffff;
+  --tertiary-100: #ffffff;
+  --tertiary-200: #fcfeff;
+  --tertiary-300: #d6eefc;
+  --tertiary-400: #b0dff9;
+  --tertiary-500: #8ad0f6;
+  --tertiary-600: #56bbf2;
+  --tertiary-700: #22a6ee;
+  --tertiary-800: #0f87c8;
+  --tertiary-900: #0b6494;
+  --tertiary-950: #09527a;
+}
 
 .container {
   @include flex(center, stretch, column);
@@ -15,4 +47,11 @@
   width: 100%;
   overflow: hidden;
   font-family: "Space Grotesk", "Noto Sans", sans-serif;
+}
+
+.p-button {
+  --p-button-primary-background: var(--secondary-500);
+  --p-button-primary-hover-background: var(--secondary-600);
+  --p-button-primary-border-color: var(--secondary-500);
+  --p-button-primary-hover-border-color: var(--secondary-600);
 }
