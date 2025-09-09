@@ -17,4 +17,40 @@
     color: #ffff;
     font-size: 0.875rem;
   }
+
+  &__socials {
+    @include flex(space-between, center, row);
+    gap: 1rem;
+
+    div {
+      cursor: pointer;
+      color: #ffff;
+
+      &:hover {
+        color: var(--primary-400);
+      }
+    }
+
+    &__version {
+      color: #ffff;
+      font-size: 0.875rem;
+      &:hover {
+        color: #ffff;
+        cursor: default;
+      }
+    }
+  }
+  &__policies {
+    @include flex(space-between, center, row);
+    gap: 1rem;
+
+    div {
+      cursor: pointer;
+      color: #ffff;
+
+      &:hover {
+        color: var(--primary-400);
+      }
+    }
+  }
 }

@@ -11,6 +11,14 @@ p-menubar-item-link {
   --p-menubar-item-link-color: var(--primary-500);
 }
 
-.title {
-  font-weight: bold;
+:host(.theme-dark) {
+  --p-menubar-color: var(--primary-100) !important;
+  --p-menubar-background: var(--primary-500) !important;
+}
+
+:host(.theme-light) {
+  p-menubar {
+    --p-menubar-color: var(--primary-500) !important;
+    --p-menubar-background: transparent;
+  }
 }

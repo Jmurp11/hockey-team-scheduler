@@ -8,10 +8,22 @@ import { HomeComponent } from './landing/home/home.component';
 import { PricingComponent } from './landing/pricing/pricing.component';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './auth/login/login.component';
+import { ContactComponent } from './landing/contact/contact.component';
+import { NewUserComponent } from './auth/new-user/new-user.component';
+import { authGuard } from './guards/auth.guard';
+import { CallbackComponent } from './auth/callback/callback.component';
+import { RegisterComponent } from './auth/register/register.component';
+
 export const routes: Routes = [
+  {
+    path: '*',
+    redirectTo: '/',
+    pathMatch: 'full',
+  },
   {
     path: '',
     component: LandingComponent,
+
     children: [
       {
         path: '',
@@ -25,10 +37,23 @@ export const routes: Routes = [
         path: 'login',
         component: LoginComponent,
       },
+      {
+        path: 'welcome',
+        component: NewUserComponent,
+      },
+      {
+        path: 'contact',
+        component: ContactComponent,
+      },
+       {
+        path: 'callback',
+        component: CallbackComponent,
+      },
     ],
   },
   {
     path: 'app',
+    canActivate: [authGuard],
     component: ContainerComponent,
     children: [
       {
@@ -47,6 +72,10 @@ export const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+      },
+      {
+        path: 'complete-profile',
+        component: RegisterComponent,
       },
     ],
   },

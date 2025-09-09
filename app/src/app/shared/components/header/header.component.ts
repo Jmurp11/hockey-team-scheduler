@@ -30,13 +30,7 @@ import { NavigationService } from '../../services/navigation.service';
   providers: [NavigationService],
   template: ` <p-menubar [model]="items">
     <ng-template pTemplate="start">
-      <a
-        pRipple
-        class="title flex items-center p-menubar-item-link"
-        (click)="navigation.navigateToLink('/')"
-      >
-        <span>{{ title }}</span>
-      </a>
+      <ng-container *ngTemplateOutlet="start"></ng-container>
     </ng-template>
     <ng-template #item let-item let-root="root">
       <a
@@ -59,12 +53,10 @@ export class HeaderComponent {
   items: MenuItem[] | undefined;
 
   @Input()
-  title: string;
+  class: string | undefined;
 
   @ContentChild('start') start: TemplateRef<any> | undefined;
   @ContentChild('end') end: TemplateRef<any> | undefined;
 
   navigation = inject(NavigationService);
-
-  constructor() {}
 }

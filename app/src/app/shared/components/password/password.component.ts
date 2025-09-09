@@ -27,7 +27,7 @@ import { MessageModule } from 'primeng/message';
             [class.ng-invalid]="isInvalid(fcName)"
           >
           </p-password>
-          <label for="password">Password</label>
+          <label for="password">{{ labelText() }}</label>
         </p-iftalabel>
         @if (isInvalid(fcName)) {
         <p-message severity="error" size="small" variant="simple"
@@ -54,5 +54,13 @@ export class PasswordComponent {
       this.parentForm.get(formControlName)?.invalid &&
       this.parentForm.get(formControlName)?.touched
     );
+  }
+
+  checkIsConfirm() {
+    return this.fcName === 'confirmPassword';
+  }
+
+  labelText() {
+    return this.checkIsConfirm() ? 'Confirm Password' : 'Password';
   }
 }

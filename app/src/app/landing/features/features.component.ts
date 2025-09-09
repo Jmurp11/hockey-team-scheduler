@@ -10,33 +10,14 @@ import { CardComponent } from '../../shared/components/card/card.component';
     <div class="features-container">
       <h2>Key Features</h2>
       <div class="features-container__cards">
+        @for (card of cards; track card.title) {
         <app-card class="features-container__card">
-          <ng-template #title>Ice Slot Management</ng-template>
+          <ng-template #title>{{ card.title }}</ng-template>
           <ng-template #content>
-            <p>
-              Easily upload and manage your available ice slots for the entire
-              season
-            </p>
+            <p>{{ card.description }}</p>
           </ng-template>
         </app-card>
-        <app-card class="features-container__card">
-          <ng-template #title>Team Availability Suggestions</ng-template>
-          <ng-template #content>
-            <p>
-              Receive suggestions for the teams with matching availability,
-              including team names, ratings, and distances
-            </p>
-          </ng-template>
-        </app-card>
-        <app-card class="features-container__card">
-          <ng-template #title>Location-Based Matching</ng-template>
-          <ng-template #content>
-            <p>
-              Find teams located near your home rink or schedule clusters of
-              games for road trips
-            </p>
-          </ng-template>
-        </app-card>
+        }
       </div>
     </div>
   `,
@@ -44,5 +25,24 @@ import { CardComponent } from '../../shared/components/card/card.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeaturesComponent {
-  constructor() {}
+  cards: { title: string; description: string }[] = [];
+  constructor() {
+    this.cards = [
+      {
+        title: 'Ice Slot Management',
+        description:
+          'Easily upload and manage your available ice slots for the entire season',
+      },
+      {
+        title: 'Team Availability Suggestions',
+        description:
+          'Receive suggestions for the teams with matching availability, including team names, ratings, and distances',
+      },
+      {
+        title: 'Location-Based Matching',
+        description:
+          'Find teams located near your home rink or schedule clusters of games for road trips',
+      },
+    ];
+  }
 }

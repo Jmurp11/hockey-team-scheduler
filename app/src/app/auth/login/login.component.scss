@@ -50,7 +50,7 @@
     color: #666;
 
     a {
-      color: #007ad9;
+      color: var(--primary-400);
       text-decoration: none;
 
       &:hover {
@@ -60,7 +60,7 @@
   }
 
   .forgot-password {
-    color: #007ad9;
+    color: var(--primary-400);
     text-decoration: none;
     font-size: 0.9rem;
 

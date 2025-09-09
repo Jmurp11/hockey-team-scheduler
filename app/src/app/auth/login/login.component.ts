@@ -13,6 +13,7 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { ButtonModule } from 'primeng/button';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
+import { UserService } from '../user.service';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,7 @@ import { PasswordComponent } from '../../shared/components/password/password.com
     PasswordComponent,
     ButtonModule,
   ],
-  providers: [LoadingService, NavigationService],
+  providers: [LoadingService, NavigationService, UserService],
   template: `
     <div class="login-container">
       <app-card class="card">
@@ -35,16 +36,12 @@ import { PasswordComponent } from '../../shared/components/password/password.com
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <app-input [parentForm]="loginForm" fcName="email" />
 
-            <app-password
-              [parentForm]="loginForm"
-              fcName="password"
-            />
+            <app-password [parentForm]="loginForm" fcName="password" />
 
             <div class="form-actions">
               <p-button
                 type="submit"
                 label="Sign In"
-                
                 [disabled]="loginForm.invalid || loadingService.isLoading()"
                 [loading]="loadingService.isLoading()"
                 styleClass="w-full"
@@ -70,6 +67,7 @@ import { PasswordComponent } from '../../shared/components/password/password.com
 })
 export class LoginComponent {
   protected loadingService = inject(LoadingService);
+  private userService = inject(UserService);
   navigation = inject(NavigationService);
 
   loginForm: FormGroup = new FormGroup({
@@ -83,5 +81,14 @@ export class LoginComponent {
 
   constructor() {}
 
-  onSubmit() {}
+  async onSubmit() {
+    const data = await this.userService.login(
+      this.loginForm.get('email')?.value,
+      this.loginForm.get('password')?.value
+    );
+
+    if (data) {
+      this.navigation.navigateToLink('/callback');
+    }
+  }
 }

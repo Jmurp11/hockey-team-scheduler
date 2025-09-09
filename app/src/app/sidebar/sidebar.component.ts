@@ -5,7 +5,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { DrawerModule } from 'primeng/drawer';
 import { MenuModule } from 'primeng/menu';
-import { MenuHeaderComponent } from './menu-header/menu-header.component';
+// import { MenuHeaderComponent } from './menu-header/menu-header.component';
 import { MenuItemComponent } from './menu-items/menu-item.component';
 @Component({
   selector: 'app-sidebar',
@@ -17,12 +17,11 @@ import { MenuItemComponent } from './menu-items/menu-item.component';
     MenuModule,
     BadgeModule,
     AvatarModule,
-    MenuHeaderComponent,
+   // MenuHeaderComponent,
     MenuItemComponent,
   ],
   template: `<div class="sidebar-container">
     <p-menu [model]="items" [style]="{ height: '100%' }">
-      <ng-template #start><app-menu-header [title]="title" /></ng-template>
       <ng-template #item let-item class="items">
         <app-menu-item [item]="item" />
       </ng-template>

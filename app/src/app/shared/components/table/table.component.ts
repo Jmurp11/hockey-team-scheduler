@@ -62,16 +62,27 @@ import { TableOptions } from '../../types/table-options.type';
         <div class="text-end pb-4">
           <p-button
             icon="pi pi-external-link"
-            
+            size="small"
             label="Export"
             (click)="exportCSV(dt)"
           />
         </div>
       </div>
     </ng-template>
-    <ng-template pTemplate="header"
-      ><ng-container *ngTemplateOutlet="header"></ng-container
-    ></ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        @for (col of tableOpts.columns; track col.field) { @if (col.sortable) {
+        <th [pSortableColumn]="col.field">
+          {{ col.header | titlecase }}
+          <p-sortIcon [field]="col.field"></p-sortIcon>
+        </th>
+        } @else {
+        <th>
+          {{ col.header | titlecase }}
+        </th>
+        }}
+      </tr></ng-template
+    >
     <ng-template pTemplate="body" let-rowData
       ><ng-container
         *ngTemplateOutlet="body; context: { $implicit: rowData }"
