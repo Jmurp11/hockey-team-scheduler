@@ -1,18 +1,19 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { ScheduleComponent } from './schedule/schedule.component';
 import { ContainerComponent } from './container/container.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProfileComponent } from './profile/profile.component';
+import { ScheduleComponent } from './schedule/schedule.component';
 
-import { HomeComponent } from './landing/home/home.component';
-import { PricingComponent } from './landing/pricing/pricing.component';
-import { LandingComponent } from './landing/landing.component';
-import { LoginComponent } from './auth/login/login.component';
-import { ContactComponent } from './landing/contact/contact.component';
-import { NewUserComponent } from './auth/new-user/new-user.component';
-import { authGuard } from './guards/auth.guard';
 import { CallbackComponent } from './auth/callback/callback.component';
+import { LoginComponent } from './auth/login/login.component';
+import { NewUserComponent } from './auth/new-user/new-user.component';
 import { RegisterComponent } from './auth/register/register.component';
+import { UpdatePasswordComponent } from './auth/update-password/update-password.component';
+import { authGuard } from './guards/auth.guard';
+import { ContactComponent } from './landing/contact/contact.component';
+import { HomeComponent } from './landing/home/home.component';
+import { LandingComponent } from './landing/landing.component';
+import { PricingComponent } from './landing/pricing/pricing.component';
 
 export const routes: Routes = [
   {
@@ -45,7 +46,7 @@ export const routes: Routes = [
         path: 'contact',
         component: ContactComponent,
       },
-       {
+      {
         path: 'callback',
         component: CallbackComponent,
       },
@@ -76,6 +77,10 @@ export const routes: Routes = [
       {
         path: 'complete-profile',
         component: RegisterComponent,
+      },
+      {
+        path: 'reset-password',
+        component: UpdatePasswordComponent,
       },
     ],
   },

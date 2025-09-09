@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { UpdateUser } from './user.type';
 import { SupabaseService } from '../shared/services/supabase.service';
 import { AuthService } from './auth.service';
+import { UpdateUser } from './user.type';
 @Injectable()
 export class UserService {
   supabaseClient = inject(SupabaseService).getSupabaseClient();
@@ -65,5 +65,11 @@ export class UserService {
     });
 
     return { data, error };
+  }
+
+  updatePassword(password: string) {
+    return this.supabaseClient!.auth.updateUser({
+      password: password,
+    });
   }
 }

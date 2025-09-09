@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IftaLabelModule } from 'primeng/iftalabel';
-import { SelectButtonModule } from 'primeng/selectbutton';
 import { MessageModule } from 'primeng/message';
+import { SelectButtonModule } from 'primeng/selectbutton';
 
 @Component({
   selector: 'app-select-button',
@@ -40,7 +40,7 @@ export class SelectButtonComponent {
   @Input()
   options: { label: string; value: string }[] = [];
 
-  constructor() {}
+  
 
   isInvalid(formControlName: string) {
     return (

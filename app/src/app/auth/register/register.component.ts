@@ -1,31 +1,31 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NavigationService } from '../../shared/services/navigation.service';
-import { CardComponent } from '../../shared/components/card/card.component';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
+  Validators
 } from '@angular/forms';
-import { LoadingService } from '../../shared/services/loading.service';
+import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { Observable, tap } from 'rxjs';
+import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
+import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
-import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { AssociationService } from '../../shared/services/associations.service';
-import { TeamsService } from '../../shared/services/teams.service';
-import { SelectItem } from 'primeng/api';
+import { LoadingService } from '../../shared/services/loading.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 import { SupabaseService } from '../../shared/services/supabase.service';
-import { Observable, tap } from 'rxjs';
-import { AbstractControl, ValidatorFn } from '@angular/forms';
-import { UserService } from '../user.service';
+import { TeamsService } from '../../shared/services/teams.service';
 import { AuthService } from '../auth.service';
+import { confirmPasswordValidator } from '../update-password/password-match.validator';
+import { UserService } from '../user.service';
 
 @Component({
   selector: 'app-register',
@@ -55,7 +55,11 @@ import { AuthService } from '../auth.service';
           <form [formGroup]="registerForm" (ngSubmit)="submit()">
             <app-input [parentForm]="registerForm" fcName="email" />
 
-            <app-password [parentForm]="registerForm" fcName="password" />
+            <app-password
+              [parentForm]="registerForm"
+              fcName="password"
+              [errorMessage]="errorMessage"
+            />
 
             <app-password
               [parentForm]="registerForm"
@@ -116,16 +120,7 @@ export class RegisterComponent implements OnInit {
 
   navigation = inject(NavigationService);
 
-  // TODO: show error message to user that passwords do not match
-  passwordMatchValidator: ValidatorFn = (
-    control: AbstractControl
-  ): { [key: string]: any } | null => {
-    const group = control as FormGroup;
-    const password = group.get('password')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-
-    return password === confirmPassword ? null : { passwordsMismatch: true };
-  };
+  errorMessage = 'Password is required.';
 
   registerForm: FormGroup;
 
@@ -151,7 +146,7 @@ export class RegisterComponent implements OnInit {
           }
         ),
         password: new FormControl(null, {
-          validators: [Validators.required, Validators.minLength(6)],
+          validators: [Validators.required, Validators.minLength(10)],
         }),
         confirmPassword: new FormControl(null, {
           validators: [Validators.required],
@@ -166,7 +161,7 @@ export class RegisterComponent implements OnInit {
           validators: [Validators.required],
         }),
       },
-      { validators: this.passwordMatchValidator }
+      { validators: confirmPasswordValidator }
     );
   }
   async loadAssociations() {
@@ -218,5 +213,14 @@ export class RegisterComponent implements OnInit {
     await this.userService.updateUserProfile(submission);
 
     this.navigation.navigateToLink('/app/dashboard');
+  }
+
+  getPasswordErrors() {
+    return this.registerForm.get('password')?.valueChanges.pipe(
+      tap((password) => {
+        console.log({ password });
+        console.log(this.registerForm.get('password')?.errors);
+      })
+    );
   }
 }

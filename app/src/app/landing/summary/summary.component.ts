@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { GetStartedComponent } from '../get-started.component.ts/get-started.component';
 
 @Component({
@@ -26,5 +26,5 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SummaryComponent {
-  constructor() {}
+  
 }

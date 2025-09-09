@@ -1,18 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { NavigationService } from '../../shared/services/navigation.service';
-import { CardComponent } from '../../shared/components/card/card.component';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { LoadingService } from '../../shared/services/loading.service';
 import { ButtonModule } from 'primeng/button';
+import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
+import { LoadingService } from '../../shared/services/loading.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 import { UserService } from '../user.service';
 
 @Component({
@@ -36,7 +35,7 @@ import { UserService } from '../user.service';
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <app-input [parentForm]="loginForm" fcName="email" />
 
-            <app-password [parentForm]="loginForm" fcName="password" />
+            <app-password [parentForm]="loginForm" fcName="password" errorMessage="Password is required." />
 
             <div class="form-actions">
               <p-button
@@ -75,11 +74,9 @@ export class LoginComponent {
       validators: [Validators.required, Validators.email],
     }),
     password: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required],
     }),
   });
-
-  constructor() {}
 
   async onSubmit() {
     const data = await this.userService.login(
