@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../shared/components/header/header.component';
@@ -20,7 +25,12 @@ import { NavigationService } from '../shared/services/navigation.service';
   providers: [NavigationService],
   template: `<div class="container">
     <app-header [items]="items" [title]="appTitle">
-      <ng-template #start></ng-template>
+      <ng-template #start>
+        <a pRipple class="title" (click)="navigation.navigateToLink('/')">
+          <span class="title__left">{{ titleSplit[0] }}</span>
+          <span class="title__right">.{{ titleSplit[1] }}</span>
+        </a>
+      </ng-template>
       <ng-template #end>
         <div class="right-header">
           <div>
@@ -48,7 +58,7 @@ import { NavigationService } from '../shared/services/navigation.service';
   styleUrls: ['./landing.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
   navigation = inject(NavigationService);
 
   appTitle = 'IceTime.ai';
@@ -67,5 +77,16 @@ export class LandingComponent {
       routerLink: '/contact',
     },
   ];
+
+  titleSplit: string[] = [];
+  
   constructor() {}
+
+  ngOnInit(): void {
+    this.titleSplit = this.splitTitle(this.appTitle);
+  }
+
+  splitTitle(title: string): string[] {
+    return title.split('.');
+  }
 }

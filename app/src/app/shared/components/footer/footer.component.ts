@@ -8,9 +8,17 @@ import packageInfo from '../../../../../package.json';
   imports: [CommonModule, RouterModule],
   template: ` <div class="footer">
     <div class="footer__content">
-      <div>Privacy Policy</div>
+      <div class="footer__policies">
+        <div>Terms of Service</div>
+        <div>Privacy Policy</div>
+      </div>
       <div>&#64;2025 IceTime.ai All Rights Reserved</div>
-      <div>v{{ packageInfo.version }}</div>
+      <div class="footer__socials">
+        <div><i class="pi pi-twitter" style="font-size: 1rem"></i></div>
+        <div><i class="pi pi-instagram" style="font-size: 1rem"></i></div>
+        <div><i class="pi pi-discord" style="font-size: 1rem"></i></div>
+        <div>v{{ packageInfo.version }}</div>
+      </div>
     </div>
   </div>`,
   styleUrls: ['./footer.component.scss'],

@@ -23,18 +23,10 @@ import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.co
         [tableData]="tableData"
         [exportColumns]="exportColumns"
       >
-        <ng-template #header>
-          <tr>
-            @for (col of columns; track col.field) {
-            <th style="width: 20%">
-              {{ col.header | titlecase }}
-            </th>
-            }
-          </tr></ng-template
-        >
+        <ng-template #header></ng-template>
         <ng-template #body let-rowData>
           <tr>
-            @for (col of columns; track col.field) {
+            @for (col of tableOpts.columns; track col.field) {
             <td>
               {{ rowData[col.field] }}
             </td>
@@ -99,15 +91,15 @@ export class ScheduleComponent {
     stateStorage: 'session',
     stateKey: 'hs-schedule-session',
     datakey: undefined,
+    columns: [
+      { field: 'date', header: 'Date', sortable: true },
+      { field: 'time', header: 'Time', sortable: false },
+      { field: 'location', header: 'Location', sortable: false },
+      { field: 'opponent', header: 'Opponent', sortable: false },
+      { field: 'gameType', header: 'Game Type', sortable: false },
+    ],
   };
 
-  columns = [
-    { field: 'date', header: 'Date' },
-    { field: 'time', header: 'Time' },
-    { field: 'location', header: 'Location' },
-    { field: 'opponent', header: 'Opponent' },
-    { field: 'gameType', header: 'Game Type' },
-  ];
   tableData = [
     {
       id: 1,
@@ -272,7 +264,7 @@ export class ScheduleComponent {
   ];
 
   constructor() {
-    this.exportColumns = this.columns.map((col) => ({
+    this.exportColumns = this.tableOpts.columns.map((col) => ({
       title: col.header,
       dataKey: col.field,
     }));

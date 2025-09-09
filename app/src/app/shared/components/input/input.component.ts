@@ -21,11 +21,11 @@ import { MessageModule } from 'primeng/message';
         <p-iftalabel>
           <input
             pInputText
-            id="email"
+            [id]="fcName"
             [formControlName]="fcName"
             [class.ng-invalid]="isInvalid(fcName)"
           />
-          <label for="email">{{ fcName | titlecase }}</label>
+          <label [for]="fcName">{{ fcName | titlecase }}</label>
         </p-iftalabel>
         @if (isInvalid(fcName)) {
         <p-message severity="error" size="small" variant="simple"
