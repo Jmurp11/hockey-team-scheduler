@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { OpponentsComponent } from './opponents/opponents.component';
-import { TeamsService } from '../shared/services/teams.service';
 import { AuthService } from '../auth/auth.service';
-import { OpponentsTableComponent } from './opponents-table/opponents-table.component';
+import { TeamsService } from '../shared/services/teams.service';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
+import { OpponentsComponent } from './opponents/opponents.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -13,7 +12,6 @@ import { OpponentListComponent } from './opponent-list/opponent-list.component';
     CommonModule,
     RouterModule,
     OpponentsComponent,
-    OpponentsTableComponent,
     OpponentListComponent
   ],
   template: ` <div class="container">
