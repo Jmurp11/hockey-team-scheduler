@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { PasswordModule } from 'primeng/password';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
+import { PasswordModule } from 'primeng/password';
 
 @Component({
   selector: 'app-password',
@@ -31,8 +31,12 @@ import { MessageModule } from 'primeng/message';
         </p-iftalabel>
         @if (isInvalid(fcName)) {
         <p-message severity="error" size="small" variant="simple"
-          >Password is required.</p-message
+          >Password is invalid</p-message
         >
+        } @if (errorMessage.length > 0) {
+        <p-message severity="error" size="small" variant="simple">{{
+          errorMessage
+        }}</p-message>
         }
       </div>
     </form>
@@ -47,7 +51,8 @@ export class PasswordComponent {
   @Input()
   fcName: string;
 
-  constructor() {}
+  @Input()
+  errorMessage: string = '';
 
   isInvalid(formControlName: string) {
     return (

@@ -18,7 +18,7 @@ import { MenuItem } from 'primeng/api';
 export class MenuItemComponent implements OnInit {
   @Input() item!: MenuItem;
 
-  constructor() {}
+  
 
   ngOnInit(): void {}
 }

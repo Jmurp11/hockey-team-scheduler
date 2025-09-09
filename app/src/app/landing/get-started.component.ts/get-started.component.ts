@@ -1,10 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  Input,
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    inject,
+    Input,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { NavigationService } from '../../shared/services/navigation.service';
 
@@ -31,5 +31,5 @@ export class GetStartedComponent {
 
   navigation = inject(NavigationService);
 
-  constructor() {}
+  
 }

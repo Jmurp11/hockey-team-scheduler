@@ -35,7 +35,7 @@ export class DashboardComponent {
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
 
-  constructor() {}
+  
 
   async fetchNearbyTeams(params: any) {
     const user = await this.authService.currentUser();

@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
-  constructor() {}
+  
 
   ngOnInit(): void {}
 }

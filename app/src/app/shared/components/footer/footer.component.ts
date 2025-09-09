@@ -26,7 +26,7 @@ import packageInfo from '../../../../../package.json';
 })
 export class FooterComponent implements OnInit {
   packageInfo = packageInfo;
-  constructor() {}
+  
 
   ngOnInit(): void {}
 }

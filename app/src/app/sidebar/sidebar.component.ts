@@ -54,7 +54,7 @@ export class SidebarComponent implements OnInit {
       routerLink: '/app/profile',
     },
   ];
-  constructor() {}
+  
 
   ngOnInit(): void {}
 }

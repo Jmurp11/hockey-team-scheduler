@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageModule } from 'primeng/message';
 import { SliderModule } from 'primeng/slider';
@@ -52,5 +52,5 @@ export class SliderComponent {
   @Input()
   max: number;
 
-  constructor() {}
+  
 }

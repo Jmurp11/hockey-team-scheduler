@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { SummaryComponent } from '../summary/summary.component';
 import { FeaturesComponent } from '../features/features.component';
 import { GetStartedComponent } from '../get-started.component.ts/get-started.component';
+import { SummaryComponent } from '../summary/summary.component';
 
 @Component({
   selector: 'app-home',
@@ -32,5 +32,5 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
-  constructor() {}
+  
 }

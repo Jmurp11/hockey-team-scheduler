@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 export class MenuHeaderComponent implements OnInit {
   @Input() title: string;
-  constructor() {}
+  
 
   ngOnInit(): void {}
 }
