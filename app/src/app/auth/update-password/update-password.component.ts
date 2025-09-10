@@ -28,8 +28,8 @@ import { confirmPasswordValidator } from './password-match.validator';
   template: `
     <div class="password-container">
       <app-card class="card">
-        <ng-template #title>Update Password</ng-template>
-        <ng-template #subtitle>Update your password for IceTime.ai</ng-template>
+        <ng-template #title>Reset Password</ng-template>
+        <ng-template #subtitle>Reset your password for IceTime.ai</ng-template>
         <ng-template #content>
           <form [formGroup]="updatePassword" (ngSubmit)="onSubmit()">
             <app-password [parentForm]="updatePassword" fcName="password" />
@@ -43,7 +43,7 @@ import { confirmPasswordValidator } from './password-match.validator';
             <div class="form-actions">
               <p-button
                 type="submit"
-                label="Update Password"
+                label="Reset Password"
                 [disabled]="
                   updatePassword.invalid || loadingService.isLoading()
                 "

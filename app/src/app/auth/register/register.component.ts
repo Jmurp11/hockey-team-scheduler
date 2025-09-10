@@ -9,7 +9,7 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -58,7 +58,6 @@ import { UserService } from '../user.service';
             <app-password
               [parentForm]="registerForm"
               fcName="password"
-              [errorMessage]="errorMessage"
             />
 
             <app-password
@@ -119,8 +118,6 @@ export class RegisterComponent implements OnInit {
   teamsObs$: Observable<void> | undefined;
 
   navigation = inject(NavigationService);
-
-  errorMessage = 'Password is required.';
 
   registerForm: FormGroup;
 
