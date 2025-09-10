@@ -35,7 +35,7 @@ import { UserService } from '../user.service';
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <app-input [parentForm]="loginForm" fcName="email" />
 
-            <app-password [parentForm]="loginForm" fcName="password" errorMessage="Password is required." />
+            <app-password [parentForm]="loginForm" fcName="password" />
 
             <div class="form-actions">
               <p-button
@@ -55,7 +55,7 @@ import { UserService } from '../user.service';
               Don't have an account?
               <a (click)="navigation.navigateToLink('pricing')">Sign up</a>
             </p>
-            <a href="#" class="forgot-password">Forgot password?</a>
+            <a (click)="navigation.navigateToLink('forgot-password')" class="forgot-password">Forgot password?</a>
           </div>
         </ng-template>
       </app-card>
