@@ -5,6 +5,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 
 import { CallbackComponent } from './auth/callback/callback.component';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { LoginComponent } from './auth/login/login.component';
 import { NewUserComponent } from './auth/new-user/new-user.component';
 import { RegisterComponent } from './auth/register/register.component';
@@ -37,6 +38,10 @@ export const routes: Routes = [
       {
         path: 'login',
         component: LoginComponent,
+      },
+      {
+        path: 'forgot-password',
+        component: ForgotPasswordComponent,
       },
       {
         path: 'welcome',

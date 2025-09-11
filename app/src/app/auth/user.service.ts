@@ -72,4 +72,8 @@ export class UserService {
       password: password,
     });
   }
+
+  sendPasswordResetEmail(email: string) {
+    return this.supabaseClient!.auth.resetPasswordForEmail(email);
+  }
 }
