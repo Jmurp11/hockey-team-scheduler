@@ -23,6 +23,7 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
 import { SupabaseService } from '../../shared/services/supabase.service';
 import { TeamsService } from '../../shared/services/teams.service';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { AuthService } from '../auth.service';
 import { confirmPasswordValidator } from '../update-password/password-match.validator';
 import { UserService } from '../user.service';
@@ -31,6 +32,7 @@ import { UserService } from '../user.service';
   selector: 'app-register',
   standalone: true,
   imports: [
+    AuthContainerComponent,
     CommonModule,
     CardComponent,
     ReactiveFormsModule,
@@ -48,17 +50,14 @@ import { UserService } from '../user.service';
     UserService,
   ],
   template: `
-    <div class="register-container">
+    <app-auth-container>
       <app-card class="card">
         <ng-template #title>Complete Profile</ng-template>
         <ng-template #content>
           <form [formGroup]="registerForm" (ngSubmit)="submit()">
             <app-input [parentForm]="registerForm" fcName="email" />
 
-            <app-password
-              [parentForm]="registerForm"
-              fcName="password"
-            />
+            <app-password [parentForm]="registerForm" fcName="password" />
 
             <app-password
               [parentForm]="registerForm"
@@ -95,7 +94,7 @@ import { UserService } from '../user.service';
         </ng-template>
         <ng-template #footer> </ng-template>
       </app-card>
-    </div>
+    </app-auth-container>
   `,
   styleUrls: ['./register.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -213,11 +212,6 @@ export class RegisterComponent implements OnInit {
   }
 
   getPasswordErrors() {
-    return this.registerForm.get('password')?.valueChanges.pipe(
-      tap((password) => {
-        console.log({ password });
-        console.log(this.registerForm.get('password')?.errors);
-      })
-    );
+    return this.registerForm.get('password')?.valueChanges;
   }
 }

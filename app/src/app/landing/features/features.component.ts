@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CardComponent } from '../../shared/components/card/card.component';
 
 @Component({
@@ -28,11 +28,6 @@ export class FeaturesComponent {
   cards: { title: string; description: string }[] = [];
   constructor() {
     this.cards = [
-      {
-        title: 'Ice Slot Management',
-        description:
-          'Easily upload and manage your available ice slots for the entire season',
-      },
       {
         title: 'Team Availability Suggestions',
         description:

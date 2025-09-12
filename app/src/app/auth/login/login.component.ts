@@ -12,6 +12,7 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
 @Component({
@@ -19,6 +20,7 @@ import { UserService } from '../user.service';
   standalone: true,
   imports: [
     CommonModule,
+    AuthContainerComponent,
     CardComponent,
     ReactiveFormsModule,
     InputComponent,
@@ -27,7 +29,7 @@ import { UserService } from '../user.service';
   ],
   providers: [LoadingService, NavigationService, UserService],
   template: `
-    <div class="login-container">
+    <app-auth-container>
       <app-card class="card">
         <ng-template #title>Login</ng-template>
         <ng-template #subtitle>Welcome back to IceTime.ai</ng-template>
@@ -55,11 +57,15 @@ import { UserService } from '../user.service';
               Don't have an account?
               <a (click)="navigation.navigateToLink('pricing')">Sign up</a>
             </p>
-            <a (click)="navigation.navigateToLink('forgot-password')" class="forgot-password">Forgot password?</a>
+            <a
+              (click)="navigation.navigateToLink('forgot-password')"
+              class="forgot-password"
+              >Forgot password?</a
+            >
           </div>
         </ng-template>
       </app-card>
-    </div>
+    </app-auth-container>
   `,
   styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

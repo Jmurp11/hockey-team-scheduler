@@ -1,11 +1,10 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { CardComponent } from '../../shared/components/card/card.component';
 import {
   FormControl,
   FormGroup,
@@ -13,7 +12,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
 @Component({
@@ -21,6 +22,7 @@ import { UserService } from '../user.service';
   standalone: true,
   imports: [
     CommonModule,
+    AuthContainerComponent,
     CardComponent,
     InputComponent,
     ButtonModule,
@@ -28,7 +30,7 @@ import { UserService } from '../user.service';
   ],
   providers: [UserService],
   template: `
-    <div class="new-user-container">
+    <app-auth-container>
       @if (emailSent()) {
       <app-card class="card">
         <ng-template #title>Check your email!</ng-template>
@@ -59,7 +61,7 @@ import { UserService } from '../user.service';
         </ng-template>
         <ng-template #footer> </ng-template> </app-card
       >}
-    </div>
+    </app-auth-container>
   `,
   styleUrls: ['./new-user.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

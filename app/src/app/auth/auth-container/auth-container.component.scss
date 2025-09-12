@@ -1,0 +1,9 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+.auth-container {
+  @include flex(flex-start, center, column);
+  height: 97.5vh;
+  flex: 1;
+  width: 100vw;
+  overflow: auto;
+}
