@@ -11,6 +11,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 import { confirmPasswordValidator } from './password-match.validator';
 
@@ -18,6 +19,7 @@ import { confirmPasswordValidator } from './password-match.validator';
   selector: 'app-update-password',
   standalone: true,
   imports: [
+    AuthContainerComponent,
     CommonModule,
     CardComponent,
     ReactiveFormsModule,
@@ -26,7 +28,7 @@ import { confirmPasswordValidator } from './password-match.validator';
   ],
   providers: [LoadingService, NavigationService, UserService],
   template: `
-    <div class="password-container">
+  <app-auth-container>
       <app-card class="card">
         <ng-template #title>Reset Password</ng-template>
         <ng-template #subtitle>Reset your password for IceTime.ai</ng-template>
@@ -56,7 +58,7 @@ import { confirmPasswordValidator } from './password-match.validator';
         </ng-template>
         <ng-template #footer> </ng-template>
       </app-card>
-    </div>
+  </app-auth-container>
   `,
   styleUrls: ['./update-password.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

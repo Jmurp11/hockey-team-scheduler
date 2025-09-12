@@ -11,6 +11,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
 @Component({
@@ -18,6 +19,7 @@ import { UserService } from '../user.service';
   standalone: true,
   imports: [
     CommonModule,
+    AuthContainerComponent,
     CardComponent,
     ReactiveFormsModule,
     InputComponent,
@@ -25,7 +27,7 @@ import { UserService } from '../user.service';
   ],
   providers: [LoadingService, NavigationService, UserService],
   template: `
-    <div class="fp-container">
+    <app-auth-container>
       <app-card class="card">
         <ng-template #title>Reset Password</ng-template>
         <ng-template #subtitle>Reset your password for IceTime.ai</ng-template>
@@ -48,7 +50,7 @@ import { UserService } from '../user.service';
         </ng-template>
         <ng-template #footer> </ng-template>
       </app-card>
-    </div>
+    </app-auth-container>
   `,
   styleUrls: ['./forgot-password.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
