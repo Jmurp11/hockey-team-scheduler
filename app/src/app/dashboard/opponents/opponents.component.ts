@@ -34,9 +34,7 @@ import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.com
   providers: [LoadingService],
   template: `
     <form [formGroup]="opponentsForm" (ngSubmit)="submit()">
-      <div class="opponents-container">
         <app-card class="card">
-          <ng-template #title>Find Opponents </ng-template>
           <ng-template #content>
             <div class="content">
               <div class="content-div">
@@ -112,7 +110,6 @@ import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.com
             </div>
           </ng-template>
         </app-card>
-      </div>
     </form>
   `,
   styleUrls: ['./opponents.component.scss'],

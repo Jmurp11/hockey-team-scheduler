@@ -1,18 +1,19 @@
 @use "../../scss/mixins/_mixins.scss" as *;
 
-.opponents-container {
-  @include flex(flex-start, center, column);
-  height: 100%;
-  flex: 1;
-  width: 95vw;
-  overflow: auto;
+:host {
+  width: 100%;
 }
 
 .card {
-  width: 100%;
+  display: block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+
+  margin: 1rem;
+  width: 97.5%;
   height: 100%;
-  max-height: 30vh;
-  border-radius: 12px;
+  max-height: 27vh;
 }
 
 .opponents-header {
@@ -67,7 +68,7 @@
   height: 100%;
   width: 100%;
   gap: 1rem;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .content-div {

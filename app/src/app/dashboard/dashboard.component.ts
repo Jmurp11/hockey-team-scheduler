@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { TeamsService } from '../shared/services/teams.service';
@@ -12,19 +17,20 @@ import { OpponentsComponent } from './opponents/opponents.component';
     CommonModule,
     RouterModule,
     OpponentsComponent,
-    OpponentListComponent
+    OpponentListComponent,
   ],
-  template: ` <div class="container">
-    <app-opponents (selectedInputs)="fetchNearbyTeams($event)" />
+  template: `
+    <div class="container">
+      <app-opponents (selectedInputs)="fetchNearbyTeams($event)" />
 
-    @if (nearbyTeams().length > 0) {
-    <div class="opponent-list">
-      <app-opponent-list [opponents]="nearbyTeams()" />
-    </div>
-    } @else {
-    <p>No nearby teams found.</p>
-    }
-  </div>`,
+      @if (nearbyTeams().length > 0) {
+      <div class="opponent-list">
+        <app-opponent-list [opponents]="nearbyTeams()" />
+      </div>
+      } @else {
+      <p>No nearby teams found.</p>
+      }
+    </div>`,
   styleUrls: ['./dashboard.component.scss'],
   providers: [TeamsService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,8 +40,6 @@ export class DashboardComponent {
 
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
-
-  
 
   async fetchNearbyTeams(params: any) {
     const user = await this.authService.currentUser();
@@ -53,7 +57,9 @@ export class DashboardComponent {
       p_max_distance: params.distance as number,
     };
 
-    this.nearbyTeams.set(await this.teamsService.nearbyTeams(nearbyTeamsParams));
+    this.nearbyTeams.set(
+      await this.teamsService.nearbyTeams(nearbyTeamsParams)
+    );
 
     console.log('Nearby Teams:', this.nearbyTeams());
   }
