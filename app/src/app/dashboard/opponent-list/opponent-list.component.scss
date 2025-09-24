@@ -1,0 +1,25 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+
+:host {
+  width: 100%;
+
+  app-card {
+    display: block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+
+    margin: 1rem;
+    width: 97.5%;
+
+    ::ng-deep .p-button {
+      --p-button-text-primary-hover-background: var(--secondary-50);
+      --p-button-text-primary-color: var(--secondary-500);
+    }
+
+    & ::ng-deep .p-card-content {
+      @include flex(center, center, row);
+    }
+  }
+}

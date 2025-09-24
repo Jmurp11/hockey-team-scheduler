@@ -24,6 +24,14 @@
     width: 100%;
   }
 
+  & ::ng-deep .p-card-header {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-content {
+    width: 100%;
+  }
+
   & ::ng-deep .p-card-footer {
     width: 100%;
   }
