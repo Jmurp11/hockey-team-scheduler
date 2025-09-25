@@ -1,9 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
+import { OpenAiService } from '../../shared/services/open-ai.service';
+import { formatLocation } from '../../shared/utilities/location.utility';
 
 @Component({
   selector: 'app-opponent-list',
@@ -15,6 +22,7 @@ import { OpponentCardContentComponent } from './opponent-card-content/opponent-c
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
   ],
+  providers: [OpenAiService],
   template: `
     @for (opponent of opponents; track opponent.team_name) {
     <app-card>
@@ -33,8 +41,8 @@ import { OpponentCardContentComponent } from './opponent-card-content/opponent-c
           icon="pi pi-user"
           iconPos="right"
           label="Contact Scheduler"
-          size="large"
-          variant="text"
+          variant="outlined"
+          (click)="contactScheduler(opponent)"
       /></ng-template>
     </app-card>
     }
@@ -46,29 +54,44 @@ export class OpponentListComponent {
   @Input()
   opponents: any[];
 
+  openAiService = inject(OpenAiService);
+
+  async contactScheduler(opponent: any) {
+    const response = await this.openAiService.contactScheduler({
+      team: opponent.team_name,
+      location: formatLocation(opponent.city, opponent.state, opponent.country),
+    });
+    console.log({ response });
+    return response;
+  }
+
   getCardContent(opponent: any) {
     return Object.entries(opponent)
-      .filter(([key, value]) => {
-        return (
-          key === 'agd' ||
-          key === 'record' ||
-          key === 'rating' ||
-          key === 'sched'
-        );
-      })
-      .map(([key, value]) => {
-        switch (key) {
-          case 'agd':
-            return { label: 'Avg Goal Diff', value: value };
-          case 'record':
-            return { label: 'Record', value: value };
-          case 'rating':
-            return { label: 'Rating', value: value };
-          case 'sched':
-            return { label: 'Strength of Schedule', value: value };
-          default:
-            return { label: key, value: value };
-        }
-      }) as { label: string; value: string }[];
+      .filter(([key]) => this.isStatKey(key))
+      .map(([key, value]) => this.assignLabels(key, value)) as {
+      label: string;
+      value: string;
+    }[];
+  }
+
+  isStatKey(key: string): boolean {
+    return (
+      key === 'agd' || key === 'record' || key === 'rating' || key === 'sched'
+    );
+  }
+
+  assignLabels(key: string, value: unknown) {
+    switch (key) {
+      case 'agd':
+        return { label: 'Avg Goal Diff', value: value };
+      case 'record':
+        return { label: 'Record', value: value };
+      case 'rating':
+        return { label: 'Rating', value: value };
+      case 'sched':
+        return { label: 'Strength of Schedule', value: value };
+      default:
+        return { label: key, value: value };
+    }
   }
 }
