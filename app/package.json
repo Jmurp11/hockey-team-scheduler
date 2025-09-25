@@ -21,6 +21,7 @@
     "@primeuix/themes": "^1.2.1",
     "@supabase/supabase-js": "^2.52.0",
     "@tailwindcss/postcss": "^4.1.8",
+    "openai": "^5.23.0",
     "postcss": "^8.5.4",
     "primeicons": "^7.0.0",
     "primeng": "^20.0.1",
@@ -28,7 +29,8 @@
     "stripe": "^18.3.0",
     "tailwindcss": "^4.1.8",
     "tailwindcss-primeui": "^0.6.1",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@angular/build": "^20.0.1",

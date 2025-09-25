@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-item.component';
+import {formatLocation} from '../../../shared/utilities/location.utility';
 
 @Component({
   selector: 'app-opponent-card-header',
@@ -34,11 +35,9 @@ export class OpponentCardHeaderComponent {
   @Input()
   opponent: any;
 
+  formatLocation = formatLocation;
+  
   formatDistance(distance: string): string {
     return `${distance} mi`;
-  }
-
-  formatLocation(city: string, state: string, country: string): string {
-    return `${city}, ${state}${country !== 'USA' ? `, ${country}` : ''}`;
   }
 }
