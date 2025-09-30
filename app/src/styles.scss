@@ -101,3 +101,8 @@ body {
   --p-checkbox-checked-hover-border-color: var(--secondary-600);
   --p-checkbox-checked-focus-border-color: var(--secondary-300);
 }
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}

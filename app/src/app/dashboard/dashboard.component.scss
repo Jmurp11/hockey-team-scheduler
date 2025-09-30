@@ -1,15 +1,9 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
 .container {
-  @include flex(space-between, flex-start, column);
-  height: 97.5vh;
-  width: 100%;
-  overflow: hidden;
+  @include flex(space-between, flex-start, row);
 }
 
 .opponent-list {
   @include flex(center, center, column);
-  height: 100%;
-  width: 100%;
-  overflow: auto;
 }

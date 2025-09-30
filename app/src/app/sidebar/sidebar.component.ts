@@ -3,31 +3,27 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
-import { DrawerModule } from 'primeng/drawer';
-import { MenuModule } from 'primeng/menu';
-// import { MenuHeaderComponent } from './menu-header/menu-header.component';
-import { MenuItemComponent } from './menu-items/menu-item.component';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    DrawerModule,
-    MenuModule,
-    BadgeModule,
-    AvatarModule,
-   // MenuHeaderComponent,
-    MenuItemComponent,
-  ],
-  template: `<div class="sidebar-container">
-    <p-menu [model]="items" [style]="{ height: '100%' }">
-      <ng-template #item let-item class="items">
-        <app-menu-item [item]="item" />
-      </ng-template>
-      <ng-template #end></ng-template>
-    </p-menu>
-  </div> `,
+  imports: [CommonModule, RouterModule, BadgeModule, AvatarModule],
+  template: `<nav class="navigation">
+    <div class="navigation__logo-container">
+      <span class="navigation__logo">
+        <i class="bi bi-graph-up"></i>
+        IceTime.ai
+      </span>
+    </div>
+    <ul class="navigation__list">
+      @for (item of items; track item.label) {
+      <li class="navigation__item">
+        <a routerLink="{{ item.routerLink }}" class="navigation__link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+          ><i class="{{ item.icon }}"></i>{{ item.label }}</a
+        >
+      </li>
+      }
+    </ul>
+  </nav> `,
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -54,7 +50,6 @@ export class SidebarComponent implements OnInit {
       routerLink: '/app/profile',
     },
   ];
-  
 
   ngOnInit(): void {}
 }

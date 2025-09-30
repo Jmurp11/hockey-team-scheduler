@@ -4,14 +4,14 @@ import { RouterModule } from '@angular/router';
 // import { FooterComponent } from '../footer/footer.component';
 import { BlockUIModule } from 'primeng/blockui';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { ToastModule } from 'primeng/toast';
 import { RippleModule } from 'primeng/ripple';
+import { ToastModule } from 'primeng/toast';
+import { AuthService } from '../auth/auth.service';
+import { FooterComponent } from '../shared/components/footer/footer.component';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { LoadingService } from '../shared/services/loading.service';
-import { SidebarComponent } from '../sidebar/sidebar.component';
-import { FooterComponent } from '../shared/components/footer/footer.component';
-import { AuthService } from '../auth/auth.service';
 import { NavigationService } from '../shared/services/navigation.service';
+import { SidebarComponent } from '../sidebar/sidebar.component';
 @Component({
   selector: 'app-container',
   standalone: true,
@@ -28,38 +28,42 @@ import { NavigationService } from '../shared/services/navigation.service';
   ],
   providers: [LoadingService, NavigationService],
   template: ` <div class="container">
-      <app-header
-        [title]="authService.currentUser()?.team_name || 'IceTime.ai'"
-      >
-        <ng-template #start>
-          <a pRipple class="title" (click)="navigation.navigateToLink('/app')">
-            <span class="title__left">{{
-              authService.currentUser()?.team_name || 'IceTime.ai'
-            }}</span>
-          </a>
-        </ng-template>
-        <ng-template #end>
-          <div class="header__avatar">
-            <i
-              class="bi bi-person-circle"
-              style="font-size: 1.5rem; color: #002C77;"
-            ></i>
-          </div>
-          <div class="header__name">
-            {{
-              authService.currentUser()?.displayName ||
-                authService.session()?.user?.email ||
-                'User'
-            }}
-          </div>
-        </ng-template>
-      </app-header>
+      <div>
+        <app-sidebar></app-sidebar>
+      </div>
 
-      <div class="content-container">
-        <div class="sidebar">
-          <app-sidebar></app-sidebar>
-        </div>
-        <div class="content">
+      <div class="container__page-content">
+        <app-header
+          [title]="authService.currentUser()?.team_name || 'IceTime.ai'"
+        >
+          <ng-template #start>
+            <a
+              pRipple
+              class="title"
+              (click)="navigation.navigateToLink('/app')"
+            >
+              <span class="title__left">{{
+                authService.currentUser()?.team_name || 'IceTime.ai'
+              }}</span>
+            </a>
+          </ng-template>
+          <ng-template #end>
+            <div class="header__avatar">
+              <i
+                class="bi bi-person-circle"
+                style="font-size: 1.5rem; color: #002C77;"
+              ></i>
+            </div>
+            <div class="header__name">
+              {{
+                authService.currentUser()?.displayName ||
+                  authService.session()?.user?.email ||
+                  'User'
+              }}
+            </div>
+          </ng-template>
+        </app-header>
+        <div class="container__page-content__router-outlet">
           <router-outlet></router-outlet>
         </div>
       </div>
