@@ -1,36 +1,39 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
-.content-container {
-  @include flex(center, stretch, row);
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  margin-top: .5rem;
-  padding-bottom: 5vh;
-}
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-rows: auto 1fr;
+  background-color: var(--color-background-primary);
 
-.sidebar {
-  width: 13.5%;
-  height: 100%;
-  overflow: hidden;  
-  box-shadow: 0px 4px 6px -4px lightgray;
-}
-.content {
-  @include flex(flex-start, space-between, column);
-  width: 85%;
-  height: 100%;
-  overflow: hidden;
-  box-shadow: 0px 4px 6px -4px lightgray;
-}
+  &__page-content {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
-.header {
-  &__avatar {
-    @include flex();
-  }
+    .title {
+      &__left {
+        font-size: 20px;
+        font-weight: bold;
+      }
+    }
 
-  &__name {
-    font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
+    .header {
+      &__name {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      &__avatar {
+      }
+    }
+
+    &__router-outlet {
+      overflow: visible;
+      flex: 1;
+      min-height: 0;
+    }
   }
 }

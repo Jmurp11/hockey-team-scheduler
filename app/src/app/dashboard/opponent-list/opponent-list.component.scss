@@ -1,27 +1,36 @@
 @use "../../scss/mixins/_mixins.scss" as *;
 
-
 :host {
-  width: 100%;
+  display: block;
+  height: 100%;
+  overflow: auto; // Add this back for scrolling
+  padding: 1rem;
+  box-sizing: border-box;
+}
 
-  app-card {
-    display: block;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    transition: box-shadow 0.3s ease;
+app-card {
+  display: block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+  margin-bottom: 1rem;
+  width: calc(100% - 2rem); // Account for horizontal margins
+  margin-left: auto;
+  margin-right: auto;
 
-    margin: 1rem;
-    width: 97.5%;
+  &:last-child {
+    margin-bottom: 0;
+  }
 
-    ::ng-deep .p-button {
-      --p-button-outlined-primary-hover-background: var(--secondary-50);
-      --p-button-outlined-primary-color: var(--secondary-500);
-      --p-button-outlined-primary-border-color: var(--secondary-500);
-      width: 300px;
-    }
+  ::ng-deep .p-button {
+    --p-button-outlined-primary-hover-background: var(--secondary-50);
+    --p-button-outlined-primary-color: var(--secondary-500);
+    --p-button-outlined-primary-border-color: var(--secondary-500);
+    width: 100%;
+    max-width: 300px;
+  }
 
-    & ::ng-deep .p-card-content {
-      @include flex(center, center, row);
-    }
+  ::ng-deep .p-card-content {
+    @include flex(center, center, row);
   }
 }

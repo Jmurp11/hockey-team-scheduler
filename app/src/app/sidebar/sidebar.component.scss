@@ -1,23 +1,53 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
-::ng-deep .p-menu-list {
-  @include flex(flex-start, flex-start, column);
+.navigation {
+  width: 155px;
+  padding-inline: 10px;
+  border-right: 1px solid var(--primary-500);
   height: 100%;
-  width: 100%;
-  overflow: hidden;
-  gap: 8px;
-  padding-left: 12px;
-  padding-block: 4px;
 
-}
+  &__logo-container {
+    display: grid;
+    grid-template-rows: 60px 1fr;
+    font-size: 1.25rem;
+  }
 
-.sidebar-container {
-  height: 100%;
-  width: 100%;
+  &__logo {
+    font-size: 12px;
+    @include flex(flex-start);
+    gap: 8px;
+    color: var(--primary-500);
+  }
 
-  //border-right: solid 2px lightgray;
-}
-::ng-deep .p-menu {
-  min-width: 100%;
-  border-color: none;
+  &__list {
+    @include flex(center, flex-start, column);
+    padding-inline-start: 0px;
+  }
+
+  &__item {
+    padding-block: 10px;
+    list-style: none;
+    color: var(--primary-500);
+
+    & a {
+      @include flex(flex-start);
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+
+      &.active {
+        background-color: var(--tertiary-400);
+        color: var(--primary-500);
+        font-weight: 600;
+        border-radius: 4px;
+        padding: 8px 12px;
+      }
+
+      &:hover {
+        color: var(--secondary-500);
+      }
+    }
+  }
 }
