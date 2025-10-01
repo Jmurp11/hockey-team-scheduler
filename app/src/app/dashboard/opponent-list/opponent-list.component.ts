@@ -7,10 +7,10 @@ import {
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
-import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpenAiService } from '../../shared/services/open-ai.service';
 import { formatLocation } from '../../shared/utilities/location.utility';
+import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
+import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
 
 @Component({
   selector: 'app-opponent-list',

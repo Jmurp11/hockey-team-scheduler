@@ -2,8 +2,11 @@
 
 :host {
   display: block;
-  height: 100%;
-  overflow: auto; // Add this back for scrolling
+  height: calc(100vh - 60px - 2rem); // Subtract header height AND padding
+  max-height: calc(100vh - 60px - 2rem);
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 1rem;
   box-sizing: border-box;
 }
@@ -14,9 +17,10 @@ app-card {
   border-radius: 8px;
   transition: box-shadow 0.3s ease;
   margin-bottom: 1rem;
-  width: calc(100% - 2rem); // Account for horizontal margins
+  width: calc(100% - 2rem);
   margin-left: auto;
   margin-right: auto;
+  flex-shrink: 0;
 
   &:last-child {
     margin-bottom: 0;
