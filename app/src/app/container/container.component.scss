@@ -1,15 +1,14 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
 .container {
-  width: 100vw;
-  height: 100vh;
   display: grid;
   grid-template-columns: min-content 1fr;
   grid-template-rows: auto 1fr;
   background-color: var(--color-background-primary);
 
+  overflow: hidden;
+
   &__page-content {
-    overflow: hidden;
     display: flex;
     flex-direction: column;
 
@@ -31,7 +30,6 @@
     }
 
     &__router-outlet {
-      overflow: visible;
       flex: 1;
       min-height: 0;
     }

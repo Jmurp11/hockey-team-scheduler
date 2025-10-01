@@ -2,8 +2,11 @@
 
 .container {
   @include flex(space-between, flex-start, row);
+  height: 97.5%;
+  width: 100%;
 }
 
 .opponent-list {
   @include flex(center, center, column);
+  flex: 1;
 }

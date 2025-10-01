@@ -1,6 +1,15 @@
+:host {
+  display: block;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--primary-500);
+}
+
 p-menubar {
   --p-menubar-color: var(--primary-500) !important;
-  --p-menubar-background: transparent;
+  --p-menubar-background: var(--tertiary-50);
 }
 
 p-menubar-item {
