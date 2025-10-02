@@ -2,13 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
-  Input,
+  Input
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { OpenAiService } from '../../shared/services/open-ai.service';
-import { formatLocation } from '../../shared/utilities/location.utility';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
 
@@ -22,7 +19,7 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
   ],
-  providers: [OpenAiService],
+  providers: [],
   template: `
     @for (opponent of opponents; track opponent.team_name) {
     <app-card>
@@ -54,15 +51,8 @@ export class OpponentListComponent {
   @Input()
   opponents: any[];
 
-  openAiService = inject(OpenAiService);
-
   async contactScheduler(opponent: any) {
-    const response = await this.openAiService.contactScheduler({
-      team: opponent.team_name,
-      location: formatLocation(opponent.city, opponent.state, opponent.country),
-    });
-    console.log({ response });
-    return response;
+    return;
   }
 
   getCardContent(opponent: any) {

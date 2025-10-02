@@ -1,18 +1,18 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   Input,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { IftaLabelModule } from 'primeng/iftalabel';
-import { MessageModule } from 'primeng/message';
+import { FilterService, SelectItem } from 'primeng/api';
 import {
   AutoCompleteModule,
   AutoCompleteSelectEvent,
 } from 'primeng/autocomplete';
-import { FilterService, SelectItem } from 'primeng/api';
+import { IftaLabelModule } from 'primeng/iftalabel';
+import { MessageModule } from 'primeng/message';
 
 interface AutoCompleteCompleteEvent {
   originalEvent: Event;
@@ -38,7 +38,6 @@ interface AutoCompleteCompleteEvent {
             [forceSelection]="true"
             [suggestions]="filteredItems"
             (completeMethod)="filterItems($event)"
-            optionValue="label"
             (onSelect)="onSelect($event)"
           >
             <ng-template let-item pTemplate="selectedItem">
@@ -74,7 +73,7 @@ export class AutoCompleteComponent {
 
   onSelect(event: AutoCompleteSelectEvent) {
     this.parentForm.get(this.fcName)?.setValue(event.value);
-    console.log('on select', this.parentForm.get(this.fcName)?.value);
+    console.log(this.parentForm.get(this.fcName)?.value);
   }
 
   isInvalid(formControlName: string) {
@@ -85,6 +84,7 @@ export class AutoCompleteComponent {
   }
 
   filterItems(event: AutoCompleteCompleteEvent) {
+    console.log({ items: this.items });
     let query = event.query;
 
     this.filteredItems = this.items.filter((item: SelectItem) =>

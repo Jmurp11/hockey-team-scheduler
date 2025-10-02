@@ -1,18 +1,12 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class LeagueService {
-  private supabase = inject(SupabaseService);
+  private http = inject(HttpClient);
 
   leagues() {
-    const client = this.supabase.getSupabaseClient();
-    if (!client) {
-      return Promise.reject('Supabase client is not initialized');
-    }
-    return client
-      .from('leagues')
-      .select('id,name')
-      .order('name', { ascending: true });
+    return this.http.get(`${environment.apiUrl}/leagues`);
   }
 }

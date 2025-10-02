@@ -13,7 +13,7 @@ import {
 } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, startWith, switchMap } from 'rxjs';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
@@ -66,19 +66,19 @@ import { UserService } from '../user.service';
 
             <app-input [parentForm]="registerForm" fcName="name" />
 
+            @if (associations$ | async; as associations) {
             <app-auto-complete
               [parentForm]="registerForm"
               fcName="association"
               [items]="associations"
             />
-
-            @if (teamsObs$ | async) {
+            } @if (teams$ | async; as teams) { @if (teams.length > 0) {
             <app-auto-complete
               [parentForm]="registerForm"
               fcName="team"
               [items]="teams"
             />
-            }
+            } }
 
             <div class="form-actions">
               <p-button
@@ -110,11 +110,10 @@ export class RegisterComponent implements OnInit {
 
   userService = inject(UserService);
 
-  associations: SelectItem[] = [];
-
   teams: SelectItem[] = [];
 
-  teamsObs$: Observable<void> | undefined;
+  associations$: Observable<SelectItem[]> = new Observable<SelectItem[]>();
+  teams$: Observable<SelectItem[]> = new Observable<SelectItem[]>();
 
   navigation = inject(NavigationService);
 
@@ -123,13 +122,9 @@ export class RegisterComponent implements OnInit {
   async ngOnInit() {
     this.registerForm = this.initForm();
 
-    this.loadAssociations();
+    this.associations$ = this.getAssociations();
 
-    this.teamsObs$ = this.registerForm.get('association')?.valueChanges.pipe(
-      tap(() => {
-        this.loadTeams();
-      })
-    );
+    this.teams$ = this.onAssociationChange();
   }
 
   initForm() {
@@ -160,43 +155,50 @@ export class RegisterComponent implements OnInit {
       { validators: confirmPasswordValidator }
     );
   }
-  async loadAssociations() {
-    this.associations = await this.formatAssociations();
+
+  getAssociations(): Observable<SelectItem[]> {
+    return this.associationsService.associations().pipe(
+      map((associations) => {
+        console.log({ associations });
+        return (associations as any[]).map((association) => ({
+          label: association.name,
+          value: association.id,
+        }));
+      }
+      )
+    );
   }
 
-  async loadTeams() {
-    this.teams = await this.formatTeams();
+  getTeams(associationId: number): Observable<SelectItem[]> {
+    return this.teamsService
+      .teams(associationId)
+      .pipe(
+        map((teams) =>
+          (teams as any[]).map((team) => ({ label: team.name, value: team.id }))
+        )
+      );
   }
 
-  async formatAssociations(): Promise<SelectItem[]> {
-    const { data, error } = await this.associationsService.associations();
-
-    if (!data || data.length === 0) {
-      return [];
+  onAssociationChange(): Observable<SelectItem[]> {
+    const associationControl = this.registerForm.get('association');
+    console.log(associationControl?.value)
+    if (!associationControl) {
+      return new Observable<SelectItem[]>();
     }
 
-    return data.map((association) => ({
-      label: association.name,
-      value: association.id,
-    }));
-  }
-
-  async formatTeams(): Promise<SelectItem[]> {
-    const association = this.registerForm.get('association')?.value;
-
-    if (!association || !association.value) {
-      return [];
-    }
-
-    const associationId = association.value;
-
-    const { data } = await this.teamsService.teams(associationId);
-
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-    return data.map((team) => ({ label: team.team_name, value: team.id }));
+    return associationControl.valueChanges.pipe(
+      startWith(associationControl.value),
+      switchMap((association) => {
+        console.log({ association });
+        if (!association) {
+          return new Observable<SelectItem[]>((observer) => {
+            observer.next([]);
+            observer.complete();
+          });
+        }
+        return this.getTeams(association.value);
+      })
+    );
   }
 
   async submit() {

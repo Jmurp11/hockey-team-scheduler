@@ -8,7 +8,6 @@ export class UserService {
   authService = inject(AuthService);
 
   async updateUserProfile(update: UpdateUser) {
-    console.log({ update });
     const updateAuthUser = await this.supabaseClient!.auth.updateUser({
       email: update.email,
       password: update.password,
@@ -17,7 +16,6 @@ export class UserService {
       },
     });
 
-    console.log({ updateAuthUser, id: updateAuthUser.data.user?.id });
     if (updateAuthUser.error) {
       console.error('Error updating user profile:', updateAuthUser.error);
       throw updateAuthUser.error;
