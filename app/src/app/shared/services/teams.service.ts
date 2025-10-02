@@ -1,45 +1,28 @@
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { environment } from '../../environments/environment';
 import { NearbyTeamsParams } from '../types/nearby-teams.type';
 
 @Injectable()
 export class TeamsService {
-  private supabase = inject(SupabaseService);
+  private http = inject(HttpClient);
 
   teams(association?: number) {
-    const client = this.supabase.getSupabaseClient();
-    if (!client) {
-      return Promise.reject('Supabase client is not initialized');
-    }
-
-    if (association) {
-      return client
-        .from('rankings')
-        .select('id,team_name')
-        .eq('association', association)
-        .order('team_name', { ascending: true });
-    }
-
-    return client
-      .from('rankings')
-      .select('id,team_name')
-      .order('team_name', { ascending: true });
+    return this.http.get(`${environment.apiUrl}/teams`, {
+      params: association ? { association: association.toString() } : {},
+    });
   }
 
-  async nearbyTeams(params: NearbyTeamsParams) {
-    const client = this.supabase.getSupabaseClient();
-    if (!client) {
-      return Promise.reject('Supabase client is not initialized');
-    }
-
-    const { data, error } = await client.rpc('p_find_nearby_teams', {
-      ...params,
+  nearbyTeams(params: NearbyTeamsParams) {
+    return this.http.get(`${environment.apiUrl}/teams/nearbyTeams`, {
+      params: {
+        p_id: params.p_id.toString(),
+        p_girls_only: params.p_girls_only,
+        p_age: params.p_age,
+        p_max_rating: params.p_max_rating.toString(),
+        p_min_rating: params.p_min_rating.toString(),
+        p_max_distance: params.p_max_distance.toString(),
+      },
     });
-
-    if (error) {
-      console.error('Error fetching nearby teams:', error);
-    }
-
-    return data;
   }
 }

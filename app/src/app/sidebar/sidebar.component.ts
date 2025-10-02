@@ -17,7 +17,11 @@ import { BadgeModule } from 'primeng/badge';
     <ul class="navigation__list">
       @for (item of items; track item.label) {
       <li class="navigation__item">
-        <a routerLink="{{ item.routerLink }}" class="navigation__link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+        <a
+          routerLink="{{ item.routerLink }}"
+          class="navigation__link"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
           ><i class="{{ item.icon }}"></i>{{ item.label }}</a
         >
       </li>
@@ -35,9 +39,14 @@ export class SidebarComponent implements OnInit {
   //logo = null;
   items = [
     {
-      label: 'Dashboard',
-      icon: 'pi pi-fw pi-home',
+      label: 'Opponents',
+      icon: 'pi pi-fw pi-search',
       routerLink: '/app/dashboard',
+    },
+    {
+      label: 'Tournaments',
+      icon: 'pi pi-fw pi-trophy',
+      // routerLink: '/app/schedule',
     },
     {
       label: 'Schedule',
