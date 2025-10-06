@@ -15,6 +15,7 @@ import { ContactComponent } from './landing/contact/contact.component';
 import { HomeComponent } from './landing/home/home.component';
 import { LandingComponent } from './landing/landing.component';
 import { PricingComponent } from './landing/pricing/pricing.component';
+import { TournamentsComponent } from './tournaments/tournaments.component';
 
 export const routes: Routes = [
   {
@@ -70,6 +71,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent,
+      },
+      {
+        path: 'tournaments',
+        component: TournamentsComponent,
       },
       {
         path: 'schedule',
