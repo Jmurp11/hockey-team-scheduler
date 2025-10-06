@@ -46,7 +46,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Tournaments',
       icon: 'pi pi-fw pi-trophy',
-      // routerLink: '/app/schedule',
+      routerLink: '/app/tournaments',
     },
     {
       label: 'Schedule',

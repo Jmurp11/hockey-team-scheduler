@@ -1,0 +1,7 @@
+@use "../scss/mixins/_mixins.scss" as *;
+
+.container {
+  @include flex(space-between, flex-start, row);
+  height: 97.5%;
+  width: 100%;
+}

@@ -49,7 +49,6 @@ export class DashboardComponent implements OnInit {
   }
 
   async getNearbyTeams(params: any) {
-    console.log({ params });
     this.nearbyTeams$ = this.user$.pipe(
       switchMap((user) =>
         this.teamsService.nearbyTeams({

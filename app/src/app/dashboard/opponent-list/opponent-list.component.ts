@@ -2,12 +2,17 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  DestroyRef,
+  inject,
+  Input,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
+import { OpenAiService } from '../../shared/services/openai.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-opponent-list',
@@ -19,7 +24,7 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
   ],
-  providers: [],
+  providers: [OpenAiService],
   template: `
     @for (opponent of opponents; track opponent.team_name) {
     <app-card>
@@ -51,8 +56,24 @@ export class OpponentListComponent {
   @Input()
   opponents: any[];
 
+  private openAiService = inject(OpenAiService);
+  destroyRef = inject(DestroyRef);
+
   async contactScheduler(opponent: any) {
-    return;
+    const params = {
+      team: opponent.team_name,
+      location: opponent.location,
+    };
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((response: any) => JSON.parse(response.output_text))
+      )
+      .subscribe((response) => {
+        console.log({ response });
+        window.alert(JSON.stringify(response));
+      });
   }
 
   getCardContent(opponent: any) {
