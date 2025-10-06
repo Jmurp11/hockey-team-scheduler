@@ -23,6 +23,7 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
 import { SupabaseService } from '../../shared/services/supabase.service';
 import { TeamsService } from '../../shared/services/teams.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { AuthService } from '../auth.service';
 import { confirmPasswordValidator } from '../update-password/password-match.validator';
@@ -55,29 +56,18 @@ import { UserService } from '../user.service';
         <ng-template #title>Complete Profile</ng-template>
         <ng-template #content>
           <form [formGroup]="registerForm" (ngSubmit)="submit()">
-            <app-input [parentForm]="registerForm" fcName="email" />
+            <app-input [control]="getFormControl(registerForm, 'email')" label="Email"/>
 
-            <app-password [parentForm]="registerForm" fcName="password" />
+            <app-password [control]="getFormControl(registerForm, 'password')" label="Password"/>
 
-            <app-password
-              [parentForm]="registerForm"
-              fcName="confirmPassword"
-            />
+            <app-password [control]="getFormControl(registerForm, 'confirmPassword')" label="Confirm Password"/>
 
-            <app-input [parentForm]="registerForm" fcName="name" />
+            <app-input [control]="getFormControl(registerForm, 'name')" label="Name"/>
 
             @if (associations$ | async; as associations) {
-            <app-auto-complete
-              [parentForm]="registerForm"
-              fcName="association"
-              [items]="associations"
-            />
+            <app-auto-complete [control]="getFormControl(registerForm, 'association')" label="Association" [items]="associations" />
             } @if (teams$ | async; as teams) { @if (teams.length > 0) {
-            <app-auto-complete
-              [parentForm]="registerForm"
-              fcName="team"
-              [items]="teams"
-            />
+            <app-auto-complete [control]="getFormControl(registerForm, 'team')" label="Team" [items]="teams" />
             } }
 
             <div class="form-actions">
@@ -113,11 +103,14 @@ export class RegisterComponent implements OnInit {
   teams: SelectItem[] = [];
 
   associations$: Observable<SelectItem[]> = new Observable<SelectItem[]>();
+
   teams$: Observable<SelectItem[]> = new Observable<SelectItem[]>();
 
   navigation = inject(NavigationService);
 
   registerForm: FormGroup;
+
+  getFormControl = getFormControl;
 
   async ngOnInit() {
     this.registerForm = this.initForm();
@@ -159,13 +152,11 @@ export class RegisterComponent implements OnInit {
   getAssociations(): Observable<SelectItem[]> {
     return this.associationsService.associations().pipe(
       map((associations) => {
-        console.log({ associations });
         return (associations as any[]).map((association) => ({
           label: association.name,
           value: association.id,
         }));
-      }
-      )
+      })
     );
   }
 
@@ -181,7 +172,6 @@ export class RegisterComponent implements OnInit {
 
   onAssociationChange(): Observable<SelectItem[]> {
     const associationControl = this.registerForm.get('association');
-    console.log(associationControl?.value)
     if (!associationControl) {
       return new Observable<SelectItem[]>();
     }
@@ -189,7 +179,6 @@ export class RegisterComponent implements OnInit {
     return associationControl.valueChanges.pipe(
       startWith(associationControl.value),
       switchMap((association) => {
-        console.log({ association });
         if (!association) {
           return new Observable<SelectItem[]>((observer) => {
             observer.next([]);

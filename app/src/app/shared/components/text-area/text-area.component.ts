@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { TextareaModule } from 'primeng/textarea';
+import { inputId } from '../../utilities/form.utility';
 
 @Component({
   selector: 'app-text-area',
@@ -16,45 +17,40 @@ import { TextareaModule } from 'primeng/textarea';
     ReactiveFormsModule,
   ],
   template: `
-    <form [formGroup]="parentForm">
-      <div class="form-field">
-        <p-iftalabel>
-          <textarea
-            pTextarea
-            id="description"
-            [formControlName]="fcName"
-            [class.ng-invalid]="isInvalid(fcName)"
-            rows="5"
-            cols="30"
-            style="resize: none"
-          ></textarea>
+    <div class="form-field">
+      <p-iftalabel>
+        <textarea
+          pTextarea
+          [id]="inputId(label)"
+          [formControl]="control"
+          [class.ng-invalid]="isInvalid()"
+          rows="5"
+          cols="30"
+          style="resize: none"
+        ></textarea>
 
-          <label [for]="fcName">{{ fcName | titlecase }}</label>
-        </p-iftalabel>
-        @if (isInvalid(fcName)) {
-        <p-message severity="error" size="small" variant="simple"
-          >{{ fcName | titlecase }} is required.</p-message
-        >
-        }
-      </div>
-    </form>
+        <label [for]="inputId(label)">{{ label | titlecase }}</label>
+      </p-iftalabel>
+      @if (isInvalid()) {
+      <p-message severity="error" size="small" variant="simple"
+        >{{ label | titlecase }} is required.</p-message
+      >
+      }
+    </div>
   `,
   styleUrl: './text-area.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextAreaComponent {
   @Input()
-  parentForm: FormGroup;
+  control: FormControl;
 
   @Input()
-  fcName: string;
+  label: string;
 
-  
+  inputId = inputId;
 
-  isInvalid(formControlName: string) {
-    return (
-      this.parentForm.get(formControlName)?.invalid &&
-      this.parentForm.get(formControlName)?.touched
-    );
+  isInvalid() {
+    return this.control?.invalid && this.control?.touched;
   }
 }

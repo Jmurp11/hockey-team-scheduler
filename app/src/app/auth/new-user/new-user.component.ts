@@ -14,6 +14,7 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
+import { getFormControl } from '../../shared/utilities/form.utility';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
@@ -48,7 +49,10 @@ import { UserService } from '../user.service';
         >
         <ng-template #content>
           <form [formGroup]="newUserForm">
-            <app-input [parentForm]="newUserForm" fcName="email" />
+            <app-input
+              [control]="getFormControl(newUserForm, 'email')"
+              label="Email"
+            />
             <div class="form-actions">
               <p-button
                 [disabled]="newUserForm.invalid"
@@ -76,6 +80,8 @@ export class NewUserComponent {
       validators: [Validators.required, Validators.email],
     }),
   });
+
+  getFormControl = getFormControl;
 
   async magicLink() {
     let { data, error } = await this.userService.loginWithMagicLink(

@@ -11,6 +11,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 import { confirmPasswordValidator } from './password-match.validator';
@@ -34,12 +35,11 @@ import { confirmPasswordValidator } from './password-match.validator';
         <ng-template #subtitle>Reset your password for IceTime.ai</ng-template>
         <ng-template #content>
           <form [formGroup]="updatePassword" (ngSubmit)="onSubmit()">
-            <app-password [parentForm]="updatePassword" fcName="password" />
+            <app-password [control]="getFormControl(updatePassword, 'password')" label="New Password" />
 
-            <app-password
-              [parentForm]="updatePassword"
-              fcName="confirmPassword"
+            <app-password [control]="getFormControl(updatePassword, 'confirmPassword')"
               [errorMessage]="passwordErrorMessage()"
+              label="Confirm Password"
             />
 
             <div class="form-actions">
@@ -67,6 +67,8 @@ export class UpdatePasswordComponent {
   protected loadingService = inject(LoadingService);
   private userService = inject(UserService);
   navigation = inject(NavigationService);
+  
+  getFormControl = getFormControl;
   
   updatePassword: FormGroup = new FormGroup(
     {

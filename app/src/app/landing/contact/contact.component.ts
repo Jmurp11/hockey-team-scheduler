@@ -1,17 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationService } from '../../shared/services/navigation.service';
-import { CardComponent } from '../../shared/components/card/card.component';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { LoadingService } from '../../shared/services/loading.service';
 import { ButtonModule } from 'primeng/button';
-import { TextAreaComponent } from '../../shared/components/text-area/text-area.component';
+import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
+import { TextAreaComponent } from '../../shared/components/text-area/text-area.component';
+import { LoadingService } from '../../shared/services/loading.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 
 @Component({
   selector: 'app-contact',
@@ -32,9 +32,18 @@ import { InputComponent } from '../../shared/components/input/input.component';
         <ng-template #content>
           <form [formGroup]="contactForm" (ngSubmit)="submit()">
             <div class="form-actions">
-              <app-input [parentForm]="contactForm" fcName="email" />
-              <app-input [parentForm]="contactForm" fcName="subject" />
-              <app-text-area [parentForm]="contactForm" fcName="message" />
+              <app-input
+                [control]="getFormControl(contactForm, 'email')"
+                label="Email"
+              />
+              <app-input
+                [control]="getFormControl(contactForm, 'subject')"
+                label="Subject"
+              />
+              <app-text-area
+                [control]="getFormControl(contactForm, 'message')"
+                label="Message"
+              />
             </div>
           </form>
         </ng-template>
@@ -57,6 +66,8 @@ import { InputComponent } from '../../shared/components/input/input.component';
 export class ContactComponent {
   protected loadingService = inject(LoadingService);
 
+  getFormControl = getFormControl;
+  
   contactForm: FormGroup = new FormGroup({
     email: new FormControl(null, {
       validators: [Validators.required, Validators.email],

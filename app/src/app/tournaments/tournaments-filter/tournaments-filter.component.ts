@@ -16,9 +16,11 @@ import { ButtonModule } from 'primeng/button';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
+import { SelectComponent } from '../../shared/components/select/select.component';
 import { SliderComponent } from '../../shared/components/slider/slider.component';
 import { LoadingService } from '../../shared/services/loading.service';
-import { SelectComponent } from '../../shared/components/select/select.component';
+import { SelectParams } from '../../shared/types/form-item.type';
+import { getFormControl } from '../../shared/utilities/form.utility';
 
 @Component({
   selector: 'app-tournaments-filter',
@@ -31,7 +33,7 @@ import { SelectComponent } from '../../shared/components/select/select.component
     SliderComponent,
     ButtonModule,
     IftaLabelModule,
-    SelectComponent
+    SelectComponent,
   ],
   providers: [LoadingService],
   template: `
@@ -45,8 +47,7 @@ import { SelectComponent } from '../../shared/components/select/select.component
                 >Maximum Travel Distance (mi):
                 <strong>{{ tournamentsForm.get('distance')?.value }}</strong>
                 <app-slider
-                  [parentForm]="tournamentsForm"
-                  fcName="distance"
+                  [control]="getFormControl(tournamentsForm, 'distance')"
                   [isRange]="false"
                   [step]="5"
                   [min]="0"
@@ -56,14 +57,15 @@ import { SelectComponent } from '../../shared/components/select/select.component
 
             <div>
               <app-select
-                [parentForm]="tournamentsForm"
-                fcName="level"
-                [options]="levels"
+                [control]="getFormControl(tournamentsForm, 'level')"
+                [options]="options"
               />
             </div>
 
             <div class="checkbox">
-              <app-checkbox [parentForm]="tournamentsForm" fcName="girlsOnly" />
+              <app-checkbox
+                [control]="getFormControl(tournamentsForm, 'girlsOnly')"
+              />
               <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
             </div>
           </div>
@@ -92,6 +94,18 @@ export class TournamentsFilterComponent {
     { label: 'A', value: 'A' },
     { label: 'B', value: 'B' },
   ];
+
+  options: SelectParams<{ label: string; value: string }> = {
+    itemLabel: 'Level',
+    listItems: this.levels,
+    placeholder: 'Select Level',
+    isAutoComplete: false,
+    emptyMessage: 'No levels found',
+    errorMessage: 'ERROR'
+  };
+
+  getFormControl = getFormControl;
+
   tournamentsForm: FormGroup = new FormGroup({
     distance: new FormControl(10, {
       validators: [Validators.required],

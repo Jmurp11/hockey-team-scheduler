@@ -18,6 +18,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
 import { SliderComponent } from '../../shared/components/slider/slider.component';
 import { LoadingService } from '../../shared/services/loading.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 
 @Component({
   selector: 'app-opponents',
@@ -43,8 +44,7 @@ import { LoadingService } from '../../shared/services/loading.service';
                 >Maximum Travel Distance (mi):
                 <strong>{{ opponentsForm.get('distance')?.value }}</strong>
                 <app-slider
-                  [parentForm]="opponentsForm"
-                  fcName="distance"
+                  [control]="getFormControl(opponentsForm, 'distance')"
                   [isRange]="false"
                   [step]="5"
                   [min]="0"
@@ -56,8 +56,7 @@ import { LoadingService } from '../../shared/services/loading.service';
               <p-iftalabel for="rating"
                 >Rating
                 <app-slider
-                  [parentForm]="opponentsForm"
-                  fcName="rating"
+                  [control]="getFormControl(opponentsForm, 'rating')"
                   [isRange]="true"
                   [min]="60"
                   [max]="100"
@@ -81,15 +80,16 @@ import { LoadingService } from '../../shared/services/loading.service';
 
             <div class="checkbox">
               <app-checkbox
-                [parentForm]="opponentsForm"
-                fcName="excludeLeague"
+                [control]="getFormControl(opponentsForm, 'excludeLeague')"
               />
               <p-iftalabel for="excludeLeague"
                 >Exclude League Members</p-iftalabel
               >
             </div>
             <div class="checkbox">
-              <app-checkbox [parentForm]="opponentsForm" fcName="girlsOnly" />
+              <app-checkbox
+                [control]="getFormControl(opponentsForm, 'girlsOnly')"
+              />
               <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
             </div>
           </div>
@@ -112,6 +112,8 @@ export class OpponentsComponent {
   @Output() selectedInputs = new EventEmitter<any>();
   protected loadingService = inject(LoadingService);
 
+  getFormControl = getFormControl;
+  
   opponentsForm: FormGroup = new FormGroup({
     distance: new FormControl(10, {
       validators: [Validators.required],

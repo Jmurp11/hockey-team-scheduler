@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MessageModule } from 'primeng/message';
 import { SliderModule } from 'primeng/slider';
 @Component({
@@ -8,12 +8,11 @@ import { SliderModule } from 'primeng/slider';
   standalone: true,
   imports: [CommonModule, MessageModule, ReactiveFormsModule, SliderModule],
   template: `
-    <form [formGroup]="parentForm">
       <div class="form-field">
         @if (isRange) {
         <p-slider
           [range]="true"
-          [formControlName]="fcName"
+          [formControl]="control"
           [animate]="true"
           [min]="min"
           [max]="max"
@@ -21,24 +20,20 @@ import { SliderModule } from 'primeng/slider';
         } @else {
         <p-slider
           [step]="step"
-          [formControlName]="fcName"
+          [formControl]="control"
           [animate]="true"
           [min]="min"
           [max]="max"
         />
         }
       </div>
-    </form>
   `,
   styleUrl: './slider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SliderComponent {
   @Input()
-  parentForm: FormGroup;
-
-  @Input()
-  fcName: string;
+  control: FormControl;
 
   @Input()
   step?: number = 1;

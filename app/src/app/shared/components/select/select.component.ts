@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 
+import { SelectParams } from '../../types/form-item.type';
+import { inputId } from '../../utilities/form.utility';
+
 @Component({
   selector: 'app-select',
-  standalone: true,
   imports: [
     CommonModule,
     IftaLabelModule,
@@ -16,52 +18,46 @@ import { SelectModule } from 'primeng/select';
     ReactiveFormsModule,
   ],
   template: `
-    <form [formGroup]="parentForm">
-      <div class="form-field">
+    <div class="form-field">
+      <p-iftalabel>
         <p-select
-          [options]="items"
-          [(ngModel)]="selectedCountry"
-          optionLabel="label"
-          [placeholder]=""
-          class="w-full md:w-56"
+          [options]="options?.listItems"
+          [formControl]="control"
+          [id]="inputId(label)"
+          [optionLabel]="options?.itemLabel"
+          [filter]="options?.isAutoComplete"
+          [filterBy]="options?.itemLabel"
+          [placeholder]="options?.placeholder"
+          [emptyMessage]="options!.emptyMessage"
+          [showClear]="true"
         >
           <ng-template #selectedItem let-selectedOption>
-                <div>{{ selectedOption.label }}</div>
+            <div>{{ selectedOption[options!.itemLabel] }}</div>
           </ng-template>
-          <ng-template let-item #item>
-              <div>{{ item.label }}</div>
-            </div>
-          </ng-template>
-          <ng-template #dropdownicon>
-            <i class="pi pi-chevron-down"></i>
-          </ng-template>
-          <ng-template #header>
-            <ng-container *ngTemplateOutlet="header"></ng-container>
-          </ng-template>
-          <ng-template #footer>
-            <ng-container *ngTemplateOutlet="footer"></ng-container>
+          <ng-template let-option #item>
+            <div>{{ option[options!.itemLabel] }}</div>
           </ng-template>
         </p-select>
-      </div>
-    </form>
+        <label [for]="inputId(label)">{{ label }}</label>
+      </p-iftalabel>
+      @if (control.invalid && (control.dirty || control.touched)) {
+      <p-message severity="error" size="small" variant="simple"
+        >Required</p-message
+      >
+      }
+    </div>
   `,
-  styleUrls: ['./select.component.scss'],
+  styleUrl: './select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectComponent {
+export class SelectComponent<T> {
   @Input()
-  parentForm: FormGroup;
+  control: FormControl;
 
   @Input()
-  fcName: string;
+  label: string;
 
-  @Input()
-  options: { label: string; value: string }[] = [];
+  @Input() options: SelectParams<T> | undefined;
 
-  isInvalid(formControlName: string) {
-    return (
-      this.parentForm.get(formControlName)?.invalid &&
-      this.parentForm.get(formControlName)?.touched
-    );
-  }
+  inputId = inputId;
 }

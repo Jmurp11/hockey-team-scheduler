@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
+import { inputId } from '../../utilities/form.utility';
 
 @Component({
   selector: 'app-input',
@@ -16,41 +17,36 @@ import { MessageModule } from 'primeng/message';
     ReactiveFormsModule,
   ],
   template: `
-    <form [formGroup]="parentForm">
-      <div class="form-field">
-        <p-iftalabel>
-          <input
-            pInputText
-            [id]="fcName"
-            [formControlName]="fcName"
-            [class.ng-invalid]="isInvalid(fcName)"
-          />
-          <label [for]="fcName">{{ fcName | titlecase }}</label>
-        </p-iftalabel>
-        @if (isInvalid(fcName)) {
-        <p-message severity="error" size="small" variant="simple"
-          >{{ fcName | titlecase }} is required.</p-message
-        >
-        }
-      </div>
-    </form>
+    <div class="form-field">
+      <p-iftalabel>
+        <input
+          pInputText
+          [id]="inputId(label)"
+          [formControl]="control"
+          [class.ng-invalid]="isInvalid()"
+        />
+        <label [for]="inputId(label)">{{ label | titlecase }}</label>
+      </p-iftalabel>
+      @if (isInvalid()) {
+      <p-message severity="error" size="small" variant="simple"
+        >{{ label | titlecase }} is required.</p-message
+      >
+      }
+    </div>
   `,
   styleUrl: './input.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InputComponent {
   @Input()
-  parentForm: FormGroup;
+  control: FormControl;
 
   @Input()
-  fcName: string;
+  label: string
 
+  inputId = inputId;
   
-
-  isInvalid(formControlName: string) {
-    return (
-      this.parentForm.get(formControlName)?.invalid &&
-      this.parentForm.get(formControlName)?.touched
-    );
+  isInvalid() {
+    return this.control?.invalid && this.control?.touched;
   }
 }
