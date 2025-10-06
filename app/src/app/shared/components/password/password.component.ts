@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
+import { inputId } from '../../utilities/form.utility';
 
 @Component({
   selector: 'app-password',
@@ -16,53 +17,50 @@ import { PasswordModule } from 'primeng/password';
     ReactiveFormsModule,
   ],
   template: `
-    <form [formGroup]="parentForm">
-      <div class="form-field">
-        <p-iftalabel>
-          <p-password
-            id="password"
-            [formControlName]="fcName"
-            [feedback]="false"
-            [toggleMask]="true"
-            [class.ng-invalid]="isInvalid(fcName)"
-          >
-          </p-password>
-          <label for="password">{{ labelText() }}</label>
-        </p-iftalabel>
-        @if (isInvalid(fcName)) {
-        <p-message severity="error" size="small" variant="simple"
-          >Password is invalid</p-message
+    <div class="form-field">
+      <p-iftalabel>
+        <p-password
+          [id]="inputId(this.label)"
+          [formControl]="control"
+          [feedback]="false"
+          [toggleMask]="true"
+          [class.ng-invalid]="isInvalid()"
         >
-        } @if (errorMessage.length > 0) {
-        <p-message severity="error" size="small" variant="simple">{{
-          errorMessage
-        }}</p-message>
-        }
-      </div>
-    </form>
+        </p-password>
+        <label for="password">{{ labelText() }}</label>
+      </p-iftalabel>
+      @if (isInvalid()) {
+      <p-message severity="error" size="small" variant="simple"
+        >Password is invalid</p-message
+      >
+      } @if (errorMessage.length > 0) {
+      <p-message severity="error" size="small" variant="simple">{{
+        errorMessage
+      }}</p-message>
+      }
+    </div>
   `,
-  styleUrl: './password.component.scss',
+  styleUrls: ['./password.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PasswordComponent {
   @Input()
-  parentForm: FormGroup;
-
-  @Input()
-  fcName: string;
+  control: FormControl;
 
   @Input()
   errorMessage: string = '';
 
-  isInvalid(formControlName: string) {
-    return (
-      this.parentForm.get(formControlName)?.invalid &&
-      this.parentForm.get(formControlName)?.touched
-    );
+  @Input()
+  label: string;
+
+  inputId = inputId;
+
+  isInvalid() {
+    return this.control?.invalid && this.control?.touched;
   }
 
   checkIsConfirm() {
-    return this.fcName === 'confirmPassword';
+    return this.inputId(this.label) === 'confirmPassword';
   }
 
   labelText() {

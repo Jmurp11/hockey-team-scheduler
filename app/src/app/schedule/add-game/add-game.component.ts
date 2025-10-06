@@ -1,23 +1,24 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { LoadingService } from '../../shared/services/loading.service';
 import { ButtonModule } from 'primeng/button';
-import { DialogComponent } from '../../shared/components/dialog/dialog.component';
-import { AddGameService } from './add-game.service';
-import { InputComponent } from '../../shared/components/input/input.component';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectButtonComponent } from '../../shared/components/select-button/select-button.component';
+import { LoadingService } from '../../shared/services/loading.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
+import { AddGameService } from './add-game.service';
 
 @Component({
   selector: 'app-add-game',
@@ -49,30 +50,30 @@ import { SelectButtonComponent } from '../../shared/components/select-button/sel
         </ng-template>
         <div>
           <app-auto-complete
-            [parentForm]="addGameForm"
-            fcName="opponent"
+            [control]="getFormControl(addGameForm, 'opponent')" label="Opponent"
+            
           ></app-auto-complete>
-          <app-input [parentForm]="addGameForm" fcName="rink"></app-input>
+          <app-input [control]="getFormControl(addGameForm, 'rink')" label="Rink"/>
           <app-auto-complete
-            [parentForm]="addGameForm"
-            fcName="city"
-          ></app-auto-complete>
-          <app-auto-complete
-            [parentForm]="addGameForm"
-            fcName="state"
+            [control]="getFormControl(addGameForm, 'city')"
+            label="City"
           ></app-auto-complete>
           <app-auto-complete
-            [parentForm]="addGameForm"
-            fcName="country"
+            [control]="getFormControl(addGameForm, 'state')"
+            label="State"
+          ></app-auto-complete>
+          <app-auto-complete
+            [control]="getFormControl(addGameForm, 'country')"
+            label="Country"
           ></app-auto-complete>
           <app-select-button
-            [parentForm]="addGameForm"
-            fcName="gameType"
+            [control]="getFormControl(addGameForm, 'gameType')"
+            label="Game Type"
             [options]="gameTypeOptions"
           ></app-select-button>
           <app-select-button
-            [parentForm]="addGameForm"
-            fcName="isHome"
+            [control]="getFormControl(addGameForm, 'isHome')"
+            label="Is Home"
             [options]="isHomeOptions"
           ></app-select-button>
         </div>
@@ -107,6 +108,8 @@ export class AddGameComponent implements OnInit {
     { label: 'Away', value: 'away' },
   ];
 
+  getFormControl = getFormControl;
+  
   addGameForm: FormGroup = new FormGroup({
     opponent: new FormControl(null, {
       validators: [Validators.required, Validators.email],

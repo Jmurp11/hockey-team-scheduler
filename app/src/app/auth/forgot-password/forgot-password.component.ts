@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
@@ -33,7 +34,7 @@ import { UserService } from '../user.service';
         <ng-template #subtitle>Reset your password for IceTime.ai</ng-template>
         <ng-template #content>
           <form [formGroup]="forgotPassword" (ngSubmit)="onSubmit()">
-            <app-input [parentForm]="forgotPassword" fcName="email" />
+            <app-input [control]="getFormControl(forgotPassword, 'email')" label="Email" />
             <div class="form-actions">
               <p-button
                 type="submit"
@@ -60,6 +61,8 @@ export class ForgotPasswordComponent {
   private userService = inject(UserService);
   navigation = inject(NavigationService);
 
+  getFormControl = getFormControl;
+  
   forgotPassword: FormGroup = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });

@@ -12,6 +12,7 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
 import { LoadingService } from '../../shared/services/loading.service';
 import { NavigationService } from '../../shared/services/navigation.service';
+import { getFormControl } from '../../shared/utilities/form.utility';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '../user.service';
 
@@ -35,9 +36,9 @@ import { UserService } from '../user.service';
         <ng-template #subtitle>Welcome back to IceTime.ai</ng-template>
         <ng-template #content>
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <app-input [parentForm]="loginForm" fcName="email" />
+            <app-input [control]="getFormControl(loginForm, 'email')" label="Email" />
 
-            <app-password [parentForm]="loginForm" fcName="password" />
+            <app-password [control]="getFormControl(loginForm, 'password')" label="Password" />
 
             <div class="form-actions">
               <p-button
@@ -74,6 +75,8 @@ export class LoginComponent {
   protected loadingService = inject(LoadingService);
   private userService = inject(UserService);
   navigation = inject(NavigationService);
+
+  getFormControl = getFormControl;
 
   loginForm: FormGroup = new FormGroup({
     email: new FormControl(null, {
