@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   imports: [CommonModule],
   template: `
     <div class="stat-item">
-      <span class="stat-value">
+      <span [ngClass]="label === 'Leagues' ? 'stat-value-leagues' : 'stat-value'">
         {{ value }}
       </span>
       <span class="stat-label">{{ label }}</span>
