@@ -87,7 +87,7 @@ export class OpponentListComponent {
 
   isStatKey(key: string): boolean {
     return (
-      key === 'agd' || key === 'record' || key === 'rating' || key === 'sched'
+      key === 'agd' || key === 'record' || key === 'rating' || key === 'sched' || key === 'leagues'
     );
   }
 
@@ -101,8 +101,18 @@ export class OpponentListComponent {
         return { label: 'Rating', value: value };
       case 'sched':
         return { label: 'Strength of Schedule', value: value };
+      case 'leagues':
+        return {
+          label: 'Leagues',
+          value: this.formatLeagues(value),
+        };
       default:
         return { label: key, value: value };
     }
+  }
+
+  formatLeagues(leagues: any): string {
+    const raw = leagues.map((league: any) => JSON.parse(league));
+    return raw.map((league: any) => league.abbreviation).join(', ');
   }
 }
