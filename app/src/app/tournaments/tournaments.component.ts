@@ -1,18 +1,48 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TournamentsFilterComponent } from './tournaments-filter/tournaments-filter.component';
 import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
+import { OpenAiService } from '../shared/services/openai.service';
+import { AuthService } from '../auth/auth.service';
+import { Observable, switchMap } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-tournaments',
   standalone: true,
   imports: [CommonModule, TournamentsFilterComponent, TournamentsListComponent],
-  providers: [],
+  providers: [OpenAiService],
   template: ` <div class="container">
-    <app-tournaments-filter />
-    <app-tournaments-list />
+    <app-tournaments-filter (selectedInputs)="onFilterChange($event)" />
+    <app-tournaments-list [tournaments]="tournaments$ | async" />
   </div>`,
   styleUrls: ['./tournaments.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TournamentsComponent {}
+export class TournamentsComponent {
+  authService = inject(AuthService);
+  openAiService = inject(OpenAiService);
+
+  tournaments$: Observable<any> = new Observable<any>();
+  user$: Observable<any> = toObservable(this.authService.currentUser);
+
+  onFilterChange(filter: any) {
+    const input = {
+      age: filter.age.value,
+      level: filter.level.value,
+      maxDistance: filter.distance,
+      girlsOnly: filter.girlsOnly,
+    };
+
+    console.log('Filter changed:', input);
+
+    this.tournaments$ = this.user$.pipe(
+      switchMap((user) =>
+        this.openAiService.findTournaments({
+          ...input,
+          userAssociation: user.association_name,
+        })
+      )
+    );
+  }
+}

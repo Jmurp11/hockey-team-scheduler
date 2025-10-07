@@ -1,13 +1,49 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
+import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
 
 @Component({
   selector: 'app-tournaments-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    CardComponent,
+    ButtonModule,
+    TournamentCardHeaderComponent,
+    TournamentCardContentComponent,
+  ],
   providers: [],
-  template: ` <div class="container">Tournament List</div>`,
-  styleUrls: ['./tournaments-list.component.scss'],
+  template: `
+    @for (tournament of tournaments; track tournament.id) {
+    <app-card>
+      <ng-template #header>
+        <app-tournament-card-header [tournament]="tournament" />
+      </ng-template>
+      <ng-template #content>
+        <app-tournament-card-content [tournament]="tournament" />
+      </ng-template>
+      <ng-template #footer>
+        <p-button
+          icon="pi pi-trophy"
+          iconPos="right"
+          label="Register"
+          variant="outlined"
+          (click)="registerForTournament(tournament)"
+      /></ng-template>
+    </app-card>
+    }
+  `,
+  styleUrls: [`./tournaments-list.component.scss`],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TournamentsListComponent {}
+export class TournamentsListComponent {
+  @Input()
+  tournaments: any[];
+
+  registerForTournament(tournament: any) {
+    console.log('Register for tournament', tournament);
+  }
+}

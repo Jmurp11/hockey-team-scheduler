@@ -10,6 +10,8 @@ export interface SchedulerProps {
 export interface TournamentProps {
     maxDistance: number;
     age: string;
+    level: string;
+    userAssociation: string;
 }
 
 @Injectable()
@@ -22,7 +24,7 @@ export class OpenAiService {
     );
   }
 
-  findTournaments(params: SchedulerProps) {
+  findTournaments(params: TournamentProps) {
     return this.http.post(`${environment.apiUrl}/open-ai/find-tournaments`, 
       params,
     );

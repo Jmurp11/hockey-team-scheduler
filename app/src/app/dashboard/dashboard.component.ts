@@ -28,8 +28,6 @@ import { OpponentsComponent } from './opponents/opponents.component';
     <div class="opponent-list">
       <app-opponent-list [opponents]="nearbyTeams" />
     </div>
-    } @else {
-    <p>No nearby teams found.</p>
     }
   </div>`,
   styleUrls: ['./dashboard.component.scss'],

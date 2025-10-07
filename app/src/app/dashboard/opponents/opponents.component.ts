@@ -38,7 +38,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
       <app-card class="card">
         <ng-template #title>Find Opponents</ng-template>
         <ng-template #content>
-          <div class="content">
+          <div class="card__content">
             <div>
               <p-iftalabel for="distance"
                 >Maximum Travel Distance (mi):

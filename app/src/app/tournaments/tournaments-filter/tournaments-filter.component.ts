@@ -41,7 +41,21 @@ import { getFormControl } from '../../shared/utilities/form.utility';
       <app-card class="card">
         <ng-template #title>Find Tournaments</ng-template>
         <ng-template #content>
-          <div class="content">
+          <div class="card__content">
+            <div>
+              <app-select
+                [control]="getFormControl(tournamentsForm, 'age')"
+                [options]="ageOptions"
+              />
+            </div>
+
+            <div>
+              <app-select
+                [control]="getFormControl(tournamentsForm, 'level')"
+                [options]="levelOptions"
+              />
+            </div>
+
             <div>
               <p-iftalabel for="distance"
                 >Maximum Travel Distance (mi):
@@ -51,15 +65,8 @@ import { getFormControl } from '../../shared/utilities/form.utility';
                   [isRange]="false"
                   [step]="5"
                   [min]="0"
-                  [max]="300"
+                  [max]="500"
               /></p-iftalabel>
-            </div>
-
-            <div>
-              <app-select
-                [control]="getFormControl(tournamentsForm, 'level')"
-                [options]="options"
-              />
             </div>
 
             <div class="checkbox">
@@ -95,19 +102,43 @@ export class TournamentsFilterComponent {
     { label: 'B', value: 'B' },
   ];
 
-  options: SelectParams<{ label: string; value: string }> = {
-    itemLabel: 'Level',
+  levelOptions: SelectParams<{ label: string; value: string }> = {
+    itemLabel: 'label',
     listItems: this.levels,
     placeholder: 'Select Level',
     isAutoComplete: false,
     emptyMessage: 'No levels found',
-    errorMessage: 'ERROR'
+    errorMessage: 'ERROR',
+  };
+
+  ages = [
+    { label: '18u', value: '18u' },
+    { label: '16u', value: '16u' },
+    { label: '15u', value: '15u' },
+    { label: '14u', value: '14u' },
+    { label: '13u', value: '13u' },
+    { label: '12u', value: '12u' },
+    { label: '11u', value: '11u' },
+    { label: '10u', value: '10u' },
+    { label: '8u', value: '8u' },
+  ];
+
+  ageOptions: SelectParams<{ label: string; value: string }> = {
+    itemLabel: 'label',
+    listItems: this.ages,
+    placeholder: 'Select Age',
+    isAutoComplete: false,
+    emptyMessage: 'No ages found',
+    errorMessage: 'ERROR',
   };
 
   getFormControl = getFormControl;
 
   tournamentsForm: FormGroup = new FormGroup({
     distance: new FormControl(10, {
+      validators: [Validators.required],
+    }),
+    age: new FormControl(null, {
       validators: [Validators.required],
     }),
     level: new FormControl(null, {
