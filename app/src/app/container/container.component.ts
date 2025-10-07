@@ -56,9 +56,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
             </div>
             <div class="header__name">
               {{
-                authService.currentUser()?.displayName ||
+                (authService.currentUser()?.displayName ||
                   authService.session()?.user?.email ||
-                  'User'
+                  'User') | uppercase
               }}
             </div>
           </ng-template>

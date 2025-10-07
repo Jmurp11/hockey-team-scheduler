@@ -5,7 +5,7 @@
   padding-inline: 10px;
   border-right: 1px solid var(--primary-500);
   height: 100vh;
-  
+
   &__logo-container {
     display: grid;
     grid-template-rows: 60px 1fr;
@@ -13,10 +13,16 @@
   }
 
   &__logo {
-    font-size: 12px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
     @include flex(flex-start);
-    gap: 8px;
     color: var(--primary-500);
+
+    &__ai {
+      margin: 0;
+      color: var(--secondary-500);
+    }
   }
 
   &__list {
