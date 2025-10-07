@@ -80,14 +80,6 @@ import { getFormControl } from '../../shared/utilities/form.utility';
 
             <div class="checkbox">
               <app-checkbox
-                [control]="getFormControl(opponentsForm, 'excludeLeague')"
-              />
-              <p-iftalabel for="excludeLeague"
-                >Exclude League Members</p-iftalabel
-              >
-            </div>
-            <div class="checkbox">
-              <app-checkbox
                 [control]="getFormControl(opponentsForm, 'girlsOnly')"
               />
               <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
@@ -113,7 +105,7 @@ export class OpponentsComponent {
   protected loadingService = inject(LoadingService);
 
   getFormControl = getFormControl;
-  
+
   opponentsForm: FormGroup = new FormGroup({
     distance: new FormControl(10, {
       validators: [Validators.required],
@@ -121,7 +113,6 @@ export class OpponentsComponent {
     rating: new FormControl([60, 100], {
       validators: [Validators.required],
     }),
-    excludeLeague: new FormControl(false),
     girlsOnly: new FormControl(false),
   });
 

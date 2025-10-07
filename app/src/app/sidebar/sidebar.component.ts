@@ -11,7 +11,7 @@ import { BadgeModule } from 'primeng/badge';
     <div class="navigation__logo-container">
       <span class="navigation__logo">
         <i class="bi bi-graph-up"></i>
-        IceTime.ai
+        IceTime<span class="navigation__logo__ai">.ai</span>
       </span>
     </div>
     <ul class="navigation__list">
