@@ -55,16 +55,12 @@ import { inputId } from '../../utilities/form.utility';
   styleUrl: './select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectComponent<T> implements OnInit {
+export class SelectComponent<T> {
   @Input()
   control: FormControl;
 
   @Input()
   label: string;
-
-  ngOnInit() {
-    console.log({ options: this.options });
-  }
 
   @Input() options: SelectParams<T> | undefined;
 

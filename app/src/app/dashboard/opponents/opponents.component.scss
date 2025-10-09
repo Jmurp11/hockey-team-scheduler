@@ -32,6 +32,10 @@ form {
   padding-top: 1rem;
 }
 
+.slider-container {
+  width: 100%;
+}
+
 .distance-slider {
   @include flex(space-between, center, row);
   width: 100%;
