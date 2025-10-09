@@ -42,6 +42,12 @@ import { getFormControl } from '../../shared/utilities/form.utility';
         <ng-template #title>Find Tournaments</ng-template>
         <ng-template #content>
           <div class="card__content">
+            <div class="checkbox">
+              <app-checkbox
+                [control]="getFormControl(tournamentsForm, 'girlsOnly')"
+              />
+              <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
+            </div>
             <div>
               <app-select
                 [control]="getFormControl(tournamentsForm, 'age')"
@@ -57,7 +63,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               />
             </div>
 
-            <div>
+            <div class="slider-container">
               <p-iftalabel for="distance"
                 >Maximum Travel Distance (mi):
                 <strong>{{ tournamentsForm.get('distance')?.value }}</strong>
@@ -69,20 +75,11 @@ import { getFormControl } from '../../shared/utilities/form.utility';
                   [max]="500"
               /></p-iftalabel>
             </div>
-
-            <div class="checkbox">
-              <app-checkbox
-                [control]="getFormControl(tournamentsForm, 'girlsOnly')"
-              />
-              <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
-            </div>
           </div>
           <div class="submit-button">
             <p-button
               label="Start Search"
               type="submit"
-              icon="pi pi-sparkles"
-              iconPos="right"
             />
           </div>
         </ng-template>
@@ -106,13 +103,13 @@ export class TournamentsFilterComponent {
   levelOptions: SelectParams<{ label: string; value: string }> = {
     itemLabel: 'label',
     listItems: this.levels,
-    placeholder: 'Select Level',
     isAutoComplete: false,
     emptyMessage: 'No levels found',
     errorMessage: 'ERROR',
   };
 
   ages = [
+    { label: '19u', value: '19u' },
     { label: '18u', value: '18u' },
     { label: '16u', value: '16u' },
     { label: '15u', value: '15u' },
@@ -121,13 +118,12 @@ export class TournamentsFilterComponent {
     { label: '12u', value: '12u' },
     { label: '11u', value: '11u' },
     { label: '10u', value: '10u' },
-    { label: '8u', value: '8u' },
+    { label: '9u', value: '9u' },
   ];
 
   ageOptions: SelectParams<{ label: string; value: string }> = {
     itemLabel: 'label',
     listItems: this.ages,
-    placeholder: 'Select Age',
     isAutoComplete: false,
     emptyMessage: 'No ages found',
     errorMessage: 'ERROR',

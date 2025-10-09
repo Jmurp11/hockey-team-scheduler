@@ -10,3 +10,18 @@
   @include flex(center, center, column);
   flex: 1;
 }
+
+.list-container {
+  @include flex(flex-start, center, column);
+}
+
+p-button {
+  --p-button-text-secondary-color: var(--secondary-500);
+}
+
+.sort-btn {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 5rem;
+}

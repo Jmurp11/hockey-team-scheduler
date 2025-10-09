@@ -50,13 +50,21 @@ import { getFormControl } from '../../shared/utilities/form.utility';
         <ng-template #title>Find Opponents</ng-template>
         <ng-template #content>
           <div class="card__content">
-            <div class="checkbox">
-              <app-checkbox
-                [control]="getFormControl(opponentsForm, 'changeAssociation')"
-              />
-              <p-iftalabel for="changeAssociation"
-                >Change Association</p-iftalabel
-              >
+            <div class="checkbox-container">
+              <div class="checkbox">
+                <app-checkbox
+                  [control]="getFormControl(opponentsForm, 'changeAssociation')"
+                />
+                <p-iftalabel for="changeAssociation"
+                  >Change Association</p-iftalabel
+                >
+              </div>
+              <div class="checkbox">
+                <app-checkbox
+                  [control]="getFormControl(opponentsForm, 'girlsOnly')"
+                />
+                <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
+              </div>
             </div>
             @if (opponentsForm.get('changeAssociation')?.value) {
             <div>
@@ -112,21 +120,9 @@ import { getFormControl } from '../../shared/utilities/form.utility';
                 >
               </div>
             </div>
-
-            <div class="checkbox">
-              <app-checkbox
-                [control]="getFormControl(opponentsForm, 'girlsOnly')"
-              />
-              <p-iftalabel for="girlsOnly">Girls Only</p-iftalabel>
-            </div>
           </div>
           <div class="submit-button">
-            <p-button
-              label="Start Search"
-              type="submit"
-              icon="pi pi-sparkles"
-              iconPos="right"
-            />
+            <p-button label="Start Search" type="submit" />
           </div>
         </ng-template>
       </app-card>
