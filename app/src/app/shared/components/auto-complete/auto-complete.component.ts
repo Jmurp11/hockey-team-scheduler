@@ -39,6 +39,7 @@ interface AutoCompleteCompleteEvent {
           [forceSelection]="true"
           [suggestions]="filteredItems"
           (completeMethod)="filterItems($event)"
+          [showClear]="true"
           (onSelect)="onSelect($event)"
         >
           <ng-template let-item pTemplate="selectedItem">

@@ -74,7 +74,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
                 label="Age"
               />
             </div>
-            <div>
+            <div class="slider-container">
               <p-iftalabel for="distance"
                 >Maximum Travel Distance (mi):
                 <strong>{{ opponentsForm.get('distance')?.value }}</strong>
@@ -87,7 +87,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               /></p-iftalabel>
             </div>
 
-            <div>
+            <div class="slider-container">
               <p-iftalabel for="rating"
                 >Rating
                 <app-slider
