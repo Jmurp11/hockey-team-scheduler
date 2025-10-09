@@ -65,15 +65,6 @@ export class DashboardComponent implements OnInit {
   }
 
   async getNearbyTeams(params: any) {
-    console.log({ params });
-    console.log({
-      p_id: params.association.value,
-      p_girls_only: params.girlsOnly,
-      p_age: params.age.value.toLowerCase(),
-      p_max_rating: params.rating[1],
-      p_min_rating: params.rating[0],
-      p_max_distance: params.distance,
-    });
     this.nearbyTeams$ = this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly,

@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class AddGameService {
   private _isVisible = signal(false);
@@ -10,7 +10,6 @@ export class AddGameService {
 
   openDialog(): void {
     this._isVisible.set(true);
-    console.log({ isVisible: this._isVisible() });
   }
 
   closeDialog(): void {
