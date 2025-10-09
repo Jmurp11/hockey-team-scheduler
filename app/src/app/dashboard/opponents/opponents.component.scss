@@ -3,6 +3,10 @@
 :host {
   height: 90%;
   width: 30%;
+
+  ::ng-deep .p-iftalabel {
+    font-size: 14px;
+  }
 }
 
 form {
@@ -32,15 +36,15 @@ form {
   padding-top: 1rem;
 }
 
-.slider-container {
-  width: 100%;
-}
-
 .distance-slider {
   @include flex(space-between, center, row);
   width: 100%;
 }
 
+.checkbox-container {
+  @include flex(space-between, center, row);
+  width: 100%;
+}
 .checkbox {
   @include flex(flex-start, center, row);
   width: 100%;

@@ -6,13 +6,13 @@ import {
   inject,
   Input,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
+import { map } from 'rxjs';
 import { CardComponent } from '../../shared/components/card/card.component';
+import { OpenAiService } from '../../shared/services/openai.service';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
-import { OpenAiService } from '../../shared/services/openai.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
 
 @Component({
   selector: 'app-opponent-list',
@@ -87,7 +87,11 @@ export class OpponentListComponent {
 
   isStatKey(key: string): boolean {
     return (
-      key === 'agd' || key === 'record' || key === 'rating' || key === 'sched' || key === 'leagues'
+      key === 'agd' ||
+      key === 'record' ||
+      key === 'rating' ||
+      key === 'sched' ||
+      key === 'leagues'
     );
   }
 

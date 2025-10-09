@@ -7,7 +7,9 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { SelectItem } from 'primeng/api';
+import { MenuItem, SelectItem } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
 import { filter, map, Observable, startWith } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { AssociationService } from '../shared/services/associations.service';
@@ -22,6 +24,8 @@ import { OpponentsComponent } from './opponents/opponents.component';
     RouterModule,
     OpponentsComponent,
     OpponentListComponent,
+    ButtonModule,
+    MenuModule,
   ],
   template: ` <div class="container">
     <app-opponents
@@ -31,8 +35,22 @@ import { OpponentsComponent } from './opponents/opponents.component';
     />
 
     @if (nearbyTeams$ | async; as nearbyTeams) {
-    <div class="opponent-list">
-      <app-opponent-list [opponents]="nearbyTeams" />
+    <div class="list-container">
+      <div class="sort-btn">
+        <p-button
+          (click)="sortMenu.toggle($event)"
+          label="Sort"
+          variant="text"
+          severity="secondary"
+          iconPos="right"
+          icon="pi pi-sort-alt"
+          size="small"
+        />
+        <p-menu #sortMenu [model]="actions" [popup]="true" appendTo="body" />
+      </div>
+      <div class="opponent-list">
+        <app-opponent-list [opponents]="nearbyTeams" />
+      </div>
     </div>
     }
   </div>`,
@@ -46,6 +64,7 @@ export class DashboardComponent implements OnInit {
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
 
+  actions: MenuItem[];
   user$: Observable<SelectItem> = toObservable(
     this.authService.currentUser
   ).pipe(
@@ -62,16 +81,43 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.nearbyTeams$ = new Observable<any[]>();
+
+    this.actions = this.getActions();
   }
 
   async getNearbyTeams(params: any) {
     this.nearbyTeams$ = this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
-      p_age: params.age.value.toLowerCase(), 
+      p_age: params.age.value.toLowerCase(),
       p_max_rating: params.rating[1],
       p_min_rating: params.rating[0],
       p_max_distance: params.distance,
     });
+  }
+
+  getActions() {
+    return [
+      {
+        icon: 'pi pi-sort-amount-up',
+        label: 'Distance (asc)',
+        command: () => console.log('details'),
+      },
+      {
+        icon: 'pi pi-sort-amount-down',
+        label: 'Distance (desc)',
+        command: () => console.log('details'),
+      },
+      {
+        icon: 'pi pi-sort-amount-up',
+        label: 'Rating (asc)',
+        command: () => console.log('details'),
+      },
+      {
+        icon: 'pi pi-sort-amount-down',
+        label: 'Ratings (desc)',
+        command: () => console.log('details'),
+      },
+    ];
   }
 }
