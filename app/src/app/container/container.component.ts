@@ -43,7 +43,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
               (click)="navigation.navigateToLink('/app')"
             >
               <span class="title__left">{{
-                authService.currentUser()?.team_name || 'IceTime.ai'
+                authService.currentUser()?.association_name || 'IceTime.ai'
               }}</span>
             </a>
           </ng-template>
