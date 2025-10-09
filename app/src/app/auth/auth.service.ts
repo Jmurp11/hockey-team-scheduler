@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { SupabaseService } from '../shared/services/supabase.service';
 import { Session } from '@supabase/supabase-js';
+import { SupabaseService } from '../shared/services/supabase.service';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +32,5 @@ export class AuthService {
     }
 
     this.currentUser.set(data);
-
-    console.log(this.currentUser());
   }
 }
