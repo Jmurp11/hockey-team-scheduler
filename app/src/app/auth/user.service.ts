@@ -31,7 +31,6 @@ export class UserService {
       .eq('user_id', updateAuthUser.data.user?.id)
       .select();
 
-    console.log({ updateAppUser });
     if (updateAppUser.error) {
       console.error('Error updating app user:', updateAppUser.error);
       throw updateAppUser.error;

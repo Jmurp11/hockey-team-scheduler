@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
 import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
+import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
 
 @Component({
   selector: 'app-tournaments-list',

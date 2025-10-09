@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Observable, switchMap } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { OpenAiService } from '../shared/services/openai.service';
 import { TournamentsFilterComponent } from './tournaments-filter/tournaments-filter.component';
 import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
-import { OpenAiService } from '../shared/services/openai.service';
-import { AuthService } from '../auth/auth.service';
-import { Observable, switchMap } from 'rxjs';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-tournaments',
@@ -33,8 +33,6 @@ export class TournamentsComponent {
       maxDistance: filter.distance,
       girlsOnly: filter.girlsOnly,
     };
-
-    console.log('Filter changed:', input);
 
     this.tournaments$ = this.user$.pipe(
       switchMap((user) =>
