@@ -46,13 +46,14 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               <app-select
                 [control]="getFormControl(tournamentsForm, 'age')"
                 [options]="ageOptions"
+                label="Age"
               />
             </div>
-
             <div>
               <app-select
                 [control]="getFormControl(tournamentsForm, 'level')"
                 [options]="levelOptions"
+                label="Level"
               />
             </div>
 

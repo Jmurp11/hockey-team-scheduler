@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { SelectItem } from 'primeng/api';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { NearbyTeamsParams } from '../types/nearby-teams.type';
 
@@ -24,5 +26,13 @@ export class TeamsService {
         p_max_distance: params.p_max_distance.toString(),
       },
     });
+  }
+
+  getTeams(associationId: number): Observable<SelectItem[]> {
+    return this.teams(associationId).pipe(
+      map((teams) =>
+        (teams as any[]).map((team) => ({ label: team.name, value: team.id }))
+      )
+    );
   }
 }

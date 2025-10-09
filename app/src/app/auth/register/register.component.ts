@@ -13,7 +13,7 @@ import {
 } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { map, Observable, startWith, switchMap } from 'rxjs';
+import { Observable, startWith, switchMap } from 'rxjs';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
@@ -56,18 +56,38 @@ import { UserService } from '../user.service';
         <ng-template #title>Complete Profile</ng-template>
         <ng-template #content>
           <form [formGroup]="registerForm" (ngSubmit)="submit()">
-            <app-input [control]="getFormControl(registerForm, 'email')" label="Email"/>
+            <app-input
+              [control]="getFormControl(registerForm, 'email')"
+              label="Email"
+            />
 
-            <app-password [control]="getFormControl(registerForm, 'password')" label="Password"/>
+            <app-password
+              [control]="getFormControl(registerForm, 'password')"
+              label="Password"
+            />
 
-            <app-password [control]="getFormControl(registerForm, 'confirmPassword')" label="Confirm Password"/>
+            <app-password
+              [control]="getFormControl(registerForm, 'confirmPassword')"
+              label="Confirm Password"
+            />
 
-            <app-input [control]="getFormControl(registerForm, 'name')" label="Name"/>
+            <app-input
+              [control]="getFormControl(registerForm, 'name')"
+              label="Name"
+            />
 
             @if (associations$ | async; as associations) {
-            <app-auto-complete [control]="getFormControl(registerForm, 'association')" label="Association" [items]="associations" />
+            <app-auto-complete
+              [control]="getFormControl(registerForm, 'association')"
+              label="Association"
+              [items]="associations"
+            />
             } @if (teams$ | async; as teams) { @if (teams.length > 0) {
-            <app-auto-complete [control]="getFormControl(registerForm, 'team')" label="Team" [items]="teams" />
+            <app-auto-complete
+              [control]="getFormControl(registerForm, 'team')"
+              label="Team"
+              [items]="teams"
+            />
             } }
 
             <div class="form-actions">
@@ -115,7 +135,7 @@ export class RegisterComponent implements OnInit {
   async ngOnInit() {
     this.registerForm = this.initForm();
 
-    this.associations$ = this.getAssociations();
+    this.associations$ = this.associationsService.getAssociations();
 
     this.teams$ = this.onAssociationChange();
   }
@@ -149,27 +169,6 @@ export class RegisterComponent implements OnInit {
     );
   }
 
-  getAssociations(): Observable<SelectItem[]> {
-    return this.associationsService.associations().pipe(
-      map((associations) => {
-        return (associations as any[]).map((association) => ({
-          label: association.name,
-          value: association.id,
-        }));
-      })
-    );
-  }
-
-  getTeams(associationId: number): Observable<SelectItem[]> {
-    return this.teamsService
-      .teams(associationId)
-      .pipe(
-        map((teams) =>
-          (teams as any[]).map((team) => ({ label: team.name, value: team.id }))
-        )
-      );
-  }
-
   onAssociationChange(): Observable<SelectItem[]> {
     const associationControl = this.registerForm.get('association');
     if (!associationControl) {
@@ -185,7 +184,7 @@ export class RegisterComponent implements OnInit {
             observer.complete();
           });
         }
-        return this.getTeams(association.value);
+        return this.teamsService.getTeams(association.value);
       })
     );
   }
