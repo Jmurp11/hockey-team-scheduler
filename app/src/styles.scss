@@ -1,6 +1,5 @@
+@use "./app/scss/mixins/_mixins.scss" as *;
 @import "primeicons/primeicons.css";
-
-@import "./app/scss/mixins/_mixins.scss";
 
 html,
 body {
