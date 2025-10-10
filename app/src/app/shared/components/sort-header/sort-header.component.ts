@@ -41,8 +41,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         />
         <app-icon-select-button
           [options]="[
-            { icon: 'pi pi-arrow-up', value: 'asc' },
-            { icon: 'pi pi-arrow-down', value: 'desc' }
+            { icon: 'pi pi-sort-amount-up', value: 'asc' },
+            { icon: 'pi pi-sort-amount-down', value: 'desc' }
           ]"
           [control]="getFormControl(form, 'sortDirection')"
         />
@@ -73,13 +73,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         width: 70%;
 
         ::ng-deep app-select {
-          --p-select-hover-border-color: var(--secondary-600);
-          --p-select-focus-border-color: var(--secondary-600);
-          .p-focus {
-            background: var(--secondary-100);
-            color: var(--secondary-600);
-          }
-
           .p-select-option-selected {
             background: var(--secondary-100);
             color: var(--secondary-600);

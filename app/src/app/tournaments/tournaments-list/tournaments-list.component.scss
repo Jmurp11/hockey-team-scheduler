@@ -27,9 +27,6 @@ app-card {
   }
 
   ::ng-deep .p-button {
-    --p-button-outlined-primary-hover-background: var(--secondary-50);
-    --p-button-outlined-primary-color: var(--secondary-500);
-    --p-button-outlined-primary-border-color: var(--secondary-500);
     width: 100%;
     max-width: 300px;
   }

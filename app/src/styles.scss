@@ -1,6 +1,6 @@
-@use "./app/scss/mixins/_mixins.scss" as *;
-
 @import "primeicons/primeicons.css";
+
+@import "./app/scss/mixins/_mixins.scss";
 
 html,
 body {
@@ -45,6 +45,51 @@ body {
   --tertiary-800: #0f87c8;
   --tertiary-900: #0b6494;
   --tertiary-950: #09527a;
+
+  --p-togglebutton-checked-background: var(--secondary-200) !important;
+  --p-togglebutton-checked-color: var(--secondary-700) !important;
+  --p-select-focus-ring-color: var(--secondary-600) !important;
+  --p-select-hover-border-color: var(--secondary-600) !important;
+  --p-select-focus-border-color: var(--secondary-600) !important;
+  --p-select-focus-ring-shadow: var(--secondary-200) !important;
+  --p-iftalabel-focus-color: var(--secondary-500) !important;
+  --p-button-outlined-primary-hover-background: var(--secondary-50) !important;
+  --p-button-outlined-primary-color: var(--secondary-500) !important;
+  --p-button-outlined-primary-border-color: var(--secondary-500) !important;
+
+  --p-menubar-color: var(--primary-500) !important;
+  --p-menubar-background: var(--tertiary-50) !important;
+
+  --p-menubar-item-color: var(--primary-500) !important;
+  --p-menubar-item-link-color: var(--primary-500) !important;
+
+  --p-checkbox-background: #fff !important;
+  --p-checkbox-checked-background: var(--secondary-500) !important;
+  --p-checkbox-checked-hover-background: var(--secondary-600) !important;
+  --p-checkbox-disabled-background: #f4f4f4 !important;
+  --p-checkbox-filled-background: var(--secondary-500) !important;
+  --p-checkbox-border-color: #cccccc !important;
+  --p-checkbox-hover-border-color: #999999 !important;
+  --p-checkbox-focus-border-color: var(--secondary-300) !important;
+  --p-checkbox-checked-border-color: var(--secondary-500) !important;
+  --p-checkbox-checked-hover-border-color: var(--secondary-600) !important;
+  --p-checkbox-checked-focus-border-color: var(--secondary-300) !important;
+  --p-slider-handle-background: var(--secondary-500) !important;
+  --p-slider-handle-hover-background: var(--secondary-600) !important;
+  --p-slider-handle-content-hover-background: var(--secondary-500) !important;
+  --p-slider-range-background: var(--secondary-400) !important;
+  --p-slider-handle-focus-ring-color: var(--secondary-300) !important;
+  --p-slider-handle-focus-ring-offset: var(--secondary-200) !important;
+  --p-slider-handle-focus-ring-shadow: var(--secondary-300) !important;
+  --p-button-primary-background: var(--secondary-500) !important;
+  --p-button-primary-hover-background: var(--secondary-600) !important;
+  --p-button-primary-border-color: var(--secondary-500) !important;
+  --p-button-primary-hover-border-color: var(--secondary-600) !important;
+  --p-autocomplete-focus-border-color: var(--secondary-300) !important;
+  --p-autocomplete-shadow: var(--secondary-300) !important;
+  --p-inputtext-hover-border-color: var(--secondary-300) !important;
+  --p-inputtext-focus-border-color: var(--secondary-300) !important;
+  --p-inputtext-focus-ring-shadow	: var(--secondary-200) !important;
 }
 
 .container {
@@ -53,23 +98,6 @@ body {
   flex: 1;
   width: 100%;
   font-family: "Space Grotesk", "Noto Sans", sans-serif;
-}
-
-.p-button {
-  --p-button-primary-background: var(--secondary-500);
-  --p-button-primary-hover-background: var(--secondary-600);
-  --p-button-primary-border-color: var(--secondary-500);
-  --p-button-primary-hover-border-color: var(--secondary-600);
-}
-
-.p-slider {
-  --p-slider-handle-background: var(--secondary-500);
-  --p-slider-handle-hover-background: var(--secondary-600);
-  --p-slider-handle-content-hover-background: var(--secondary-500);
-  --p-slider-range-background: var(--secondary-400);
-  --p-slider-handle-focus-ring-color: var(--secondary-300);
-  --p-slider-handle-focus-ring-offset: var(--secondary-200);
-  --p-slider-handle-focus-ring-shadow: var(--secondary-300);
 }
 
 .title {
@@ -85,20 +113,6 @@ body {
   &__left {
     color: var(--primary-500);
   }
-}
-
-.p-checkbox {
-  --p-checkbox-background: #fff;
-  --p-checkbox-checked-background: var(--secondary-500);
-  --p-checkbox-checked-hover-background: var(--secondary-600);
-  --p-checkbox-disabled-background: #f4f4f4;
-  --p-checkbox-filled-background: var(--secondary-500);
-  --p-checkbox-border-color: #cccccc;
-  --p-checkbox-hover-border-color: #999999;
-  --p-checkbox-focus-border-color: var(--secondary-300);
-  --p-checkbox-checked-border-color: var(--secondary-500);
-  --p-checkbox-checked-hover-border-color: var(--secondary-600);
-  --p-checkbox-checked-focus-border-color: var(--secondary-300);
 }
 
 a {
