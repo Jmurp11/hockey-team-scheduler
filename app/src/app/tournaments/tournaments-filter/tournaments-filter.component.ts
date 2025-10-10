@@ -126,6 +126,7 @@ export class TournamentsFilterComponent {
     listItems: this.ages,
     isAutoComplete: false,
     emptyMessage: 'No ages found',
+    showClear: true,
     errorMessage: 'ERROR',
   };
 

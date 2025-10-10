@@ -13,6 +13,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { OpenAiService } from '../../shared/services/openai.service';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
+import { SortDirection } from '../../shared/components/sort-header/sort-header.type';
 
 @Component({
   selector: 'app-opponent-list',
@@ -55,7 +56,7 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
 export class OpponentListComponent {
   @Input()
   opponents: any[];
-
+  
   private openAiService = inject(OpenAiService);
   destroyRef = inject(DestroyRef);
 

@@ -7,7 +7,7 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem;
+  padding: 1rem 1rem 5rem 1rem; // Add extra bottom padding
   box-sizing: border-box;
 }
 
@@ -21,10 +21,6 @@ app-card {
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 
   ::ng-deep .p-button {
     --p-button-outlined-primary-hover-background: var(--secondary-50);

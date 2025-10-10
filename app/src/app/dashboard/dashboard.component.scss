@@ -1,9 +1,11 @@
 @use "../scss/mixins/_mixins.scss" as *;
 
 .container {
-  @include flex(space-between, flex-start, row);
-  height: 97.5%;
+  @include flex(flex-start, flex-start, row);
+  height: 100%;
   width: 100%;
+  gap: 1rem;
+  contain: layout;
 }
 
 .opponent-list {
@@ -12,16 +14,14 @@
 }
 
 .list-container {
-  @include flex(flex-start, center, column);
+  @include flex(flex-start, stretch, column);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  contain: layout;
 }
 
-p-button {
-  --p-button-text-secondary-color: var(--secondary-500);
-}
-
-.sort-btn {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  margin-right: 5rem;
+.sort-header {
+  width: calc(100% - 2rem);
+  padding-left: 3rem;
 }

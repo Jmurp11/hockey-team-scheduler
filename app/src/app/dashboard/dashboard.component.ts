@@ -7,15 +7,28 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { MenuItem, SelectItem } from 'primeng/api';
+import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
-import { filter, map, Observable, startWith } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  share,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { AssociationService } from '../shared/services/associations.service';
 import { TeamsService } from '../shared/services/teams.service';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsComponent } from './opponents/opponents.component';
+import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
+import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -25,29 +38,22 @@ import { OpponentsComponent } from './opponents/opponents.component';
     OpponentsComponent,
     OpponentListComponent,
     ButtonModule,
-    MenuModule,
+    SortHeaderComponent,
   ],
   template: ` <div class="container">
     <app-opponents
-      (selectedInputs)="getNearbyTeams($event)"
+      (selectedInputs)="onSearchParamsChanged($event)"
       [associations$]="associations$"
       [userDefault$]="user$"
     />
 
     @if (nearbyTeams$ | async; as nearbyTeams) {
     <div class="list-container">
-      <div class="sort-btn">
-        <p-button
-          (click)="sortMenu.toggle($event)"
-          label="Sort"
-          variant="text"
-          severity="secondary"
-          iconPos="right"
-          icon="pi pi-sort-alt"
-          size="small"
-        />
-        <p-menu #sortMenu [model]="actions" [popup]="true" appendTo="body" />
-      </div>
+      <app-sort-header class="sort-header"
+        (sortChanged)="onSortChanged($event)"
+        [resultsCount]="nearbyTeams?.length ?? 0"
+      ></app-sort-header>
+
       <div class="opponent-list">
         <app-opponent-list [opponents]="nearbyTeams" />
       </div>
@@ -64,7 +70,15 @@ export class DashboardComponent implements OnInit {
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
 
-  actions: MenuItem[];
+  private searchParams$ = new BehaviorSubject<any>(null);
+  private currentSort$ = new BehaviorSubject<{
+    field: string;
+    sortDirection: SortDirection;
+  }>({
+    field: 'distance',
+    sortDirection: 'asc',
+  });
+
   user$: Observable<SelectItem> = toObservable(
     this.authService.currentUser
   ).pipe(
@@ -80,13 +94,38 @@ export class DashboardComponent implements OnInit {
     this.associationService.getAssociations();
 
   ngOnInit(): void {
-    this.nearbyTeams$ = new Observable<any[]>();
+    // First get the teams based only on search params
+    const teams$ = this.searchParams$.pipe(
+      filter((params) => params !== null),
+      tap((params) =>
+        console.log('Fetching nearby teams with params:', params)
+      ),
+      switchMap((params) => this.getNearbyTeams(params)),
+      shareReplay(1)
+    );
 
-    this.actions = this.getActions();
+    // Then combine with sort to apply sorting without refetching
+    this.nearbyTeams$ = combineLatest({
+      teams: teams$,
+      sort: this.currentSort$,
+    }).pipe(
+      map(({ teams, sort }) => {
+        console.log('Applying sort:', sort);
+        return this.sort([...(teams as any[])], sort);
+      })
+    );
   }
 
-  async getNearbyTeams(params: any) {
-    this.nearbyTeams$ = this.teamsService.nearbyTeams({
+  onSearchParamsChanged(params: any) {
+    this.searchParams$.next(params);
+  }
+
+  onSortChanged(sort: { field: string; sortDirection: SortDirection }) {
+    this.currentSort$.next(sort);
+  }
+
+  getNearbyTeams(params: any) {
+    return this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
       p_age: params.age.value.toLowerCase(),
@@ -96,28 +135,14 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  getActions() {
-    return [
-      {
-        icon: 'pi pi-sort-amount-up',
-        label: 'Distance (asc)',
-        command: () => console.log('details'),
-      },
-      {
-        icon: 'pi pi-sort-amount-down',
-        label: 'Distance (desc)',
-        command: () => console.log('details'),
-      },
-      {
-        icon: 'pi pi-sort-amount-up',
-        label: 'Rating (asc)',
-        command: () => console.log('details'),
-      },
-      {
-        icon: 'pi pi-sort-amount-down',
-        label: 'Ratings (desc)',
-        command: () => console.log('details'),
-      },
-    ];
+  sort(teams: any[], sort: { field: string; sortDirection: SortDirection }) {
+    return teams.sort((a, b) => {
+      const fieldA = a[sort.field];
+      const fieldB = b[sort.field];
+
+      if (fieldA < fieldB) return sort.sortDirection === 'asc' ? -1 : 1;
+      if (fieldA > fieldB) return sort.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
   }
 }

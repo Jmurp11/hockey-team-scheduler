@@ -34,7 +34,7 @@ import { inputId } from '../../utilities/form.utility';
           [filterBy]="options?.itemLabel"
           [placeholder]="options?.placeholder"
           [emptyMessage]="options!.emptyMessage"
-          [showClear]="true"
+          [showClear]="options?.showClear"
         >
           <ng-template #selectedItem let-selectedOption>
             <div>{{ selectedOption[options!.itemLabel] }}</div>
