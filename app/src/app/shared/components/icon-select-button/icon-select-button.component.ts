@@ -1,39 +1,37 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { SelectButtonModule } from 'primeng/selectbutton';
 
 @Component({
-  selector: 'app-select-button',
+  selector: 'app-icon-select-button',
   standalone: true,
   imports: [
     CommonModule,
-    IftaLabelModule,
     SelectButtonModule,
     MessageModule,
     ReactiveFormsModule,
   ],
   template: `
-      <div class="form-field">
-        <p-selectbutton
-          [options]="options"
-          [formControl]="control"
-          optionLabel="label"
-          optionValue="value"
-        />
-      </div>
+    <div class="form-field">
+      <p-selectbutton
+        [options]="options"
+        [formControl]="control"
+        optionLabel="value"
+        optionValue="value"
+      >
+        <ng-template #item let-item> <i [class]="item.icon"></i> </ng-template
+      ></p-selectbutton>
+    </div>
   `,
-  styleUrls: ['./select-button.component.scss'],
+  styleUrls: ['./icon-select-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectButtonComponent {
+export class IconSelectButtonComponent {
   @Input()
   control: FormControl;
 
   @Input()
-  options: { label: string; value: string }[] = [];
-
-
+  options: { icon: string; value: string }[] = [];
 }

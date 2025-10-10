@@ -164,6 +164,7 @@ export class OpponentsComponent implements OnInit {
     isAutoComplete: false,
     emptyMessage: 'No ages found',
     errorMessage: 'ERROR',
+    showClear: true,
   };
 
   ngOnInit(): void {
