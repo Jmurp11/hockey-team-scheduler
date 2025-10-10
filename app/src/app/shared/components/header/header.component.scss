@@ -7,19 +7,6 @@
   border-bottom: 1px solid var(--primary-500);
 }
 
-p-menubar {
-  --p-menubar-color: var(--primary-500) !important;
-  --p-menubar-background: var(--tertiary-50);
-}
-
-p-menubar-item {
-  --p-menubar-item-color: var(--primary-500);
-}
-
-p-menubar-item-link {
-  --p-menubar-item-link-color: var(--primary-500);
-}
-
 :host(.theme-dark) {
   --p-menubar-color: var(--primary-100) !important;
   --p-menubar-background: var(--primary-500) !important;
