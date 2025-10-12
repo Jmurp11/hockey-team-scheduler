@@ -1,0 +1,33 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+:host {
+  display: block;
+  height: calc(100vh - 60px - 2rem); // Subtract header height AND padding
+  max-height: calc(100vh - 60px - 2rem);
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 1rem 5rem 1rem; // Add extra bottom padding
+  box-sizing: border-box;
+}
+
+app-card {
+  display: block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+  margin-bottom: 1rem;
+  width: calc(100% - 2rem);
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
+
+  ::ng-deep .p-button {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  ::ng-deep .p-card-content {
+    @include flex(center, center, row);
+  }
+}

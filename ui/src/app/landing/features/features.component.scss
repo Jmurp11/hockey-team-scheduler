@@ -1,0 +1,40 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+h2 {
+  color: var(--primary-500);
+}
+
+p {
+  text-align: left;
+}
+
+.features-container {
+  @include flex(center, center, column);
+
+  &__cards {
+    @include flex(center, space-between, row);
+    flex-wrap: wrap;
+    gap: 5rem;
+    padding: 1rem;
+
+    @media (max-width: 1550px) {
+      gap: 3rem;
+    }
+  }
+
+  &__card {
+    font-size: 12px;
+    width: 350px;
+    min-height: 200px;
+
+    @media (max-width: 1550px) {
+      width: 300px;
+      min-height: 250px;
+      font-size: 10px;
+    }
+  }
+}
+
+::ng-deep .p-card-body {
+  min-height: 190px;
+}

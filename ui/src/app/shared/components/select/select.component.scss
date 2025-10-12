@@ -1,0 +1,12 @@
+.form-field {
+  min-width: 350px;
+
+  p-select,
+  ::ng-deep .p-select {
+    width: 100%;
+  }
+
+  ::ng-deep .p-message {
+    margin-top: 0.25rem;
+  }
+}

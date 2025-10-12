@@ -1,0 +1,27 @@
+@use "../scss/mixins/_mixins.scss" as *;
+
+.container {
+  @include flex(flex-start, flex-start, row);
+  height: 100%;
+  width: 100%;
+  gap: 1rem;
+  contain: layout;
+}
+
+.opponent-list {
+  @include flex(center, center, column);
+  flex: 1;
+}
+
+.list-container {
+  @include flex(flex-start, stretch, column);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  contain: layout;
+}
+
+.sort-header {
+  width: calc(100% - 2rem);
+  padding-left: 3rem;
+}
