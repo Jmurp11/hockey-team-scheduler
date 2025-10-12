@@ -1,0 +1,45 @@
+@use "../scss/mixins/_mixins.scss" as *;
+
+.container {
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-rows: auto 1fr;
+  background-color: var(--color-background-primary);
+  height: 100vh;
+  overflow: hidden;
+  contain: layout style; // Add layout and style containment
+
+  &__page-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%; // Force explicit height
+    contain: layout; // Add containment here too
+
+    .title {
+      &__left {
+        font-size: 20px;
+        font-weight: bold;
+      }
+    }
+
+    .header {
+      &__name {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      &__avatar {
+      }
+    }
+
+    &__router-outlet {
+      flex: 1;
+      min-height: 0;
+      height: 100%; // Force explicit height
+      overflow: hidden;
+      contain: layout style size; // Full containment
+      position: relative; // Create new stacking context
+    }
+  }
+}

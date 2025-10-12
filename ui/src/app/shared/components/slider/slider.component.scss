@@ -1,0 +1,13 @@
+.form-field {
+  margin-top: .5rem;
+  margin-bottom: .5rem;
+  min-width: 225px;
+
+  ::ng-deep .p-slider {
+    width: 100%;
+  }
+
+  ::ng-deep .p-message {
+    margin-top: 0.25rem;
+  }
+}

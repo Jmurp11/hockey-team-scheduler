@@ -1,0 +1,12 @@
+.form-field {
+  margin-bottom: 1.5rem;
+  min-width: 350px;
+
+  ::ng-deep .p-selectbutton {
+    width: 100%;
+  }
+
+  ::ng-deep .p-message {
+    margin-top: 0.25rem;
+  }
+}

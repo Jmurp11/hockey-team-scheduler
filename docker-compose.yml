@@ -1,0 +1,49 @@
+services:
+  # API Service (NestJS)
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.prod
+    container_name: hockey-scheduler-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - ./api/.env
+    networks:
+      - hockey-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # UI Service (Angular)
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+      target: production
+    container_name: hockey-scheduler-ui
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - hockey-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  hockey-network:
+    driver: bridge

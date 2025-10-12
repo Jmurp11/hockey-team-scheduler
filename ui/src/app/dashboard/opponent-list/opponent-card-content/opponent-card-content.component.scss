@@ -1,0 +1,8 @@
+@use "../../../scss/mixins/flex" as *;
+
+.card-content {
+  @include flex(space-between, center, row);
+  width: 100%;
+  gap: 5rem;
+}
+
