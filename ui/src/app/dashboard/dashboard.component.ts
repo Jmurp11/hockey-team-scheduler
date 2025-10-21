@@ -15,20 +15,17 @@ import {
   filter,
   map,
   Observable,
-  of,
-  share,
   shareReplay,
   startWith,
-  switchMap,
-  tap,
+  switchMap
 } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
+import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { AssociationService } from '../shared/services/associations.service';
 import { TeamsService } from '../shared/services/teams.service';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsComponent } from './opponents/opponents.component';
-import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -49,7 +46,8 @@ import { SortDirection } from '../shared/components/sort-header/sort-header.type
 
     @if (nearbyTeams$ | async; as nearbyTeams) {
     <div class="list-container">
-      <app-sort-header class="sort-header"
+      <app-sort-header
+        class="sort-header"
         (sortChanged)="onSortChanged($event)"
         [resultsCount]="nearbyTeams?.length ?? 0"
       ></app-sort-header>
@@ -94,26 +92,16 @@ export class DashboardComponent implements OnInit {
     this.associationService.getAssociations();
 
   ngOnInit(): void {
-    // First get the teams based only on search params
     const teams$ = this.searchParams$.pipe(
       filter((params) => params !== null),
-      tap((params) =>
-        console.log('Fetching nearby teams with params:', params)
-      ),
       switchMap((params) => this.getNearbyTeams(params)),
       shareReplay(1)
     );
 
-    // Then combine with sort to apply sorting without refetching
     this.nearbyTeams$ = combineLatest({
       teams: teams$,
       sort: this.currentSort$,
-    }).pipe(
-      map(({ teams, sort }) => {
-        console.log('Applying sort:', sort);
-        return this.sort([...(teams as any[])], sort);
-      })
-    );
+    }).pipe(map(({ teams, sort }) => this.sort([...(teams as any[])], sort)));
   }
 
   onSearchParamsChanged(params: any) {

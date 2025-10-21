@@ -2,10 +2,9 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   inject,
   OnInit,
-  OnDestroy,
-  HostListener,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { BlockUIModule } from 'primeng/blockui';
@@ -53,6 +52,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
           (hamburgerClick)="sidebarService.toggle()"
         >
           <ng-template #start>
+            @if (!hideTitle) {
             <a
               pRipple
               class="title"
@@ -62,6 +62,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
                 authService.currentUser()?.association_name || 'RinkLink.ai'
               }}</span>
             </a>
+            }
           </ng-template>
           <ng-template #end>
             <div class="header__avatar">
@@ -84,7 +85,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
         </div>
       </div>
       @if (!isMobile) {
-      <app-footer></app-footer>
+      <app-footer />
       }
     </div>
 
@@ -107,6 +108,7 @@ export class ContainerComponent implements OnInit {
   sidebarService = inject(SidebarService);
 
   isMobile = false;
+  hideTitle = false;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -119,8 +121,9 @@ export class ContainerComponent implements OnInit {
 
   private checkScreenSize() {
     const previousIsMobile = this.isMobile;
-    this.isMobile = window.innerWidth <= 1024; // Tablets and mobile
+    this.hideTitle = window.innerWidth <= 767; // Tablets and mobile
 
+    this.isMobile = window.innerWidth <= 1024; // Mobile only
     if (previousIsMobile !== this.isMobile) {
       if (this.isMobile) {
         this.sidebarService.close();

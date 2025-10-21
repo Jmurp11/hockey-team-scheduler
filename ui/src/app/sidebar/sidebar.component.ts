@@ -43,11 +43,11 @@ export class SidebarComponent implements OnInit {
       icon: 'pi pi-fw pi-search',
       routerLink: '/app/dashboard',
     },
-    {
-      label: 'Tournaments',
-      icon: 'pi pi-fw pi-trophy',
-      routerLink: '/app/tournaments',
-    },
+    // {
+    //   label: 'Tournaments',
+    //   icon: 'pi pi-fw pi-trophy',
+    //   routerLink: '/app/tournaments',
+    // },
     {
       label: 'Schedule',
       icon: 'pi pi-fw pi-calendar',

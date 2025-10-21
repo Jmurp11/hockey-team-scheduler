@@ -13,21 +13,31 @@ import { CardModule } from 'primeng/card';
   imports: [CommonModule, CardModule],
   template: `
     <p-card>
-      <ng-template pTemplate="header"
-        ><ng-container *ngTemplateOutlet="header"></ng-container
-      ></ng-template>
-      <ng-template pTemplate="title"
-        ><ng-container *ngTemplateOutlet="title"></ng-container
-      ></ng-template>
-      <ng-template pTemplate="subtitle"
-        ><ng-container *ngTemplateOutlet="subtitle"></ng-container
-      ></ng-template>
-      <ng-template pTemplate="content">
-        <ng-container *ngTemplateOutlet="content"></ng-container>
-      </ng-template>
-      <ng-template pTemplate="footer"
-        ><ng-container *ngTemplateOutlet="footer"></ng-container
-      ></ng-template>
+      @if (header) {
+        <ng-template pTemplate="header"
+          ><ng-container *ngTemplateOutlet="header"></ng-container
+        ></ng-template>
+      }
+      @if (title) {
+        <ng-template pTemplate="title"
+          ><ng-container *ngTemplateOutlet="title"></ng-container
+        ></ng-template>
+      }
+      @if (subtitle) {
+        <ng-template pTemplate="subtitle"
+          ><ng-container *ngTemplateOutlet="subtitle"></ng-container
+        ></ng-template>
+      }
+      @if (content) {
+        <ng-template pTemplate="content">
+          <ng-container *ngTemplateOutlet="content"></ng-container>
+        </ng-template>
+      }
+      @if (footer) {
+        <ng-template pTemplate="footer"
+          ><ng-container *ngTemplateOutlet="footer"></ng-container
+        ></ng-template>
+      }
     </p-card>
   `,
   styleUrl: './card.component.scss',

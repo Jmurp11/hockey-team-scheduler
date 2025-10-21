@@ -119,3 +119,83 @@ export class NearbyTeamsQueryDto {
   @ApiProperty({ description: 'Maximum distance in miles', example: 50 })
   p_max_distance: number;
 }
+
+export class Game {
+  @ApiProperty({
+    description: 'Game ID',
+    example: '12345',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'Game created at timestamp with timezone',
+    example: '2024-01-15T19:00:00-05:00',
+  })
+  created_at: string;
+
+  @ApiProperty({
+    description: 'Game date',
+    example: '2024-01-15',
+  })
+  date: Date;
+
+  @ApiProperty({
+    description: 'Game time with timezone',
+    example: '19:00:00-05:00',
+  })
+  time: string;
+
+  @ApiProperty({
+    description: 'Type of game',
+    example: 'Regular Season',
+  })
+  gameType: string;
+
+  @ApiProperty({
+    description: 'City where the game is played',
+    example: 'Minneapolis',
+  })
+  city: string;
+
+  @ApiProperty({
+    description: 'State where the game is played',
+    example: 'MN',
+  })
+  state: string;
+
+  @ApiProperty({
+    description: 'Name of the rink',
+    example: 'Mariucci Arena',
+  })
+  rink: string;
+
+  @ApiProperty({
+    description: 'Opponent team ID',
+    example: 1234,
+  })
+  opponent: number;
+
+  @ApiProperty({
+    description: 'User ID who created the game',
+    example: 5678,
+  })
+  user: number;
+
+  @ApiProperty({
+    description: 'Whether this is a home game',
+    example: true,
+  })
+  isHome: boolean;
+}
+
+export type CreateGameDto = Omit<Game, 'id' | 'created_at'>;
+
+export class GamesQueryDto {
+  @ApiProperty({
+    name: 'user',
+    required: false,
+    description: 'User ID to filter games by',
+    example: 5678,
+  })
+  user: number;
+}

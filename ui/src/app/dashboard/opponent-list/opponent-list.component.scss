@@ -9,6 +9,10 @@
   overflow-x: hidden;
   padding: 1rem 1rem 5rem 1rem; // Add extra bottom padding
   box-sizing: border-box;
+
+  @media (max-width: 750px) {
+    max-width: 350px;
+  }
 }
 
 app-card {
@@ -21,6 +25,10 @@ app-card {
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;
+
+  @media (max-width: 750px) {
+    max-width: 325px;
+  }
 
   ::ng-deep .p-button {
     width: 100%;
