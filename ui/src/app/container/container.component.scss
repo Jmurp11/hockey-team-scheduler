@@ -7,14 +7,14 @@
   background-color: var(--color-background-primary);
   height: 100vh;
   overflow: hidden;
-  contain: layout style; // Add layout and style containment
+  contain: layout style;
 
   &__page-content {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: 100%; // Force explicit height
-    contain: layout; // Add containment here too
+    height: 100%;
+    contain: layout;
 
     .title {
       &__left {
@@ -36,10 +36,59 @@
     &__router-outlet {
       flex: 1;
       min-height: 0;
-      height: 100%; // Force explicit height
+      height: 100%;
       overflow: hidden;
-      contain: layout style size; // Full containment
-      position: relative; // Create new stacking context
+      contain: layout style size;
+      position: relative;
+
+      @media (max-width: 1024px) {
+        overflow: auto;
+        height: auto;
+        min-height: calc(100vh - 60px);
+        flex: 1;
+      }
     }
+
+    @media (max-width: 1024px) {
+      width: 100vw;
+      margin-left: 0;
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+    }
+  }
+}
+
+.sidebar-wrapper {
+  position: relative;
+
+  @media (max-width: 1024px) {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
+
+    &.sidebar-open {
+      left: 0;
+    }
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.container__page-content {
+  @media (max-width: 1024px) {
+    margin-left: 0;
   }
 }

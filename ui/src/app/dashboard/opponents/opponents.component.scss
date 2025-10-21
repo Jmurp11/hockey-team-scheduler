@@ -3,9 +3,14 @@
 :host {
   height: 90%;
   width: 30%;
-
   ::ng-deep .p-iftalabel {
     font-size: 14px;
+  }
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    height: auto;
+    margin-bottom: 2rem;
   }
 }
 
@@ -13,6 +18,13 @@ form {
   max-width: 500px;
   width: 100%;
   height: fit-content;
+
+  @media (max-width: 1024px) {
+    padding: 1rem 1rem;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 2rem;
+  }
 }
 
 .card {

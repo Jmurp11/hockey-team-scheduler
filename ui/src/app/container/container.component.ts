@@ -1,7 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
-// import { FooterComponent } from '../footer/footer.component';
 import { BlockUIModule } from 'primeng/blockui';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RippleModule } from 'primeng/ripple';
@@ -12,6 +18,8 @@ import { HeaderComponent } from '../shared/components/header/header.component';
 import { LoadingService } from '../shared/services/loading.service';
 import { NavigationService } from '../shared/services/navigation.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { SidebarService } from '../sidebar/sidebar.service';
+
 @Component({
   selector: 'app-container',
   standalone: true,
@@ -28,13 +36,21 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   ],
   providers: [LoadingService, NavigationService],
   template: ` <div class="container">
-      <div>
+      <div
+        class="sidebar-wrapper"
+        [class.sidebar-open]="sidebarService.isOpen()"
+      >
         <app-sidebar></app-sidebar>
       </div>
 
+      @if (sidebarService.isOpen() && isMobile) {
+      <div class="sidebar-overlay" (click)="sidebarService.close()"></div>
+      }
+
       <div class="container__page-content">
         <app-header
-          [title]="authService.currentUser()?.team_name || 'RinkLink.ai'"
+          [showHamburger]="isMobile"
+          (hamburgerClick)="sidebarService.toggle()"
         >
           <ng-template #start>
             <a
@@ -56,9 +72,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
             </div>
             <div class="header__name">
               {{
-                (authService.currentUser()?.displayName ||
+                authService.currentUser()?.displayName ||
                   authService.session()?.user?.email ||
-                  'User') | uppercase
+                  'User' | uppercase
               }}
             </div>
           </ng-template>
@@ -67,7 +83,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
           <router-outlet></router-outlet>
         </div>
       </div>
-      <app-footer />
+      @if (!isMobile) {
+      <app-footer></app-footer>
+      }
     </div>
 
     <p-blockUI [blocked]="loadingService.isLoading()">
@@ -82,8 +100,33 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   styleUrl: './container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContainerComponent {
+export class ContainerComponent implements OnInit {
   loadingService = inject(LoadingService);
   authService = inject(AuthService);
   navigation = inject(NavigationService);
+  sidebarService = inject(SidebarService);
+
+  isMobile = false;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  ngOnInit() {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    const previousIsMobile = this.isMobile;
+    this.isMobile = window.innerWidth <= 1024; // Tablets and mobile
+
+    if (previousIsMobile !== this.isMobile) {
+      if (this.isMobile) {
+        this.sidebarService.close();
+      } else {
+        this.sidebarService.open();
+      }
+    }
+  }
 }
