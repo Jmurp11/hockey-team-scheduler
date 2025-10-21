@@ -32,7 +32,6 @@
 .opponent-list {
   @include flex(center, center, column);
   flex: 1;
-  background-color: blue;
   min-height: 200px;
 }
 

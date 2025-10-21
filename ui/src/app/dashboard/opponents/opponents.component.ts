@@ -67,7 +67,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               </div>
             </div>
             @if (opponentsForm.get('changeAssociation')?.value) {
-            <div>
+            <div class="select">
               <app-auto-complete
                 [control]="getFormControl(opponentsForm, 'association')"
                 label="Association"
@@ -75,7 +75,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               />
             </div>
             }
-            <div>
+            <div class="select">
               <app-select
                 [control]="getFormControl(opponentsForm, 'age')"
                 [options]="ageOptions"
