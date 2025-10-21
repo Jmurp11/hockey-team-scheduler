@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
+  EventEmitter,
   inject,
   Input,
   OnInit,
+  Output,
   TemplateRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -30,6 +32,14 @@ import { NavigationService } from '../../services/navigation.service';
   providers: [NavigationService],
   template: ` <p-menubar [model]="items">
     <ng-template pTemplate="start">
+      @if (showHamburger) {
+        <button 
+          class="hamburger-menu"
+          (click)="onHamburgerClick()"
+          aria-label="Toggle menu">
+          <i class="pi pi-bars"></i>
+        </button>
+      }
       <ng-container *ngTemplateOutlet="start"></ng-container>
     </ng-template>
     <ng-template #item let-item let-root="root">
@@ -55,8 +65,18 @@ export class HeaderComponent {
   @Input()
   class: string | undefined;
 
+  @Input() 
+  showHamburger: boolean = false;
+
+  @Output() 
+  hamburgerClick = new EventEmitter<void>();
+
   @ContentChild('start') start: TemplateRef<any> | undefined;
   @ContentChild('end') end: TemplateRef<any> | undefined;
 
   navigation = inject(NavigationService);
+
+  onHamburgerClick() {
+    this.hamburgerClick.emit();
+  }
 }

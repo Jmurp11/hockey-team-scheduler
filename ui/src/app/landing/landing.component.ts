@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    inject,
-    OnInit,
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  inject,
+  OnInit,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -24,7 +25,7 @@ import { GetStartedComponent } from './get-started.component.ts/get-started.comp
   ],
   providers: [NavigationService],
   template: `<div class="container">
-    <app-header [items]="items" [title]="appTitle">
+    <app-header [items]="items">
       <ng-template #start>
         <a pRipple class="title" (click)="navigation.navigateToLink('/')">
           <span class="title__left">{{ titleSplit[0] }}</span>
@@ -79,8 +80,6 @@ export class LandingComponent implements OnInit {
   ];
 
   titleSplit: string[] = [];
-  
-  
 
   ngOnInit(): void {
     this.titleSplit = this.splitTitle(this.appTitle);

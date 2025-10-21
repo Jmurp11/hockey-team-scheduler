@@ -13,11 +13,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: [
-        'http://localhost:4200', // Development Angular dev server
-        'http://localhost', // Docker nginx container
-        'http://localhost:80', // Docker nginx container explicit port
-        'http://127.0.0.1', // Alternative localhost
-        'http://127.0.0.1:80', // Alternative localhost with port
+        'http://localhost:4200',
+        'http://localhost',
+        'http://localhost:80',
+        'http://127.0.0.1',
+        'http://127.0.0.1:80',
      ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization'],

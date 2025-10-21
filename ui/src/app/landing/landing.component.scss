@@ -31,6 +31,10 @@
   overflow: auto;
   font-family: "Space Grotesk", "Noto Sans", sans-serif;
   padding-bottom: 5vh;
+  
+  @media (max-width: 1024px) {
+    padding-bottom: 0vh;
+  }
 }
 
 .right-header {
