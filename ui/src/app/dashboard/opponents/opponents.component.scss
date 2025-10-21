@@ -8,9 +8,15 @@
   }
 
   @media (max-width: 1024px) {
+    max-width: 888.25px;
     width: 100%;
     height: auto;
-    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 688px;
+    width: 100%;
+    height: auto;
   }
 }
 
@@ -23,7 +29,6 @@ form {
     padding: 1rem 1rem;
     max-width: 100%;
     height: auto;
-    margin-bottom: 2rem;
   }
 }
 
@@ -40,7 +45,6 @@ form {
     @include flex(center, flex-start, column);
     flex: 1;
     gap: 1rem;
-    max-width: 300px;
   }
 }
 
@@ -63,10 +67,4 @@ form {
   width: 100%;
   margin-top: 1rem;
   gap: 0.5rem;
-}
-
-.select {
-  ::ng-deep .form-field {
-    min-width: 259px;
-  }
 }
