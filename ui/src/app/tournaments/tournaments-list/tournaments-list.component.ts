@@ -41,7 +41,7 @@ import { TournamentCardHeaderComponent } from './tournament-card-header/tourname
 })
 export class TournamentsListComponent {
   @Input()
-  tournaments: any[];
+  tournaments: any[] = [];
 
   registerForTournament(tournament: any) {
     console.log('Register for tournament', tournament);

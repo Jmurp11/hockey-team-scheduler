@@ -2,7 +2,7 @@
 
 .tournament-card-header {
   @include flex(space-between, flex-start, column);
-  gap: .5rem;
+  gap: 0.5rem;
   padding: 1rem;
   border-bottom: 1px solid var(--p-surface-border, #e0e0e0);
   width: 100%;
@@ -28,6 +28,10 @@
     font-weight: 600;
     color: var(--primary-500);
     line-height: 1.3;
+  }
+
+  .subheader {
+    @include flex(flex-start, space-between, row);
   }
 
   .location {

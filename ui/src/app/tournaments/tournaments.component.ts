@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Observable, switchMap } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -19,13 +24,16 @@ import { TournamentsListComponent } from './tournaments-list/tournaments-list.co
   styleUrls: ['./tournaments.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TournamentsComponent {
+export class TournamentsComponent implements OnInit {
   authService = inject(AuthService);
   openAiService = inject(OpenAiService);
 
   tournaments$: Observable<any> = new Observable<any>();
   user$: Observable<any> = toObservable(this.authService.currentUser);
 
+  ngOnInit(): void {
+    this.tournaments$.subscribe((c) => console.log(c));
+  }
   onFilterChange(filter: any) {
     const input = {
       age: filter.age.value,

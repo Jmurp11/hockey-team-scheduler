@@ -4,4 +4,23 @@
   @include flex(space-between, flex-start, row);
   height: 97.5%;
   width: 100%;
+
+  @media (max-width: 1024px) {
+    padding: 1rem;
+    width: 100%;
+    height: auto;
+    min-height: calc(100vh - 120px);
+    @include flex(flex-start, center, column);
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    width: 100%;
+    min-height: calc(100vh - 120px);
+    @include flex(flex-start, center, column);
+  }
 }

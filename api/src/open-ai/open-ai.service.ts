@@ -27,6 +27,9 @@ export class OpenAiService {
         name: z.string(),
         email: z.string(),
         phone: z.string(),
+        sourceUrl: z
+          .string()
+          .describe('Source URL for the contact information'),
       }),
     ),
   });
@@ -85,6 +88,7 @@ export class OpenAiService {
         name: manager.name.replace(/ cite.*/g, '').trim(),
         email: manager.email.replace(/ cite.*/g, '').trim(),
         phone: manager.phone.replace(/ cite.*/g, '').trim(),
+        sourceUrl: manager.sourceUrl.replace(/ cite.*/g, '').trim(),
         team: props.team,
       }),
     );
@@ -104,7 +108,20 @@ export class OpenAiService {
     return response;
   }
 
+  // TODO: this should be its own endpoint.  I need to prepopulate all of the tournaments in a separate process.
   async findTournaments(props: TournamentProps) {
+    const existingTournaments = await supabase
+      .from('tournaments')
+      .select('*')
+      .match(props);
+
+    if (existingTournaments.error) {
+      console.error(
+        'Error checking existing tournaments:',
+        existingTournaments.error,
+      );
+      throw new Error('Could not check existing tournaments');
+    }
     const response = await this.client.responses.create({
       model: 'gpt-5-mini',
       tools: [{ type: 'web_search' }],
@@ -114,8 +131,27 @@ export class OpenAiService {
       },
     });
 
-    console.log({ output: JSON.stringify(response.output_text) });
-    return response.output_text;
+    const output = JSON.parse(response.output_text).tournaments;
+
+    const { error } = await supabase.from('tournaments').insert(
+      output.map((tournament: any) => ({
+        name: tournament.name,
+        location: tournament.location,
+        start_date: tournament.startDate,
+        end_date: tournament.endDate,
+        registration_link: tournament.registrationLink,
+        age: props.age,
+        level: props.level,
+      })),
+    );
+
+    if (output.length === 0) {
+      console.warn('No tournaments found');
+      return existingTournaments.data;
+    }
+
+    console.log({ output });
+    return [...output, ...existingTournaments.data];
   }
 
   generateSchedulerPrompt(props: SchedulerProps): string {
@@ -162,36 +198,45 @@ Follow these strict rules:
    - https://www.sportsengine.com
    - https://www.tourneycentral.com
    - https://200x85.com
+   - https://silverstick.org
    - league or association official websites
 2. Ignore news, past tournaments, or unrelated events.
 3. Include only tournaments that are open for registration or scheduled for the current or upcoming season.
 4. Each tournament must include:
    - "name": official tournament name
-   - "location": city, state/province, or rink/arena
+   - "city": city
+   - "state": state/province
+   - "country": country
+   - "rink": specific rink or venue name, or null if unknown
    - "startDate": start date if available (ISO format preferred)
    - "endDate": end date if available (ISO format preferred)
    - "level": array of levels offered (e.g. ["AAA", "AA"])
    - "age": array of eligible age groups (e.g. ["12U", "14U"])
-   - "cost": numeric or null (in USD)
    - "registrationURL": direct link to registration or tournament info page
+   - "latitude": latitude coordinate of the tournament location, or null if unknown
+   - "longitude": longitude coordinate of the tournament location, or null if unknown
 
 Output must be **strictly valid JSON** in the following format:
 
 [
   {
     "name": "string",
-    "location": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "rink": "string | null",
     "startDate": "YYYY-MM-DD",
     "endDate": "YYYY-MM-DD",
     "level": ["AAA", "AA", "A"],
     "age": ["10U", "12U"],
-    "cost": number | null,
-    "registrationURL": "https://..."
+    "registrationURL": "https://...",
+    "latitude": "number | null",
+    "longitude": "number | null"
   }
 ]
 
 If no tournaments are found, return an empty array: []
 Do not include explanations or commentary.
-`
+`;
   }
 }

@@ -104,6 +104,11 @@ body {
   --p-progressspinner-color-two: var(--secondary-600) !important;
   --p-progressspinner-color-three: var(--secondary-500) !important;
   --p-progressspinner-color-four: var(--secondary-600) !important;
+
+  --p-paginator-nav-button-selected-color: var(--secondary-600) !important;
+  --p-paginator-nav-button-selected-background: var(--secondary-100) !important;
+  --p-datatable-header-cell-selected-background: var(--secondary-100) !important;
+  --p-datatable-header-cell-selected-color: var(--secondary-600) !important;
 }
 
 .container {

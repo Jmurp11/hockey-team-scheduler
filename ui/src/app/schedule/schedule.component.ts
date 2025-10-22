@@ -17,30 +17,28 @@ import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.co
   ],
   template: ` <div class="container">
     <app-schedule-actions class="actions-container"></app-schedule-actions>
-    <div class="table-container">
-      <app-table
-        [tableOpts]="tableOpts"
-        [tableData]="tableData"
-        [exportColumns]="exportColumns"
+    <app-table
+      [tableOpts]="tableOpts"
+      [tableData]="tableData"
+      [exportColumns]="exportColumns"
+    >
+      <ng-template #header></ng-template>
+      <ng-template #body let-rowData>
+        <tr>
+          @for (col of tableOpts.columns; track col.field) {
+          <td>
+            {{ rowData[col.field] }}
+          </td>
+          }
+        </tr></ng-template
       >
-        <ng-template #header></ng-template>
-        <ng-template #body let-rowData>
-          <tr>
-            @for (col of tableOpts.columns; track col.field) {
-            <td>
-              {{ rowData[col.field] }}
-            </td>
-            }
-          </tr></ng-template
-        >
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="5">No data found.</td>
-          </tr>
-        </ng-template>
-        ></app-table
-      >
-    </div>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">No data found.</td>
+        </tr>
+      </ng-template>
+      ></app-table
+    >
   </div>`,
   styles: [
     `

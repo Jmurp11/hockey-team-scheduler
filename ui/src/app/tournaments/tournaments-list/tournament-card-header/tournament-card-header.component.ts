@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { formatLocation } from '../../../shared/utilities/location.utility';
 import { OpponentStatItemComponent } from '../../../dashboard/opponent-list/opponent-stat-item/opponent-stat-item.component';
+import { formatLocation } from '../../../shared/utilities/location.utility';
 
 @Component({
   selector: 'app-tournament-card-header',
@@ -12,15 +12,21 @@ import { OpponentStatItemComponent } from '../../../dashboard/opponent-list/oppo
       <div class="header-main">
         <div class="tournament-info">
           <h3 class="tournament-name">{{ tournament.name }}</h3>
-          <p class="location">
-            {{
-              formatLocation(
-                tournament.city,
-                tournament.state,
-                tournament.country
-              )
-            }}
-          </p>
+          <div class="subheader">
+            <span>
+              <p class="location">
+                {{
+                  formatLocation(
+                    tournament.city,
+                    tournament.state,
+                    tournament.country
+                  )
+                }}
+              </p> </span
+            ><span class="location"
+              >{{ tournament.startDate }} - {{ tournament.endDate }}</span
+            >
+          </div>
         </div>
         <div class="stat-info">
           <app-opponent-stat-item
