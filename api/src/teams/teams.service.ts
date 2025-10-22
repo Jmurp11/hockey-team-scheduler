@@ -85,7 +85,6 @@ export class TeamsService {
       ...params,
     });
 
-    console.log({ data });
     if (error) {
       console.error('Error fetching nearby teams:', error);
     }
