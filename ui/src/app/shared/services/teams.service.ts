@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
 import { NearbyTeamsParams } from '../types/nearby-teams.type';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class TeamsService {

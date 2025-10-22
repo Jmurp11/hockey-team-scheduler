@@ -62,7 +62,9 @@ body {
   --p-button-outlined-primary-hover-background: var(--secondary-50) !important;
   --p-button-outlined-primary-color: var(--secondary-500) !important;
   --p-button-outlined-primary-border-color: var(--secondary-500) !important;
-  --p-button-outlined-primary-active-background: var(--secondary-100) !important;
+  --p-button-outlined-primary-active-background: var(
+    --secondary-100
+  ) !important;
 
   --p-menubar-color: var(--primary-500) !important;
   --p-menubar-background: var(--tertiary-50) !important;
@@ -97,6 +99,11 @@ body {
   --p-inputtext-hover-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-ring-shadow: var(--secondary-200) !important;
+
+  --p-progressspinner-color-one: var(--secondary-500) !important;
+  --p-progressspinner-color-two: var(--secondary-600) !important;
+  --p-progressspinner-color-three: var(--secondary-500) !important;
+  --p-progressspinner-color-four: var(--secondary-600) !important;
 }
 
 .container {

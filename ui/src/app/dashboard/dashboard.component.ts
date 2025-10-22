@@ -4,6 +4,7 @@ import {
   Component,
   inject,
   OnInit,
+  signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
@@ -17,7 +18,8 @@ import {
   Observable,
   shareReplay,
   startWith,
-  switchMap
+  switchMap,
+  tap,
 } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
@@ -26,6 +28,7 @@ import { AssociationService } from '../shared/services/associations.service';
 import { TeamsService } from '../shared/services/teams.service';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsComponent } from './opponents/opponents.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -36,6 +39,7 @@ import { OpponentsComponent } from './opponents/opponents.component';
     OpponentListComponent,
     ButtonModule,
     SortHeaderComponent,
+    ProgressSpinnerModule,
   ],
   template: ` <div class="container">
     <app-opponents
@@ -44,7 +48,11 @@ import { OpponentsComponent } from './opponents/opponents.component';
       [userDefault$]="user$"
     />
 
-    @if (nearbyTeams$ | async; as nearbyTeams) {
+    @if (isLoading()) {
+    <div class="loading-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+    } @else { @if (nearbyTeams$ | async; as nearbyTeams) {
     <div class="list-container">
       <app-sort-header
         class="sort-header"
@@ -56,7 +64,7 @@ import { OpponentsComponent } from './opponents/opponents.component';
         <app-opponent-list [opponents]="nearbyTeams" />
       </div>
     </div>
-    }
+    } }
   </div>`,
   styleUrls: ['./dashboard.component.scss'],
   providers: [AssociationService, TeamsService],
@@ -67,6 +75,8 @@ export class DashboardComponent implements OnInit {
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
+
+  isLoading = signal<boolean>(false);
 
   private searchParams$ = new BehaviorSubject<any>(null);
   private currentSort$ = new BehaviorSubject<{
@@ -95,6 +105,7 @@ export class DashboardComponent implements OnInit {
     const teams$ = this.searchParams$.pipe(
       filter((params) => params !== null),
       switchMap((params) => this.getNearbyTeams(params)),
+      tap(() => this.isLoading.set(false)),
       shareReplay(1)
     );
 
@@ -105,6 +116,7 @@ export class DashboardComponent implements OnInit {
   }
 
   onSearchParamsChanged(params: any) {
+    this.isLoading.set(true);
     this.searchParams$.next(params);
   }
 
