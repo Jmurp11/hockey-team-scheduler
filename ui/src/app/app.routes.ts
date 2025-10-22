@@ -54,10 +54,10 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
-      // {
-      //   path: 'tournaments',
-      //   loadComponent: () => import('./tournaments/tournaments.component').then(m => m.TournamentsComponent),
-      // },
+      {
+        path: 'tournaments',
+        loadComponent: () => import('./tournaments/tournaments.component').then(m => m.TournamentsComponent),
+      },
       {
         path: 'schedule',
         loadComponent: () => import('./schedule/schedule.component').then(m => m.ScheduleComponent),
