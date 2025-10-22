@@ -7,7 +7,11 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   imports: [CommonModule],
   template: `
     <div class="card-content">
-      <p class="description">{{ tournament.description }}</p>
+      <p class="description">{{ generateDescription() }}</p>
+      <div>
+        <span>Age: {{ tournament.age }}</span>
+        <span>Level: {{ tournament.level }}</span>
+      </div>
     </div>
   `,
   styleUrls: [`./tournament-card-content.component.scss`],
@@ -16,4 +20,8 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 export class TournamentCardContentComponent {
   @Input()
   tournament: any;
+
+  generateDescription() {
+    return `${this.tournament.name} is taking place from ${this.tournament.startDate} to ${this.tournament.endDate} in ${this.tournament.location}.`;
+  }
 }
