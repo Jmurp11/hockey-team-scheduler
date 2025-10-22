@@ -36,7 +36,8 @@ export class OpenAiService {
       z.object({
         name: z.string(),
         location: z.string(),
-        date: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
         registrationLink: z.string().describe('URL to register'), // ← remove .url() or format:'uri'
       }),
     ),
@@ -107,20 +108,14 @@ export class OpenAiService {
     const response = await this.client.responses.create({
       model: 'gpt-5-mini',
       tools: [{ type: 'web_search' }],
-      input: `Use the web_search tool to find up-to-date youth hockey tournaments
-within ${props.maxDistance} miles of the ${props.userAssociation} for
-the ${props.age} age group and ${props.level} level.
-Return real tournaments with location, date, and registration links.`,
+      input: this.generateTournamentPrompt(props),
       text: {
         format: zodTextFormat(this.tournamentResponse, 'tournaments'),
       },
     });
-    console.log({
-      request: `Return all youth hockey tournaments within ${props.maxDistance} miles of the ${props.userAssociation} for the ${props.age} age group and ${props.level} level.`,
-    });
-    console.log({ output: JSON.stringify(response, null, 2) });
-    console.log({ response });
-    return null;
+
+    console.log({ output: JSON.stringify(response.output_text) });
+    return response.output_text;
   }
 
   generateSchedulerPrompt(props: SchedulerProps): string {
@@ -146,5 +141,57 @@ Return real tournaments with location, date, and registration links.`,
 
   If nothing is found, use null values.
 `;
+  }
+
+  // TODO: userAssociation needs to be changed to location
+  generateTournamentPrompt(props: TournamentProps): string {
+    return `
+You are an automated web scraping and data extraction agent.
+
+Your task: Find **real, upcoming youth hockey tournaments** that meet these parameters:
+- Location: within ${props.maxDistance} miles of the ${props.userAssociation}.
+- Age group: ${props.age}.
+- Skill level: ${props.level} (AAA, AA, A, or similar).
+
+Follow these strict rules:
+1. Use web_search to find tournaments from **official or authoritative sources only**, including:
+   - https://www.hockeyfinder.com/tournaments
+   - https://www.nickelcityhockey.com
+   - https://www.defenderhockeytournaments.com
+   - https://www.myhockeyrankings.com
+   - https://www.sportsengine.com
+   - https://www.tourneycentral.com
+   - https://200x85.com
+   - league or association official websites
+2. Ignore news, past tournaments, or unrelated events.
+3. Include only tournaments that are open for registration or scheduled for the current or upcoming season.
+4. Each tournament must include:
+   - "name": official tournament name
+   - "location": city, state/province, or rink/arena
+   - "startDate": start date if available (ISO format preferred)
+   - "endDate": end date if available (ISO format preferred)
+   - "level": array of levels offered (e.g. ["AAA", "AA"])
+   - "age": array of eligible age groups (e.g. ["12U", "14U"])
+   - "cost": numeric or null (in USD)
+   - "registrationURL": direct link to registration or tournament info page
+
+Output must be **strictly valid JSON** in the following format:
+
+[
+  {
+    "name": "string",
+    "location": "string",
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD",
+    "level": ["AAA", "AA", "A"],
+    "age": ["10U", "12U"],
+    "cost": number | null,
+    "registrationURL": "https://..."
+  }
+]
+
+If no tournaments are found, return an empty array: []
+Do not include explanations or commentary.
+`
   }
 }
