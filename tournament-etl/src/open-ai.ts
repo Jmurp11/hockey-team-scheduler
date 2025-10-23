@@ -1,34 +1,19 @@
-
-import { zodTextFormat } from 'openai/helpers/zod';
-import { supabase } from "./supabase";
+import { zodTextFormat } from "openai/helpers/zod";
 import { TournamentProps } from "./types";
 
 export async function findTournaments(props: TournamentProps) {
-    const existingTournaments = await supabase
-      .from('tournaments')
-      .select('*')
-      .match(props);
-
-    if (existingTournaments.error) {
-      console.error(
-        'Error checking existing tournaments:',
-        existingTournaments.error,
-      );
-      throw new Error('Could not check existing tournaments');
-    }
+  try {
     const response = await this.client.responses.create({
-      model: 'gpt-5-mini',
-      tools: [{ type: 'web_search' }],
+      model: "gpt-5-mini",
+      tools: [{ type: "web_search" }],
       input: this.generateTournamentPrompt(props),
       text: {
-        format: zodTextFormat(this.tournamentResponse, 'tournaments'),
+        format: zodTextFormat(this.tournamentResponse, "tournaments"),
       },
     });
 
-    const output = JSON.parse(response.output_text).tournaments;
-
-    const { error } = await supabase.from('tournaments').insert(
-      output.map((tournament: any) => ({
+    const tournaments = JSON.parse(response.output_text).tournaments.map(
+      (tournament: any) => ({
         name: tournament.name,
         location: tournament.location,
         start_date: tournament.startDate,
@@ -36,17 +21,16 @@ export async function findTournaments(props: TournamentProps) {
         registration_link: tournament.registrationLink,
         age: props.age,
         level: props.level,
-      })),
+        latitude: tournament.latitude,
+        longitude: tournament.longitude,
+      })
     );
 
-    if (output.length === 0) {
-      console.warn('No tournaments found');
-      return existingTournaments.data;
-    }
-
-    console.log({ output });
-    return [...output, ...existingTournaments.data];
+    return tournaments;
+  } catch (error) {
+    throw new Error("Could not find tournaments: " + (error as Error).message);
   }
+}
 
 export function generateTournamentPrompt(props: TournamentProps): string {
   return `
