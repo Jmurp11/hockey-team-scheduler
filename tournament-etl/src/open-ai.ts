@@ -24,7 +24,7 @@ export async function findTournaments(props: TournamentProps) {
   const client = new OpenAI();
   try {
     const response = await client.responses.create({
-      model: "gpt-5",
+      model: "gpt-5-mini",
       tools: [{ type: "web_search" }],
       input: generateTournamentPrompt(props),
       reasoning: { effort: "low" },
@@ -87,9 +87,7 @@ Follow these strict rules:
 3. **Data Extraction Requirements**
    For each valid tournament, extract or infer the following fields:
    - "name": Official tournament name (required).
-   - "city": City where the tournament is held (required).
-   - "state": State or province (required).
-   - "country": Country (required).
+   - "location": City, State, Country (required).
    - "rink": Rink or venue name (required if available, else null).
    - "startDate": Start date (ISO format, YYYY-MM-DD).
    - "endDate": End date (ISO format, YYYY-MM-DD).
@@ -122,9 +120,7 @@ Follow these strict rules:
 [
   {
     "name": "string",
-    "city": "string",
-    "state": "string",
-    "country": "string",
+    "location": "string",
     "rink": "string | null",
     "startDate": "YYYY-MM-DD",
     "endDate": "YYYY-MM-DD",
