@@ -21,7 +21,7 @@ jobs:
       # Don't cancel other matrix jobs if one fails
       fail-fast: false
       # Limit concurrent jobs to avoid database conflicts
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         include:
           # US Hockey Districts
