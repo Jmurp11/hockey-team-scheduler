@@ -10,7 +10,13 @@ const tournamentResponse: ZodType = z.object({
       location: z.string(),
       startDate: z.string(),
       endDate: z.string(),
-      registrationLink: z.string().describe("URL to register"), // ← remove .url() or format:'uri'
+      registrationUrl: z.string().describe("URL to register"),
+      description: z.string(),
+      rink: z.string().nullable(),
+      age: z.array(z.string()).nullable(),
+      level: z.array(z.string()).nullable(),
+      latitude: z.number().nullable(),
+      longitude: z.number().nullable(),
     })
   ),
 });
@@ -18,9 +24,10 @@ export async function findTournaments(props: TournamentProps) {
   const client = new OpenAI();
   try {
     const response = await client.responses.create({
-      model: "gpt-5-mini",
+      model: "gpt-5",
       tools: [{ type: "web_search" }],
       input: generateTournamentPrompt(props),
+      reasoning: { effort: "low" },
       text: {
         format: zodTextFormat(tournamentResponse, "tournaments"),
       },
@@ -32,7 +39,9 @@ export async function findTournaments(props: TournamentProps) {
         location: tournament.location,
         startDate: tournament.startDate,
         endDate: tournament.endDate,
-        registration_link: tournament.registrationLink,
+        registrationUrl: tournament.registrationUrl,
+        description: tournament.description,
+        rink: tournament.rink,
         age: tournament.age,
         level: tournament.level,
         latitude: tournament.latitude,
@@ -51,7 +60,7 @@ export function generateTournamentPrompt(props: TournamentProps): string {
 You are an automated web search and data extraction agent that acts like a deterministic web scraper.
 
 Your goal: Find **real, upcoming youth hockey tournaments** that match the following parameters:
-- Within the "${props.location}" Youth Hockey District.
+- Within the ${props.locationType} of ${props.location}.
 
 Follow these strict rules:
 
@@ -85,6 +94,7 @@ Follow these strict rules:
    - "startDate": Start date (ISO format, YYYY-MM-DD).
    - "endDate": End date (ISO format, YYYY-MM-DD).
    - "registrationUrl": Direct link to the registration or info page.
+   - "description": Tournament description
 
 4. **Field Inference Rules (Required Completion)**
    Even if not explicitly listed, you must infer the following fields using reasonable context clues or common knowledge:
@@ -121,6 +131,7 @@ Follow these strict rules:
     "level": ["AAA", "AA", "A"],
     "age": ["10U", "12U"],
     "registrationUrl": "https://...",
+    "description": "string",
     "latitude": 42.1234,
     "longitude": -75.9876
   }

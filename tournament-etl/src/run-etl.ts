@@ -13,6 +13,12 @@ const argv = yargs(hideBin(process.argv))
     description: "Location to search for tournaments",
     demandOption: true,
   })
+  .option("locationType", {
+    alias: "lt",
+    type: "string",
+    description: "Type of location (e.g. state, province)",
+    demandOption: true,
+  })
   .help()
   .alias("help", "h")
   .parseSync();
@@ -25,6 +31,7 @@ async function main() {
 
     const props: TournamentProps = {
       location: argv.location,
+      locationType: argv.locationType,
     };
 
     await runETL(props);
