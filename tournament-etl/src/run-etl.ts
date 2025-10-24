@@ -21,11 +21,7 @@ async function main() {
   try {
     console.log("🏒 Starting Tournament ETL Process...");
     console.log(`Parameters:
-  Location: ${argv.location}
-  Max Distance: ${argv.maxDistance} miles
-  Age: ${argv.age}
-  Level: ${argv.level}
-`);
+  Location: ${argv.location}`);
 
     const props: TournamentProps = {
       location: argv.location,
