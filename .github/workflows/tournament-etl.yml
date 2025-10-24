@@ -22,30 +22,56 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - location: "Atlantic District"
-          - location: "Central District"
-          - location: "Mid-American District"
-          - location: "Massachusetts District"
-          - location: "Michigan District"
-          - location: "Minnesota District"
-          - location: "New England District"
-          - location: "New York District"
-          - location: "Pacific District"
-          - location: "Rocky Mountain District"
-          - location: "Southeastern District"
-          - location: "BC Hockey"
-          - location: "Hockey Alberta"
-          - location: "Saskatchewan Hockey Association"
-          - location: "Hockey Manitoba"
-          - location: "Hockey Northwestern Ontario"
-          - location: "Ontario Hockey Federation"
-          - location: "Hockey Eastern Ontario"
-          - location: "Hockey Quebec"
-          - location: "Hockey New Brunswick"
-          - location: "Hockey Nova Scotia"
-          - location: "Hockey Prince Edward Island"
-          - location: "Hockey Newfoundland and Labrador"
-          - location: "Hockey North"
+          # US Hockey Districts
+          - location: “New Jersey, Delaware, and Pennsylvania”
+            locationType: "states"
+          - location: “Illinois, Iowa, Kansas, Missouri, Nebraska, and Wisconsin”
+            locationType: "states"
+          - location: “Indiana, Kentucky, Ohio, Tennessee, and West Virginia”
+            locationType: "states"
+          - location: “Massachusetts”
+            locationType: "states"
+          - location: “Michigan”
+            locationType: "states"
+          - location: “Minnesota”
+            locationType: "states"
+          - location: “Connecticut, Maine, New Hampshire, Rhode Island, and Vermont”
+            locationType: "states"
+          - location: “New York”
+            locationType: "states"
+          - location: “Alaska, California, Hawaii, Nevada, Oregon, and Washington”
+            locationType: "states"
+          - location: “Arizona, Colorado, Idaho, New Mexico, Oklahoma, Texas, and Utah”
+            locationType: "states"
+          - location: “Alabama, Arkansas, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, and Virginia”
+            locationType: "states"
+          # Canadian Hockey Organizations
+          - location: “British Columbia and Yukon”
+            locationType: "provinces"
+          - location: “Alberta”
+            locationType: "provinces"
+          - location: “Saskatchewan”
+            locationType: "provinces"
+          - location: “Manitoba”
+            locationType: "provinces"
+          - location: “Northwestern Ontario”
+            locationType: "provinces"
+          - location: “Ontario (Southern and Central Ontario)”
+            locationType: "provinces"
+          - location: “Eastern Ontario”
+            locationType: "provinces"
+          - location: “Quebec”
+            locationType: "provinces"
+          - location: “New Brunswick”
+            locationType: "provinces"
+          - location: “Nova Scotia”
+            locationType: "provinces"
+          - location: “Prince Edward Island”
+            locationType: "provinces"
+          - location: “Newfoundland and Labrador”
+            locationType: "provinces"
+          - location: “Northwest Territories and Nunavut”
+            locationType: "territories"
 
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -71,7 +97,8 @@ jobs:
         working-directory: ./tournament-etl
         run: |
           npx tsx src/run-etl.ts \
-            --location "${{ github.event.inputs.location || matrix.location }}"
+            --location "${{ github.event.inputs.location || matrix.location }}" \
+            --locationType "${{ github.event.inputs.locationType || matrix.locationType }}"
         env:
           # Pass environment variables to the ETL process
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -82,6 +109,7 @@ jobs:
         run: |
           echo "✅ ETL completed for:"
           echo "  Location: ${{ github.event.inputs.location || matrix.location }}"
+          echo "  Location Type: ${{ github.event.inputs.locationType || matrix.locationType }}"
   summary:
     runs-on: ubuntu-latest
     needs: tournament-etl
