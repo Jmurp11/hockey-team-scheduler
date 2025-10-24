@@ -1,7 +1,19 @@
 import { zodTextFormat } from "openai/helpers/zod";
 import { TournamentProps } from "./types";
 import { OpenAI } from "openai/client";
+import { ZodType, z } from "zod/v3";
 
+const tournamentResponse: ZodType = z.object({
+  tournaments: z.array(
+    z.object({
+      name: z.string(),
+      location: z.string(),
+      startDate: z.string(),
+      endDate: z.string(),
+      registrationLink: z.string().describe("URL to register"), // ← remove .url() or format:'uri'
+    })
+  ),
+});
 export async function findTournaments(props: TournamentProps) {
   const client = new OpenAI();
   try {
@@ -10,7 +22,7 @@ export async function findTournaments(props: TournamentProps) {
       tools: [{ type: "web_search" }],
       input: generateTournamentPrompt(props),
       text: {
-        format: zodTextFormat(this.tournamentResponse, "tournaments"),
+        format: zodTextFormat(tournamentResponse, "tournaments"),
       },
     });
 
@@ -39,7 +51,7 @@ export function generateTournamentPrompt(props: TournamentProps): string {
 You are an automated web search and data extraction agent that acts like a deterministic web scraper.
 
 Your goal: Find **real, upcoming youth hockey tournaments** that match the following parameters:
-- Within ${props.location} Youth Hockey District".
+- Within the ${props.location} Youth Hockey District".
 
 Follow these strict rules:
 
