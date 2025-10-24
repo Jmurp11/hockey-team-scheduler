@@ -1,12 +1,14 @@
 import { zodTextFormat } from "openai/helpers/zod";
 import { TournamentProps } from "./types";
+import { OpenAI } from "openai/client";
 
 export async function findTournaments(props: TournamentProps) {
+  const client = new OpenAI();
   try {
-    const response = await this.client.responses.create({
+    const response = await client.responses.create({
       model: "gpt-5-mini",
       tools: [{ type: "web_search" }],
-      input: this.generateTournamentPrompt(props),
+      input: generateTournamentPrompt(props),
       text: {
         format: zodTextFormat(this.tournamentResponse, "tournaments"),
       },
