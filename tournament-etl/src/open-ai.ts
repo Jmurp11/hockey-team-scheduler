@@ -19,8 +19,8 @@ export async function findTournaments(props: TournamentProps) {
         start_date: tournament.startDate,
         end_date: tournament.endDate,
         registration_link: tournament.registrationLink,
-        age: props.age,
-        level: props.level,
+        age: tournament.age,
+        level: tournament.level,
         latitude: tournament.latitude,
         longitude: tournament.longitude,
       })
@@ -34,42 +34,58 @@ export async function findTournaments(props: TournamentProps) {
 
 export function generateTournamentPrompt(props: TournamentProps): string {
   return `
-You are an automated web scraping and data extraction agent.
+You are an automated web search and data extraction agent that acts like a deterministic web scraper.
 
-Your task: Find **real, upcoming youth hockey tournaments** that meet these parameters:
-- Location: within ${props.maxDistance} miles of ${props.location}.
-- Age group: ${props.age}.
-- Skill level: ${props.level} (AAA, AA, A, or similar).
+Your goal: Find **real, upcoming youth hockey tournaments** that match the following parameters:
+- Within ${props.location} Youth Hockey District".
 
 Follow these strict rules:
-1. Use web_search to find tournaments from **official or authoritative sources only**, including:
-   - https://www.hockeyfinder.com/tournaments
-   - https://www.nickelcityhockey.com
-   - https://www.defenderhockeytournaments.com
-   - https://www.myhockeyrankings.com
-   - https://www.sportsengine.com
-   - https://www.tourneycentral.com
-   - https://200x85.com
-   - https://silverstick.org
-   - league or association official websites
-2. Ignore news, past tournaments, or unrelated events.
-3. Include only tournaments that are open for registration or scheduled for the current or upcoming season.
-4. Each tournament must include:
-   - "name": official tournament name
-   - "city": city
-   - "state": state/province
-   - "country": country
-   - "rink": specific rink or venue name, or null if unknown
-   - "startDate": start date if available (ISO format preferred)
-   - "endDate": end date if available (ISO format preferred)
-   - "level": array of levels offered (e.g. ["AAA", "AA"])
-   - "age": array of eligible age groups (e.g. ["12U", "14U"])
-   - "registrationURL": direct link to registration or tournament info page
-   - "latitude": latitude coordinate of the tournament location, or null if unknown
-   - "longitude": longitude coordinate of the tournament location, or null if unknown
 
-Output must be **strictly valid JSON** in the following format:
+1. **Search Scope**
+   - Use web_search to locate tournament listings or registration pages from **official or authoritative sources only**, including:
+     - https://www.hockeyfinder.com/tournaments
+     - https://www.nickelcityhockey.com
+     - https://www.defenderhockeytournaments.com
+     - https://www.myhockeyrankings.com
+     - https://www.sportsengine.com
+     - https://www.tourneycentral.com
+     - https://www.200x85.com
+     - https://silverstick.org
+     - Official league or association websites.
+   - Prioritize pages that explicitly list **upcoming** or **currently open** tournaments.
 
+2. **Inclusion Criteria**
+   - Include only **verified tournaments** that are scheduled for the current or upcoming season.
+   - Ignore:
+     - Past or archived events.
+     - General news articles or announcements without registration details.
+     - Duplicates or repeated tournament names with the same dates.
+
+3. **Data Requirements**
+   - For each valid tournament, extract the following fields:
+     - "name": Official tournament name.
+     - "city": City where the tournament is held.
+     - "state": State or province.
+     - "country": Country.
+     - "rink": Rink or venue name (null if not provided).
+     - "startDate": Tournament start date (YYYY-MM-DD format).
+     - "endDate": Tournament end date (YYYY-MM-DD format).
+     - "level": Array of competitive levels offered (e.g. ["AAA", "AA"]).
+     - "age": Array of eligible age groups (e.g. ["12U", "14U"]).
+     - "registrationURL": Direct link to the official registration or event info page.
+
+4. **Post-Processing (Derived Fields)**
+   - After identifying the city, estimate:
+     - "latitude": Approximate latitude of the tournament city.
+     - "longitude": Approximate longitude of the tournament city.
+   - These values should be **derived** using known geographic data, not scraped from the page.
+   - Round to **4 decimal places** for consistency.
+   - If coordinates cannot be determined, use 'null'.
+
+5. **Output Format**
+   - Return results as valid JSON matching the following structure:
+
+***json
 [
   {
     "name": "string",
@@ -82,12 +98,9 @@ Output must be **strictly valid JSON** in the following format:
     "level": ["AAA", "AA", "A"],
     "age": ["10U", "12U"],
     "registrationURL": "https://...",
-    "latitude": "number | null",
-    "longitude": "number | null"
+    "latitude": 42.1234,
+    "longitude": -75.9876
   }
 ]
-
-If no tournaments are found, return an empty array: []
-Do not include explanations or commentary.
 `;
 }
