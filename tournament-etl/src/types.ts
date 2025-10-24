@@ -1,5 +1,6 @@
 export interface TournamentProps {
   location: string;
+  locationType?: string;
 }
 
 export interface Tournament {
