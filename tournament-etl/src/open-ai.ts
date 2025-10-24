@@ -30,8 +30,8 @@ export async function findTournaments(props: TournamentProps) {
       (tournament: any) => ({
         name: tournament.name,
         location: tournament.location,
-        start_date: tournament.startDate,
-        end_date: tournament.endDate,
+        startDate: tournament.startDate,
+        endDate: tournament.endDate,
         registration_link: tournament.registrationLink,
         age: tournament.age,
         level: tournament.level,
@@ -51,7 +51,7 @@ export function generateTournamentPrompt(props: TournamentProps): string {
 You are an automated web search and data extraction agent that acts like a deterministic web scraper.
 
 Your goal: Find **real, upcoming youth hockey tournaments** that match the following parameters:
-- Within the ${props.location} Youth Hockey District".
+- Within the "${props.location}" Youth Hockey District.
 
 Follow these strict rules:
 
@@ -72,32 +72,41 @@ Follow these strict rules:
    - Include only **verified tournaments** that are scheduled for the current or upcoming season.
    - Ignore:
      - Past or archived events.
-     - General news articles or announcements without registration details.
-     - Duplicates or repeated tournament names with the same dates.
+     - News articles or pages without registration or date info.
+     - Duplicate listings.
 
-3. **Data Requirements**
-   - For each valid tournament, extract the following fields:
-     - "name": Official tournament name.
-     - "city": City where the tournament is held.
-     - "state": State or province.
-     - "country": Country.
-     - "rink": Rink or venue name (null if not provided).
-     - "startDate": Tournament start date (YYYY-MM-DD format).
-     - "endDate": Tournament end date (YYYY-MM-DD format).
-     - "level": Array of competitive levels offered (e.g. ["AAA", "AA"]).
-     - "age": Array of eligible age groups (e.g. ["12U", "14U"]).
-     - "registrationURL": Direct link to the official registration or event info page.
+3. **Data Extraction Requirements**
+   For each valid tournament, extract or infer the following fields:
+   - "name": Official tournament name (required).
+   - "city": City where the tournament is held (required).
+   - "state": State or province (required).
+   - "country": Country (required).
+   - "rink": Rink or venue name (required if available, else null).
+   - "startDate": Start date (ISO format, YYYY-MM-DD).
+   - "endDate": End date (ISO format, YYYY-MM-DD).
+   - "registrationUrl": Direct link to the registration or info page.
 
-4. **Post-Processing (Derived Fields)**
-   - After identifying the city, estimate:
-     - "latitude": Approximate latitude of the tournament city.
-     - "longitude": Approximate longitude of the tournament city.
-   - These values should be **derived** using known geographic data, not scraped from the page.
-   - Round to **4 decimal places** for consistency.
-   - If coordinates cannot be determined, use 'null'.
+4. **Field Inference Rules (Required Completion)**
+   Even if not explicitly listed, you must infer the following fields using reasonable context clues or common knowledge:
+
+   - "level":  
+     Derive from tournament descriptions or names (e.g. “AAA”, “AA”, “A”, “Tier I”, “Select”).  
+     If not stated, default to null.
+
+   - "age":  
+     Infer age groups (e.g. “10U”, “12U”, “14U”, “16U”, “18U”) from titles, divisions, or categories.  
+     If missing, leave null.
+
+   - "latitude" and "longitude":  
+     Derive approximate coordinates for the tournament's **city, state, and country**.  
+     Use widely known public geolocation data (e.g. latitude/longitude of the city center).  
+     Round to 4 decimal places.  
+     If the city is unknown, set both to null.
+
+   All fields must be included in each JSON object. None may be omitted.
 
 5. **Output Format**
-   - Return results as valid JSON matching the following structure:
+   - Return only a valid JSON array structured exactly like this:
 
 ***json
 [
@@ -111,7 +120,7 @@ Follow these strict rules:
     "endDate": "YYYY-MM-DD",
     "level": ["AAA", "AA", "A"],
     "age": ["10U", "12U"],
-    "registrationURL": "https://...",
+    "registrationUrl": "https://...",
     "latitude": 42.1234,
     "longitude": -75.9876
   }
