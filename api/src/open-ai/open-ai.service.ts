@@ -137,8 +137,8 @@ export class OpenAiService {
       output.map((tournament: any) => ({
         name: tournament.name,
         location: tournament.location,
-        start_date: tournament.startDate,
-        end_date: tournament.endDate,
+        startDate: tournament.startDate,
+        endDate: tournament.endDate,
         registration_link: tournament.registrationLink,
         age: props.age,
         level: props.level,

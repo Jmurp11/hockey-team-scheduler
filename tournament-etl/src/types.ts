@@ -12,7 +12,7 @@ export interface Tournament {
   endDate: string;
   level: string[];
   age: string[];
-  registrationURL: string;
+  registrationUrl: string;
   latitude: number;
   longitude: number;
 }

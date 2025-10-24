@@ -14,8 +14,8 @@ export function getTournaments(tournaments: Tournament[]) {
       .from("tournaments")
       .select("*")
       .in(
-        "registrationURL",
-        tournaments.map((t) => t.registrationURL)
+        "registrationUrl",
+        tournaments.map((t) => t.registrationUrl)
       );
   } catch (error) {
     throw new Error("Could not get tournaments: " + (error as Error).message);
