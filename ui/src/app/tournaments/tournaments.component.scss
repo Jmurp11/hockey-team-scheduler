@@ -24,3 +24,31 @@
     @include flex(flex-start, center, column);
   }
 }
+
+.tournament-list {
+  @include flex(center, center, column);
+  flex: 1;
+  min-height: 200px;
+}
+
+.list-container {
+  @include flex(flex-start, stretch, column);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  contain: layout;
+}
+
+.sort-header {
+  width: calc(100% - 2rem);
+  padding-left: 3rem;
+  margin-bottom: 0.2rem;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+}

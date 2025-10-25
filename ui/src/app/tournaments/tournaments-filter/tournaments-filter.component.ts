@@ -109,16 +109,16 @@ export class TournamentsFilterComponent {
   };
 
   ages = [
-    { label: '19u', value: '19u' },
-    { label: '18u', value: '18u' },
-    { label: '16u', value: '16u' },
-    { label: '15u', value: '15u' },
-    { label: '14u', value: '14u' },
-    { label: '13u', value: '13u' },
-    { label: '12u', value: '12u' },
-    { label: '11u', value: '11u' },
-    { label: '10u', value: '10u' },
-    { label: '9u', value: '9u' },
+    { label: '19U', value: '19U' },
+    { label: '18U', value: '18U' },
+    { label: '16U', value: '16U' },
+    { label: '15U', value: '15U' },
+    { label: '14U', value: '14U' },
+    { label: '13U', value: '13U' },
+    { label: '12U', value: '12U' },
+    { label: '11U', value: '11U' },
+    { label: '10U', value: '10U' },
+    { label: '9U', value: '9U' },
   ];
 
   ageOptions: SelectParams<{ label: string; value: string }> = {

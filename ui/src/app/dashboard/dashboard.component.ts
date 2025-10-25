@@ -58,6 +58,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         class="sort-header"
         (sortChanged)="onSortChanged($event)"
         [resultsCount]="nearbyTeams?.length ?? 0"
+        [sortFields]="sortFields"
       ></app-sort-header>
 
       <div class="opponent-list">
@@ -77,6 +78,11 @@ export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
 
   isLoading = signal<boolean>(false);
+
+  sortFields = [
+    { label: 'Distance', value: 'distance' },
+    { label: 'Rating', value: 'rating' },
+  ];
 
   private searchParams$ = new BehaviorSubject<any>(null);
   private currentSort$ = new BehaviorSubject<{

@@ -47,10 +47,6 @@
   }
 }
 
-.stat-info {
-  @include flex(space-between, flex-end, row);
-}
-
 // Hover effects
 .card-header {
   transition: background-color 0.2s ease;

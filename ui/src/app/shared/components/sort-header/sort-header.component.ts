@@ -17,12 +17,15 @@ import { getFormControl } from '../../utilities/form.utility';
 import { SelectParams } from '../../types/form-item.type';
 import { IconSelectButtonComponent } from '../icon-select-button/icon-select-button.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { InputComponent } from '../input/input.component';
+import { combineLatest, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-sort-header',
   imports: [
     CommonModule,
     ButtonModule,
+    InputComponent,
     SelectComponent,
     IconSelectButtonComponent,
   ],
@@ -32,7 +35,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       <div class="sort-header__results">
         Showing {{ resultsCount ?? 0 }} results
       </div>
-
+      @if (showSearch) {
+      <div class="sort-header__search">
+        <app-input
+          [control]="getFormControl(form, 'search')"
+          [label]="'Search Tournaments, Locations, etc.'"
+        />
+      </div>
+      }
       <div class="sort-header__sort">
         <app-select
           [control]="getFormControl(form, 'sort')"
@@ -68,9 +78,32 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         width: 30%;
       }
 
+      .sort-header__search {
+        @include flex(flex-start, center, row);
+        width: 40%;
+
+        ::ng-deep app-input {
+          width: 100%;
+
+          .p-input {
+            height: 3.5rem !important;
+          }
+
+          .form-field {
+            width: 100% !important;
+            margin-bottom: 0 !important;
+
+            @media (max-width: 1024px) {
+              min-width: 150px !important;
+              max-width: 215px !important;
+            }
+          }
+        }
+      }
+
       .sort-header__sort {
         @include flex(flex-end, center, row);
-        width: 70%;
+        width: 30%;
 
         ::ng-deep app-select {
           .p-select-option-selected {
@@ -107,47 +140,80 @@ export class SortHeaderComponent implements OnInit {
     sortDirection: SortDirection;
   }>();
 
+  @Output() searchChanged = new EventEmitter<string | null>();
+
   @Input() resultsCount: number | null = null;
+
+  @Input() sortFields: { label: string; value: string }[] = [];
+
+  @Input() showSearch = false;
 
   private destroyRef = inject(DestroyRef);
 
-  sortFields = [
-    { label: 'Distance', value: 'distance' },
-    { label: 'Rating', value: 'rating' },
-  ];
-
-  sortOptions: SelectParams<{ label: string; value: string }> = {
-    itemLabel: 'label',
-    listItems: this.sortFields,
-    placeholder: '',
-    isAutoComplete: false,
-    emptyMessage: 'No sort options',
-    errorMessage: 'ERROR',
-    showClear: false,
-  };
+  sortOptions: SelectParams<{ label: string; value: string }>;
 
   sortIconOptions: { icon: string; sort: SortDirection }[] = [
     { icon: 'pi pi-sort-amount-up', sort: 'asc' },
     { icon: 'pi pi-sort-amount-down', sort: 'desc' },
   ];
 
-  form = new FormGroup({
-    sort: new FormControl<{ label: string; value: string } | null>(
-      this.sortFields[0]
-    ),
-    sortDirection: new FormControl<SortDirection>('asc'),
-  });
+  form: FormGroup;
 
   getFormControl = getFormControl;
 
   ngOnInit() {
-    this.form.valueChanges
+    this.sortOptions = {
+      itemLabel: 'label',
+      listItems: this.sortFields,
+      placeholder: '',
+      isAutoComplete: false,
+      emptyMessage: 'No sort options',
+      errorMessage: 'ERROR',
+      showClear: false,
+    };
+
+    this.form = new FormGroup({
+      search: new FormControl<string | null>(null),
+      sort: new FormControl<{ label: string; value: string } | null>(
+        this.sortFields[0]
+      ),
+      sortDirection: new FormControl<SortDirection>('asc'),
+    });
+
+    combineLatest([
+      this.getFormControl(this.form, 'sort').valueChanges.pipe(
+        startWith(this.getFormControl(this.form, 'sort').value)
+      ),
+      this.getFormControl(this.form, 'sortDirection').valueChanges.pipe(
+        startWith(this.getFormControl(this.form, 'sortDirection').value)
+      ),
+    ])
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) =>
-        this.sortChanged.emit({
-          field: value.sort?.value ?? this.sortFields[0].value,
-          sortDirection: value.sortDirection ?? 'asc',
-        })
-      );
+      .subscribe(([sort, sortDirection]) => {
+        this.onSortChanged({ sort, sortDirection });
+      });
+
+    this.getFormControl(this.form, 'search')
+      .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((search) => {
+        this.onSearchChanged({ search });
+      });
+  }
+
+  onSortChanged(value: {
+    sort: {
+      label: string;
+      value: string;
+    } | null;
+    sortDirection: SortDirection | null;
+  }) {
+    this.sortChanged.emit({
+      field: value.sort?.value ?? this.sortFields[0].value,
+      sortDirection: value.sortDirection ?? 'asc',
+    });
+  }
+
+  onSearchChanged(value: { search: string | null }) {
+    this.searchChanged.emit(value.search);
   }
 }

@@ -27,18 +27,4 @@ export class OpenAiController {
   async contactScheduler(@Body() contactSchedulerDto: ContactSchedulerDto) {
     return this.openAiService.contactScheduler(contactSchedulerDto);
   }
-
-  @Post('find-tournaments')
-  @ApiOperation({ summary: 'Find hockey tournaments based on criteria' })
-  @ApiResponse({
-    status: 200,
-    description: 'Tournaments found successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid search criteria',
-  })
-  async findTournaments(@Body() findTournamentsDto: FindTournamentsDto) {
-    return this.openAiService.findTournaments(findTournamentsDto);
-  }
 }

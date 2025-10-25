@@ -199,3 +199,33 @@ export class GamesQueryDto {
   })
   user: number;
 }
+
+export class Tournament {
+  @ApiProperty()
+  id: string;
+  @ApiProperty()
+  name: string;
+  @ApiProperty()
+  location: string;
+  @ApiProperty()
+  startDate: string;
+  @ApiProperty()
+  endDate: string;
+  @ApiProperty()
+  registrationUrl: string;
+  @ApiProperty()
+  description: string;
+  @ApiProperty()
+  rink: string | null;
+  @ApiProperty()
+  age: string[] | null;
+  @ApiProperty()
+  level: string[] | null;
+  @ApiProperty()
+  distance?: number;
+}
+
+export class TournamentProps {
+  @ApiProperty({ description: 'Association ID', example: 4918 })
+  p_id: number;
+}

@@ -79,7 +79,6 @@ export class TeamsService {
     return teams as Team[];
   }
 
-  // TODO: type return type
   async getNearbyTeams(params: NearbyTeamsParams): Promise<Partial<Team>[]> {
     const { data, error } = await supabase.rpc('p_find_nearby_teams', {
       ...params,
