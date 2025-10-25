@@ -107,7 +107,9 @@ body {
 
   --p-paginator-nav-button-selected-color: var(--secondary-600) !important;
   --p-paginator-nav-button-selected-background: var(--secondary-100) !important;
-  --p-datatable-header-cell-selected-background: var(--secondary-100) !important;
+  --p-datatable-header-cell-selected-background: var(
+    --secondary-100
+  ) !important;
   --p-datatable-header-cell-selected-color: var(--secondary-600) !important;
 }
 
@@ -142,4 +144,13 @@ a {
 .slider-container {
   padding: 0rem 0.5rem;
   width: 100%;
+}
+
+.stat-info {
+  @include flex(space-between, flex-end, row);
+  &__distance {
+    ::ng-deep .stat-value {
+      color: var(--secondary-500) !important;
+    }
+  }
 }

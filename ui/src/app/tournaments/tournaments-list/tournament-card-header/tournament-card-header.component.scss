@@ -31,7 +31,7 @@
   }
 
   .subheader {
-    @include flex(flex-start, space-between, row);
+    @include flex(flex-start, flex-start, column);
   }
 
   .location {
@@ -43,10 +43,6 @@
       font-weight: 500;
     }
   }
-}
-
-.stat-info {
-  @include flex(space-between, flex-end, row);
 }
 
 // Hover effects

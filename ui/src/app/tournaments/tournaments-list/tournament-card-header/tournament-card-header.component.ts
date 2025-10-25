@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { OpponentStatItemComponent } from '../../../dashboard/opponent-list/opponent-stat-item/opponent-stat-item.component';
-import { formatLocation } from '../../../shared/utilities/location.utility';
+import { formatTournamentLocation } from '../../../shared/utilities/location.utility';
 
 @Component({
   selector: 'app-tournament-card-header',
@@ -13,19 +13,14 @@ import { formatLocation } from '../../../shared/utilities/location.utility';
         <div class="tournament-info">
           <h3 class="tournament-name">{{ tournament.name }}</h3>
           <div class="subheader">
-            <span>
+            <div>
               <p class="location">
-                {{
-                  formatLocation(
-                    tournament.city,
-                    tournament.state,
-                    tournament.country
-                  )
-                }}
-              </p> </span
-            ><span class="location"
-              >{{ tournament.startDate }} - {{ tournament.endDate }}</span
-            >
+                {{ formatLocation(tournament.location) }}
+              </p>
+            </div>
+            <div class="location">
+              {{ tournament.startDate | date: 'MMM d, y' }} - {{ tournament.endDate  | date: 'MMM d, y' }}
+            </div>
           </div>
         </div>
         <div class="stat-info">
@@ -45,8 +40,7 @@ export class TournamentCardHeaderComponent {
   @Input()
   tournament: any;
 
-  formatLocation = formatLocation;
-
+  formatLocation = formatTournamentLocation;
   formatDistance(distance: string): string {
     return `${distance} mi`;
   }

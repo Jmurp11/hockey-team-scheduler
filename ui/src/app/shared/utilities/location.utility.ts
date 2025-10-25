@@ -5,3 +5,7 @@ export function formatLocation(
 ): string {
   return `${city}, ${state}${country !== 'USA' ? `, ${country}` : ''}`;
 }
+
+export function formatTournamentLocation(location: string): string {
+  return `${location.split(',').join(', ')}`;
+}

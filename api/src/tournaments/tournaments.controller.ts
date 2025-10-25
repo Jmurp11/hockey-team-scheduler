@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TournamentsService } from './tournaments.service';
+import { Tournament, TournamentProps } from '../types';
 
 @ApiTags('tournaments')
 @Controller('v1/tournaments')
@@ -16,17 +17,22 @@ export class TournamentsController {
     return this.tournamentsService.getTournaments();
   }
 
-  @Get(':id')
-  @ApiParam({
-    name: 'id',
-    description: 'Tournament ID',
-    type: 'string',
-  })
+  @Get('nearByTournaments')
   @ApiResponse({
     status: 200,
-    description: 'Get a tournament by ID.',
+    description: 'Get a nearby teams by association.',
+    type: Tournament,
   })
-  async getTournament(@Param('id') id: string) {
-    return this.tournamentsService.getTournament(id);
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'Not Found.' })
+  async getNearbyTeams(
+    @Query() queryParams: TournamentProps,
+  ): Promise<Partial<Tournament>[] | null> {
+    console.log({ queryParams });
+    const params: TournamentProps = {
+      p_id: queryParams.p_id,
+    };
+    return this.tournamentsService.getNearbyTournaments(params);
   }
 }

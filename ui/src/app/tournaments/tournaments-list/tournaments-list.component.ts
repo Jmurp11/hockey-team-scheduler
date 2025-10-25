@@ -44,6 +44,6 @@ export class TournamentsListComponent {
   tournaments: any[] = [];
 
   registerForTournament(tournament: any) {
-    console.log('Register for tournament', tournament);
+    window.open(tournament.registrationUrl, '_blank');
   }
 }
