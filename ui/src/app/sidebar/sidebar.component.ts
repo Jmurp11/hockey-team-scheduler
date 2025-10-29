@@ -39,6 +39,11 @@ export class SidebarComponent implements OnInit {
   //logo = null;
   items = [
     {
+      label: 'Schedule',
+      icon: 'pi pi-fw pi-calendar',
+      routerLink: '/app/schedule',
+    },
+    {
       label: 'Conversations',
       icon: 'pi pi-fw pi-inbox',
       routerLink: '/app/conversations',
@@ -46,17 +51,12 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Opponents',
       icon: 'pi pi-fw pi-search',
-      routerLink: '/app/dashboard',
+      routerLink: '/app/opponents',
     },
     {
       label: 'Tournaments',
       icon: 'pi pi-fw pi-trophy',
       routerLink: '/app/tournaments',
-    },
-    {
-      label: 'Schedule',
-      icon: 'pi pi-fw pi-calendar',
-      routerLink: '/app/schedule',
     },
     {
       label: 'Profile',

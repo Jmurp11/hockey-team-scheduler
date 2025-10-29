@@ -68,14 +68,14 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'opponents',
         pathMatch: 'full',
       },
       {
-        path: 'dashboard',
+        path: 'opponents',
         loadComponent: () =>
-          import('./dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent
+          import('./opponents/opponents.component').then(
+            (m) => m.OpponentsComponent
           ),
       },
       {
