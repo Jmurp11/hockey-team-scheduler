@@ -29,7 +29,6 @@ export class TournamentsController {
   async getNearbyTeams(
     @Query() queryParams: TournamentProps,
   ): Promise<Partial<Tournament>[] | null> {
-    console.log({ queryParams });
     const params: TournamentProps = {
       p_id: queryParams.p_id,
     };

@@ -39,6 +39,11 @@ export class SidebarComponent implements OnInit {
   //logo = null;
   items = [
     {
+      label: 'Conversations',
+      icon: 'pi pi-fw pi-inbox',
+      routerLink: '/app/conversations',
+    },
+    {
       label: 'Opponents',
       icon: 'pi pi-fw pi-search',
       routerLink: '/app/dashboard',

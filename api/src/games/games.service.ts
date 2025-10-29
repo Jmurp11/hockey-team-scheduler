@@ -4,12 +4,12 @@ import { supabase } from '../supabase';
 
 @Injectable()
 export class GamesService {
-  async create(createGameDto: CreateGameDto): Promise<Game[]> {
+  async create(createGameDto: CreateGameDto[]): Promise<Game[]> {
     console.log('Creating game:', createGameDto);
 
     const { data, error } = await supabase
       .from('games')
-      .insert([createGameDto])
+      .insert(createGameDto)
       .select();
 
     if (error) {
