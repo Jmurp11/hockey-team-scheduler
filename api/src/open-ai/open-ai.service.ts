@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { env } from 'node:process';
+import openai from 'openai';
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { supabase } from 'src/supabase';
@@ -31,6 +32,37 @@ export class OpenAiService {
     this.client = new OpenAI({
       apiKey: env.OPENAI_API_KEY || '',
     });
+  }
+
+  async generateReply(conversationId: string) {
+    const messages = await supabase
+      .from('messages')
+      .select()
+      .eq('conversation_id', conversationId)
+      .limit(100)
+      .order('created_at', { ascending: true });
+
+    const context = messages.data?.map((m) => ({
+      role: m.sender === 'contact' ? 'user' : 'assistant',
+      content: m.content,
+    }));
+
+    if (!context || context.length === 0) {
+      throw new Error('No messages found for conversation');
+    }
+
+    const response = await this.client.chat.completions.create({
+      model: 'gpt-5-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a friendly hockey team manager scheduling games.',
+        },
+        ...(context as any),
+      ],
+    });
+
+    return response.choices[0].message.content;
   }
 
   // TODO: needs refactor

@@ -229,3 +229,41 @@ export class TournamentProps {
   @ApiProperty({ description: 'Association ID', example: 4918 })
   p_id: number;
 }
+
+export class CreateConversationDto {
+  @ApiProperty()
+  userId: string;
+  @ApiProperty()
+  contactName: string;
+  @ApiProperty()
+  contactTeam: string;
+  @ApiProperty()
+  phone: string;
+  @ApiProperty()
+  message: string;
+}
+
+export class MessageDto {
+  @ApiProperty()
+  phone: string;
+  @ApiProperty()
+  body: string;
+}
+
+export interface Conversation {
+  id: string;
+  user_id: string;
+  manager_id: string;
+  ai_enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  sender: 'contact' | 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
+
+

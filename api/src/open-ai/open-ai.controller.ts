@@ -9,7 +9,7 @@ import { OpenAiService } from './open-ai.service';
 import { ContactSchedulerDto, FindTournamentsDto } from './open-ai.types';
 
 @ApiExcludeController()
-@ApiTags('OpenAI')
+@ApiTags('Messages')
 @Controller('v1/open-ai')
 export class OpenAiController {
   constructor(private readonly openAiService: OpenAiService) {}
