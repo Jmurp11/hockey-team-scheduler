@@ -83,6 +83,7 @@ body {
   --p-checkbox-checked-border-color: var(--secondary-500) !important;
   --p-checkbox-checked-hover-border-color: var(--secondary-600) !important;
   --p-checkbox-checked-focus-border-color: var(--secondary-300) !important;
+
   --p-slider-handle-background: var(--secondary-500) !important;
   --p-slider-handle-hover-background: var(--secondary-600) !important;
   --p-slider-handle-content-hover-background: var(--secondary-500) !important;
@@ -90,12 +91,17 @@ body {
   --p-slider-handle-focus-ring-color: var(--secondary-300) !important;
   --p-slider-handle-focus-ring-offset: var(--secondary-200) !important;
   --p-slider-handle-focus-ring-shadow: var(--secondary-300) !important;
+
   --p-button-primary-background: var(--secondary-500) !important;
   --p-button-primary-hover-background: var(--secondary-600) !important;
   --p-button-primary-border-color: var(--secondary-500) !important;
   --p-button-primary-hover-border-color: var(--secondary-600) !important;
+  --p-button-primary-active-background: var(--secondary-700) !important;
+  --p-button-primary-active-border-color: var(--secondary-700) !important;
+
   --p-autocomplete-focus-border-color: var(--secondary-300) !important;
   --p-autocomplete-shadow: var(--secondary-300) !important;
+
   --p-inputtext-hover-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-ring-shadow: var(--secondary-200) !important;
@@ -107,6 +113,7 @@ body {
 
   --p-paginator-nav-button-selected-color: var(--secondary-600) !important;
   --p-paginator-nav-button-selected-background: var(--secondary-100) !important;
+
   --p-datatable-header-cell-selected-background: var(
     --secondary-100
   ) !important;

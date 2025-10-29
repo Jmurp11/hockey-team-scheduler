@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { OpponentStatItemComponent } from '../../../dashboard/opponent-list/opponent-stat-item/opponent-stat-item.component';
+import { OpponentStatItemComponent } from '../../../opponents/opponent-list/opponent-stat-item/opponent-stat-item.component';
 import { formatTournamentLocation } from '../../../shared/utilities/location.utility';
 
 @Component({

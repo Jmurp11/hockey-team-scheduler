@@ -10,6 +10,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   BehaviorSubject,
   combineLatest,
@@ -27,15 +28,14 @@ import { SortDirection } from '../shared/components/sort-header/sort-header.type
 import { AssociationService } from '../shared/services/associations.service';
 import { TeamsService } from '../shared/services/teams.service';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
-import { OpponentsComponent } from './opponents/opponents.component';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
     RouterModule,
-    OpponentsComponent,
+    OpponentsFilterComponent,
     OpponentListComponent,
     ButtonModule,
     SortHeaderComponent,
@@ -67,11 +67,11 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     </div>
     } }
   </div>`,
-  styleUrls: ['./dashboard.component.scss'],
+  styleUrls: ['./opponents.component.scss'],
   providers: [AssociationService, TeamsService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent implements OnInit {
+export class OpponentsComponent implements OnInit {
   nearbyTeams$: Observable<any>;
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);

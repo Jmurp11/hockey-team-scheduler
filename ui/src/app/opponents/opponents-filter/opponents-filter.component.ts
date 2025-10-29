@@ -128,10 +128,10 @@ import { getFormControl } from '../../shared/utilities/form.utility';
       </app-card>
     </form>
   `,
-  styleUrls: ['./opponents.component.scss'],
+  styleUrls: ['./opponents-filter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpponentsComponent implements OnInit {
+export class OpponentsFilterComponent implements OnInit {
   @Input() associations$: Observable<SelectItem[]>;
 
   @Input() userDefault$: Observable<SelectItem>;
