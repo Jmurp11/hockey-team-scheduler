@@ -1,0 +1,23 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+:host {
+  width: 100%;
+  overflow: auto;
+}
+
+.page-title {
+  &__text-container {
+    @include flex(space-between, center, row);
+    width: 100%;
+    height: auto;
+    padding: 0rem 3rem;
+    text-align: left;
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-500);
+  }
+}

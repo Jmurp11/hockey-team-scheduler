@@ -112,7 +112,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'conversations',
+        path: 'inbox',
         loadComponent: () =>
           import('./conversations/conversations.component').then(
             (m) => m.ConversationsComponent
