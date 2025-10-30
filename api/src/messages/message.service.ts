@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { supabase } from '../supabase';
 import { Conversation, CreateConversationDto, MessageDto } from '../types';
 import { OpenAiService } from '../open-ai/open-ai.service';
@@ -98,5 +98,29 @@ export class MessageService {
         twilio_sid: twilioMessage.sid,
       });
     }
+  }
+
+  async getMessages(
+    conversationId: string,
+    userId: string,
+  ): Promise<MessageDto[]> {
+
+    // Make sure this conversation belongs to the user
+    const { data: convo, error } = await supabase
+      .from('conversations')
+      .select('id, contact_id')
+      .eq('id', conversationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !convo) throw new ForbiddenException();
+
+    const { data: messages } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    return messages;
   }
 }
