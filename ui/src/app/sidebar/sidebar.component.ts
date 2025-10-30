@@ -44,9 +44,9 @@ export class SidebarComponent implements OnInit {
       routerLink: '/app/schedule',
     },
     {
-      label: 'Conversations',
+      label: 'Inbox',
       icon: 'pi pi-fw pi-inbox',
-      routerLink: '/app/conversations',
+      routerLink: '/app/inbox',
     },
     {
       label: 'Opponents',
