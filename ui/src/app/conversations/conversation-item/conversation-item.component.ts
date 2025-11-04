@@ -1,20 +1,28 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { Conversation } from '../../shared/types/conversation.type';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-conversation-item',
   imports: [AvatarModule, OverlayBadgeModule, ButtonModule],
   template: `<div class="conversation-item">
     <div class="align-right">
-      <p-avatar
-        [label]="getInitials(conversation.managerName)"
-        class="avatar"
-        size="large"
-        shape="circle"
-      />
+      <p-overlayBadge
+        [value]="conversation.unreadCount"
+        severity="danger"
+        [badgeDisabled]="conversation.unreadCount === 0"
+        size="small"
+      >
+        <p-avatar
+          [label]="getInitials(conversation.managerName)"
+          class="avatar"
+          size="large"
+          shape="circle"
+        />
+      </p-overlayBadge>
       <div class="message-container">
         <div class="message-container__recipient">
           {{ conversation.managerName }}
@@ -30,13 +38,19 @@ import { Conversation } from '../../shared/types/conversation.type';
         {{ getLastMessageTime(conversation.lastMessageTimestamp) }}
       </div>
 
-      <p-button label="Monitor" size="small" />
+      <p-button label="Monitor" size="small" (click)="onMonitorClick()" />
     </div>
   </div>`,
   styleUrls: ['./conversation-item.component.scss'],
 })
 export class ConversationItemComponent {
   @Input() conversation: Conversation;
+
+  private router = inject(Router);
+
+  onMonitorClick() {
+    this.router.navigate(['/app/chat', this.conversation.id]);
+  }
 
   getInitials(name: string): string {
     if (!name) return '';

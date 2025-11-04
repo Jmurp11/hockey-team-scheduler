@@ -1,5 +1,6 @@
 @use "./app/scss/mixins/_mixins.scss" as *;
 @import "primeicons/primeicons.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 
 html,
 body {
@@ -9,6 +10,18 @@ body {
 }
 
 :root {
+  --red-50: #fdeded;
+  --red-100: #fcdada;
+  --red-200: #f9b5b5;
+  --red-300: #f58f8f;
+  --red-400: #f26a6a;
+  --red-500: #ef4444;
+  --red-600: #e71414;
+  --red-700: #b30f0f;
+  --red-800: #800b0b;
+  --red-900: #4c0707;
+  --red-950: #320404;
+
   --gray-50: #f6f6f6;
   --gray-100: #e7e7e7;
   --gray-200: #d1d1d1;

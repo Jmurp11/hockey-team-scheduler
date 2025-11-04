@@ -65,12 +65,6 @@ import { SidebarService } from '../sidebar/sidebar.service';
             }
           </ng-template>
           <ng-template #end>
-            <div class="header__avatar">
-              <i
-                class="bi bi-person-circle"
-                style="font-size: 1.5rem; color: #002C77;"
-              ></i>
-            </div>
             <div class="header__name">
               {{
                 authService.currentUser()?.displayName ||
