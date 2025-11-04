@@ -20,6 +20,11 @@
   &__right {
     @include flex(flex-end, center, row);
   }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
 }
 
 .ai-enabled {

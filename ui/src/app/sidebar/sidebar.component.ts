@@ -10,7 +10,6 @@ import { BadgeModule } from 'primeng/badge';
   template: `<nav class="navigation">
     <div class="navigation__logo-container">
       <span class="navigation__logo">
-        <i class="bi bi-graph-up"></i>
         RinkLink<span class="navigation__logo__ai">.ai</span>
       </span>
     </div>

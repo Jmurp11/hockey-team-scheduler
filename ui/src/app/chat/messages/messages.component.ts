@@ -1,13 +1,12 @@
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Message } from '../../shared/types/message.type';
-import { AvatarModule } from 'primeng/avatar';
-import { NgStyle, NgClass } from '@angular/common';
 import { MessageComponent } from './message/message.component';
 
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgStyle, NgClass, MessageComponent],
+  imports: [NgClass, MessageComponent],
   template: `
     <div class="messages">
       @for (message of messages; track message.id) {
