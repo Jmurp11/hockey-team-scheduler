@@ -1,9 +1,10 @@
 import { Component, inject, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { Conversation } from '../../shared/types/conversation.type';
-import { Router } from '@angular/router';
+import { getLastMessageTime } from '../../shared/utilities/last-message.utility';
 
 @Component({
   selector: 'app-conversation-item',
@@ -48,6 +49,8 @@ export class ConversationItemComponent {
 
   private router = inject(Router);
 
+  getLastMessageTime = getLastMessageTime;
+
   onMonitorClick() {
     this.router.navigate(['/app/chat', this.conversation.id]);
   }
@@ -57,22 +60,5 @@ export class ConversationItemComponent {
     const names = name.split(' ');
     const initials = names.map((n) => n.charAt(0).toUpperCase());
     return initials.join('');
-  }
-
-  getLastMessageTime(timestamp: string): string {
-    const date = new Date(timestamp);
-    const current = new Date();
-    const diffInMs = current.getTime() - date.getTime();
-    const diffInMinutes = Math.floor(diffInMs / 60000);
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} min ago`;
-    } else if (diffInMinutes < 1440) {
-      const hours = Math.floor(diffInMinutes / 60);
-      return `${hours} hr ago`;
-    } else {
-      const days = Math.floor(diffInMinutes / 1440);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    }
   }
 }

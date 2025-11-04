@@ -8,7 +8,7 @@
   align-items: flex-end;
   gap: 0.5rem;
 
-  .content {
+  .message-content {
     background-color: var(--secondary-200);
     color: var(--primary-500);
     padding: 0.5rem 1rem;
@@ -45,4 +45,6 @@
   font-size: 0.75rem;
   color: var(--gray-300);
   margin-top: 0.25rem;
+  text-align: right;
+  max-width: 70%;
 }

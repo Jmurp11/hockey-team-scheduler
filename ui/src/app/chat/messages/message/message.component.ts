@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Message } from '../../../shared/types/message.type';
-import { AvatarModule } from 'primeng/avatar';
 import { NgStyle } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { AvatarModule } from 'primeng/avatar';
+import { Message } from '../../../shared/types/message.type';
+import { getLastMessageTime } from '../../../shared/utilities/last-message.utility';
 
 @Component({
   selector: 'app-message',
@@ -18,11 +19,11 @@ import { NgStyle } from '@angular/common';
           [label]="getAvatarLabel(message.sender)"
         />
       </div>
-      <div class="content" [ngStyle]="getContentStyle(message.sender)">
+      <div class="message-content" [ngStyle]="getContentStyle(message.sender)">
         {{ message.content }}
       </div>
       } @else {
-      <div class="content" [ngStyle]="getContentStyle(message.sender)">
+      <div class="message-content" [ngStyle]="getContentStyle(message.sender)">
         {{ message.content }}
       </div>
       <div class="avatar-container">
@@ -45,7 +46,7 @@ import { NgStyle } from '@angular/common';
       }
     </div>
     <div class="timestamp">
-      {{ message.createdAt }}
+      {{ getLastMessageTime(message.createdAt) }}
     </div>
   `,
   styleUrl: './message.component.scss',
@@ -53,6 +54,8 @@ import { NgStyle } from '@angular/common';
 })
 export class MessageComponent {
   @Input() message: Message;
+
+  getLastMessageTime = getLastMessageTime;
 
   getAvatarLabel(sender: string): string {
     switch (sender) {
