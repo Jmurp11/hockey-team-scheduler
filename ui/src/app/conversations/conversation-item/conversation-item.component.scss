@@ -15,8 +15,8 @@
     @include flex(flex-start, center, row);
 
     .avatar {
-      background-color: var(--secondary-200);
-      color: var(--primary-500);
+      --p-avatar-background: var(--secondary-100);
+      --p-avatar-color: var(--primary-500);
     }
 
     .message-container {
@@ -27,7 +27,7 @@
       &__recipient {
         font-weight: 600;
         font-size: 1.2rem;
-        color: var(--primary-600);
+        color: var(--primary-500);
       }
 
       &__last-message {

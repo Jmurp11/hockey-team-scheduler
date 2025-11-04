@@ -18,7 +18,10 @@ import PageTitleComponent from './page-title/page-title.component';
     ReactiveFormsModule,
   ],
   template: `<div>
-    <app-page-title title="Inbox"></app-page-title>
+    <app-page-title
+      title="Inbox"
+      [newMessageCount]="newMessageCount"
+    ></app-page-title>
     <form [formGroup]="form">
       <app-input [label]="label" [control]="getFormControl(form, 'search')" />
     </form>
@@ -32,7 +35,7 @@ import PageTitleComponent from './page-title/page-title.component';
   styleUrls: ['./conversations.component.scss'],
 })
 export class ConversationsComponent {
-  label = 'Search by contact name or message';
+  label = 'Search';
 
   form = new FormGroup({
     search: new FormControl(null),
@@ -76,6 +79,11 @@ export class ConversationsComponent {
       managerTeam: '',
     },
   ];
+
+  newMessageCount = this.conversations.reduce(
+    (count, convo) => count + convo.unreadCount,
+    0
+  );
 
   getFormControl = getFormControl;
 }
