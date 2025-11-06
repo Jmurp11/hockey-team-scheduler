@@ -14,13 +14,27 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { MessageService } from './message.service';
-import { MessageDto } from '../types';
+import { CreateConversationDto, MessageDto } from '../types';
 
-@ApiExcludeController()
+// @ApiExcludeController()
 @ApiTags('Messages')
 @Controller('v1/messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
+
+  @Post('start-conversation')
+  @ApiOperation({ summary: 'Start a conversation with a team manager' })
+  @ApiResponse({
+    status: 200,
+    description: 'Conversation has been started',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data',
+  })
+  async startConversation(@Body() conversationInfo: CreateConversationDto) {
+    return this.messageService.sendInitialMessage(conversationInfo);
+  }
 
   @Post('incoming')
   @ApiOperation({ summary: 'incoming messages from other team managers' })

@@ -8,12 +8,14 @@ import { OpenAiModule } from './open-ai/open-ai.module';
 import { TeamsModule } from './teams/teams.module';
 import { UserModule } from './user/user.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
+import { MessageModule } from './messages/message.module';
 @Module({
   imports: [
     AssociationsModule,
     GamesModule,
     LeaguesModule,
     OpenAiModule,
+    MessageModule,
     TeamsModule,
     TournamentsModule,
     UserModule,
