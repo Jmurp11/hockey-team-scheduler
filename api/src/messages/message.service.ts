@@ -3,6 +3,7 @@ import { supabase } from '../supabase';
 import { Conversation, CreateConversationDto, MessageDto } from '../types';
 import { OpenAiService } from '../open-ai/open-ai.service';
 import { Twilio } from 'twilio';
+import { env } from 'node:process';
 
 @Injectable()
 export class MessageService {
@@ -10,22 +11,26 @@ export class MessageService {
 
   constructor(private openAiService: OpenAiService) {
     this.twilio = new Twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN,
+      env.TWILIO_ACCOUNT_SID,
+      env.TWILIO_AUTH_TOKEN,
     );
   }
 
   async sendText(to: string, body: string) {
+    console.log({
+      to,
+      from: env.TWILIO_PHONE,
+      body,
+    })
     return this.twilio.messages.create({
       to,
-      from: process.env.TWILIO_PHONE,
+      from: env.TWILIO_PHONE,
       body,
     });
   }
 
   async sendInitialMessage(
     conversationDto: CreateConversationDto,
-    message: string,
   ): Promise<Conversation> {
     const contact = await supabase
       .from('managers')
@@ -34,13 +39,16 @@ export class MessageService {
       .ilike('team', conversationDto.contactTeam)
       .single();
 
-    const twilioMessage = await this.sendText(contact.data.phone, message);
+    const twilioMessage = await this.sendText(
+     '+19142174246', // contact.data.phone,
+      conversationDto.message,
+    );
 
     const { data, error } = await supabase
       .from('conversations')
       .insert({
         user_id: conversationDto.userId,
-        manager_id: contact.data.id,
+        manager_id: '-1', // contact.data.id,
         ai_enabled: true,
       })
       .select();
@@ -48,7 +56,7 @@ export class MessageService {
     await supabase.from('messages').insert({
       conversation_id: data?.[0].id,
       sender: 'user',
-      content: message,
+      content: conversationDto.message,
       twilio_sid: twilioMessage.sid,
     });
 
@@ -104,8 +112,6 @@ export class MessageService {
     conversationId: string,
     userId: string,
   ): Promise<MessageDto[]> {
-
-    // Make sure this conversation belongs to the user
     const { data: convo, error } = await supabase
       .from('conversations')
       .select('id, contact_id')
@@ -121,6 +127,6 @@ export class MessageService {
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
 
-    return messages;
+    return messages || [];
   }
 }
