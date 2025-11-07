@@ -1,0 +1,33 @@
+p-iftalabel ::ng-deep p-datepicker.ng-valid + label {
+    color: var(--color-accent-primary) !important;
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+  min-width: 350px;
+
+  ::ng-deep .p-autocomplete {
+    width: 100%;
+  }
+
+  ::ng-deep .p-message {
+    margin-top: 0.25rem;
+  }
+}
+
+p-datepicker {
+    width: 100%;
+    height: 56px;
+
+    & ::ng-deep .p-datepicker {
+        width: 100%;
+    }
+
+    & ::ng-deep .p-inputtext {
+        height: 56px;
+    }
+}
+
+p-message {
+    margin-top: 5px;
+}

@@ -10,7 +10,7 @@ import { getLastMessageTime } from '../../shared/utilities/last-message.utility'
   selector: 'app-conversation-item',
   imports: [AvatarModule, OverlayBadgeModule, ButtonModule],
   template: `<div class="conversation-item">
-    <div class="align-right">
+    <div class="align-right" (click)="onMonitorClick()">
       <p-overlayBadge
         [value]="conversation.unreadCount"
         severity="danger"
