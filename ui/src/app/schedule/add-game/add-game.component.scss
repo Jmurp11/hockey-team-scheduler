@@ -5,3 +5,16 @@
   align-items: center;
   width: 100%;
 }
+
+.section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .5rem 1rem;
+
+  &__item {
+    ::ng-deep .form-field {
+      min-width: 200px;
+      max-width: 275px;
+    }
+  }
+}
