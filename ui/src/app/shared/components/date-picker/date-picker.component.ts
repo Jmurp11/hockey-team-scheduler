@@ -49,6 +49,7 @@ export interface DatePickerParams {
             [placeholder]="placeholder"
             [showTime]="showTime"
             [hourFormat]="hourFormat"
+            [hideOnDateTimeSelect]="false"
           />
           <label [for]="inputId(label)">{{ label }}</label>
         </p-iftalabel>

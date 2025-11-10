@@ -2,7 +2,11 @@
   margin-bottom: 1.5rem;
   min-width: 350px;
 
-  ::ng-deep .p-autocomplete, .p-inputtext {
+  ::ng-deep input {
+    width: 100% !important;
+  }
+  
+  ::ng-deep .p-autocomplete {
     width: 100% !important;
   }
 

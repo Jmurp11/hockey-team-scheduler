@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
 } from '@angular/core';
@@ -12,7 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { SelectComponent } from '../../shared';
+import { SelectComponent, TeamsService } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
@@ -22,6 +23,8 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { getFormControl } from '../../shared/utilities/form.utility';
 import { getFormFields } from './add-game.constants';
 import { AddGameService } from './add-game.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-add-game',
@@ -113,8 +116,11 @@ import { AddGameService } from './add-game.service';
 })
 export class AddGameComponent implements OnInit {
   protected loadingService = inject(LoadingService);
-  addGameService = inject(AddGameService);
+  protected destroyRef = inject(DestroyRef);
 
+  addGameService = inject(AddGameService);
+  teamsService = inject(TeamsService);
+  
   gameTypeOptions = [
     { label: 'League', value: 'league' },
     { label: 'Playoff', value: 'playoff' },
@@ -122,78 +128,7 @@ export class AddGameComponent implements OnInit {
     { label: 'Exhibition', value: 'exhibition' },
   ];
 
-  items = [
-    [
-      {
-        idx: 0,
-        id: 30782,
-        created_at: '2025-10-22 22:30:20.088195+00',
-        team_name: 'Portage Lake Flyers 14U AA',
-        association: 4383,
-        rating: 85.02,
-        record: '0-4-1',
-        agd: -1.8,
-        sched: 86.82,
-        age: '14u',
-        girls_only: false,
-        name: 'Copper Country Jr Hockey Association',
-        city: 'Houghton',
-        state: 'MI',
-        country: 'USA',
-      },
-      {
-        idx: 1,
-        id: 31988,
-        created_at: '2025-10-29 12:12:51.476679+00',
-        team_name: 'Kensington Valley Renegades 9U A',
-        association: 3152,
-        rating: 77.3,
-        record: '3-3-0',
-        agd: 0.1,
-        sched: 77.1,
-        age: '9u',
-        girls_only: false,
-        name: 'Kensington Valley Hockey Association',
-        city: 'Brighton',
-        state: 'MI',
-        country: 'USA',
-      },
-      {
-        idx: 2,
-        id: 32490,
-        created_at: '2025-10-29 12:18:38.021307+00',
-        team_name: 'Pittsburgh Arctic Foxes (#1) 10U AA',
-        association: 4007,
-        rating: 81.1,
-        record: '1-10-0',
-        agd: -2.7,
-        sched: 83.8,
-        age: '10u',
-        girls_only: false,
-        name: 'Arctic Foxes Hockey Association',
-        city: 'Coraopolis',
-        state: 'PA',
-        country: 'USA',
-      },
-      {
-        idx: 3,
-        id: 32522,
-        created_at: '2025-10-29 12:18:38.021307+00',
-        team_name: 'Southern Illinois Ice Hawks 10U A3',
-        association: 4466,
-        rating: 80.4,
-        record: '4-1-1',
-        agd: 2.5,
-        sched: 77.9,
-        age: '10u',
-        girls_only: false,
-        name: 'Southern Illinois Ice Hawks Hockey Association',
-        city: "O'Fallon",
-        state: 'IL',
-        country: 'USA',
-      },
-    ],
-  ];
+  items$: Observable<any[]>;
 
   isHomeOptions = [
     { label: 'Home', value: 'home' },
@@ -231,10 +166,15 @@ export class AddGameComponent implements OnInit {
     }),
   });
 
-  ngOnInit() {
-    console.log('addGameService', this.addGameService.isVisible());
+  ngOnInit(): void {
+    // TODO: update endpoint to accept parameter for age group
+    this.items$ = this.teamsService.getTeams(1);
   }
+
   submit() {
-    console.log('submitted');
+    this.addGameService
+      .addGame(this.addGameForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.addGameService.closeDialog());
   }
 }
