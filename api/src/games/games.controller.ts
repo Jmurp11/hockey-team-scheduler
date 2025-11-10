@@ -24,8 +24,8 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
-  @Post()
-  create(@Body() createGameDto: CreateGameDto) {
+  @Post('/add-games')
+  create(@Body() createGameDto: CreateGameDto[]) {
     return this.gamesService.create(createGameDto);
   }
 
