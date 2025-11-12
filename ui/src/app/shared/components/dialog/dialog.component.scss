@@ -1,0 +1,27 @@
+::ng-deep .dialog {
+  width: 50rem !important;
+  max-height: 90vh !important;
+  
+  .p-dialog {
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .p-dialog-content {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    max-height: calc(90vh - 140px) !important; // Account for header and footer
+    padding: 1rem !important;
+  }
+
+  .p-dialog-header {
+    flex-shrink: 0 !important;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .p-dialog-footer {
+    flex-shrink: 0 !important;
+    border-top: 1px solid #e5e7eb;
+  }
+}

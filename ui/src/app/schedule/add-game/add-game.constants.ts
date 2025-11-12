@@ -6,7 +6,7 @@ export function getFormFields(items: any[]) {
       errorMessage: 'Please select an Opponent',
       autocomplete: false,
       controlType: 'autocomplete',
-      items: items.map((i) => ({ label: i.team_name, value: i })),
+      items: items.map((i) => ({ label: i.name, value: i })),
       section: 1,
     },
     {
@@ -39,14 +39,20 @@ export function getFormFields(items: any[]) {
       controlName: 'country',
       labelName: 'Country',
       errorMessage: 'Please enter a Country',
-      autocomplete: true,
+      autocomplete: false,
       controlType: 'select',
       section: 1,
       options: {
         itemLabel: 'label',
         listItems: items
-          .map((i) => ({ label: i.country, value: i.country }))
-          .sort(),
+          .map((i) => ({
+            label: i.association.country,
+            value: i.association.country,
+          }))
+          .filter((item, index, self) => 
+            index === self.findIndex(t => t.value === item.value)
+          )
+          .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',
         isAutoComplete: false,
         emptyMessage: 'No states found',
@@ -67,16 +73,22 @@ export function getFormFields(items: any[]) {
       controlName: 'state',
       labelName: 'State',
       errorMessage: 'Please enter a State or Province ',
-      autocomplete: true,
+      autocomplete: false,
       controlType: 'select',
       section: 1,
       options: {
         itemLabel: 'label',
         listItems: items
-          .map((i) => ({ label: i.state, value: i.state }))
-          .sort(),
+          .map((i) => ({
+            label: i.association.state,
+            value: i.association.state,
+          }))
+          .filter((item, index, self) => 
+            index === self.findIndex(t => t.value === item.value)
+          )
+          .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',
-        isAutoComplete: false,
+        isAutoComplete: true,
         emptyMessage: 'No states found',
         errorMessage: 'ERROR',
         showClear: true,

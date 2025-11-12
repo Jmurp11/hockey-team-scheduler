@@ -193,3 +193,20 @@ a {
     }
   }
 }
+
+// Global datepicker overlay styles to ensure proper positioning
+.p-datepicker-panel {
+  z-index: 9999 !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  font-family: "Space Grotesk", "Noto Sans", sans-serif !important;
+}
+
+// Ensure dialog has proper z-index
+.p-dialog {
+  z-index: 1000 !important;
+}
+
+.p-dialog-mask {
+  z-index: 999 !important;
+}

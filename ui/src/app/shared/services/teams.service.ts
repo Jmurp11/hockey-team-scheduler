@@ -5,13 +5,25 @@ import { map, Observable } from 'rxjs';
 import { NearbyTeamsParams } from '../types/nearby-teams.type';
 import { environment } from '../../environments/environment';
 
+export interface TeamsParams {
+  association?: number;
+  age?: string;
+}
+
 @Injectable()
 export class TeamsService {
   private http = inject(HttpClient);
 
-  teams(association?: number) {
+  teams(teamParams: TeamsParams) {
+    const params: any = {};
+    if (teamParams.association) {
+      params.association = teamParams.association.toString();
+    }
+    if (teamParams.age) {
+      params.age = teamParams.age.toString();
+    }
     return this.http.get(`${environment.apiUrl}/teams`, {
-      params: association ? { association: association.toString() } : {},
+      params,
     });
   }
 
@@ -28,8 +40,8 @@ export class TeamsService {
     });
   }
 
-  getTeams(associationId: number): Observable<SelectItem[]> {
-    return this.teams(associationId).pipe(
+  getTeams(teamParams: TeamsParams): Observable<SelectItem[]> {
+    return this.teams(teamParams).pipe(
       map((teams) =>
         (teams as any[]).map((team) => ({ label: team.name, value: team.id }))
       )

@@ -48,7 +48,7 @@ interface AutoCompleteCompleteEvent {
         </p-autocomplete>
         <label [for]="inputId(label)">{{ label | titlecase }}</label>
       </p-iftalabel>
-      @if (isInvalid()) {
+      @if (control.invalid && (control.dirty || control.touched)) {
       <p-message severity="error" size="small" variant="simple"
         >{{ label | titlecase }} is required.</p-message
       >
@@ -76,10 +76,6 @@ export class AutoCompleteComponent {
 
   onSelect(event: AutoCompleteSelectEvent) {
     this.control?.setValue(event.value);
-  }
-
-  isInvalid() {
-    return this.control?.invalid && this.control?.touched;
   }
 
   filterItems(event: AutoCompleteCompleteEvent) {
