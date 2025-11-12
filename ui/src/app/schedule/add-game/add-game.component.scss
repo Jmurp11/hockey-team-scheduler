@@ -6,15 +6,27 @@
   width: 100%;
 }
 
+form {
+  overflow: visible; // Let the dialog handle overflow
+}
+
 .section {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: .5rem 1rem;
+  gap: 0.5rem 1rem;
+  padding-bottom: 2rem; // Add space for date picker overlay
 
   &__item {
     ::ng-deep .form-field {
       min-width: 200px;
       max-width: 275px;
     }
+  }
+}
+
+// Global styles for datepicker overlay when appended to body
+:host ::ng-deep {
+  .p-datepicker-panel {
+    z-index: 9999 !important; // Very high z-index to appear above dialog
   }
 }

@@ -30,6 +30,11 @@ p-datepicker {
   & ::ng-deep .p-inputtext {
     height: 56px;
   }
+
+  // Ensure datepicker panel appears correctly in scrollable containers
+  & ::ng-deep .p-datepicker-panel {
+    z-index: 1100 !important;
+  }
 }
 
 p-message {

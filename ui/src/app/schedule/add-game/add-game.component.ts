@@ -40,25 +40,18 @@ import { Observable } from 'rxjs/internal/Observable';
     ButtonModule,
     SelectButtonComponent,
   ],
-  providers: [LoadingService],
+  providers: [LoadingService, TeamsService],
   template: `
     <form [formGroup]="addGameForm">
       <app-dialog [visible]="addGameService.isVisible()">
         <ng-template #header>
           <div class="dialog-header">
             <span><h2>Add Game</h2></span>
-            <span
-              ><p-button
-                icon="pi pi-times"
-                [rounded]="true"
-                [text]="true"
-                (click)="addGameService.closeDialog()"
-              />
-            </span>
           </div>
         </ng-template>
+        @if (formFieldsData.length > 0) {
         <div class="section">
-          @for (field of formFields(items); track field.controlName) { @switch
+          @for (field of formFieldsData; track field.controlName) { @switch
           (field.controlType) { @case ('input') {
           <app-input
             class="section__item"
@@ -88,7 +81,7 @@ import { Observable } from 'rxjs/internal/Observable';
           />
           } } }
           <app-select-button
-            [control]="getFormControl(addGameForm, 'gameType')"
+            [control]="getFormControl(addGameForm, 'game_type')"
             label="Game Type"
             [options]="gameTypeOptions"
           ></app-select-button>
@@ -99,12 +92,13 @@ import { Observable } from 'rxjs/internal/Observable';
             [options]="isHomeOptions"
           ></app-select-button>
         </div>
+        }
         <ng-template #footer>
           <p-button
             label="Cancel"
             [text]="true"
             severity="secondary"
-            (click)="addGameService.closeDialog()"
+            (click)="cancel()"
           />
           <p-button label="Submit" (click)="submit()"></p-button>
         </ng-template>
@@ -120,7 +114,7 @@ export class AddGameComponent implements OnInit {
 
   addGameService = inject(AddGameService);
   teamsService = inject(TeamsService);
-  
+
   gameTypeOptions = [
     { label: 'League', value: 'league' },
     { label: 'Playoff', value: 'playoff' },
@@ -128,7 +122,8 @@ export class AddGameComponent implements OnInit {
     { label: 'Exhibition', value: 'exhibition' },
   ];
 
-  items$: Observable<any[]>;
+  items$: Observable<any>;
+  formFieldsData: any[] = [];
 
   isHomeOptions = [
     { label: 'Home', value: 'home' },
@@ -158,7 +153,7 @@ export class AddGameComponent implements OnInit {
     date: new FormControl(null, {
       validators: [Validators.required, Validators.minLength(6)],
     }),
-    gameType: new FormControl(null, {
+    game_type: new FormControl(null, {
       validators: [Validators.required, Validators.minLength(6)],
     }),
     isHome: new FormControl(null, {
@@ -168,13 +163,29 @@ export class AddGameComponent implements OnInit {
 
   ngOnInit(): void {
     // TODO: update endpoint to accept parameter for age group
-    this.items$ = this.teamsService.getTeams(1);
+    this.items$ = this.teamsService.teams({ age: '16u' });
+
+    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
+      this.formFieldsData = getFormFields(items);
+    });
   }
 
   submit() {
+    const input = {
+      ...this.addGameForm.value,
+      country: this.addGameForm.value.country.value,
+      state: this.addGameForm.value.state.value,
+      opponent: this.addGameForm.value.opponent.value.id,
+      isHome: this.addGameForm.value.isHome === 'home',
+    };
     this.addGameService
-      .addGame(this.addGameForm.value)
+      .addGame(input)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.addGameService.closeDialog());
+  }
+
+  cancel() {
+    this.addGameForm.reset();
+    this.addGameService.closeDialog();
   }
 }
