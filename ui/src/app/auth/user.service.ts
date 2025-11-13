@@ -8,6 +8,11 @@ export class UserService {
   authService = inject(AuthService);
 
   async updateUserProfile(update: UpdateUser) {
+    console.log(
+      'Updating user profile with data:',
+      update,
+      this.authService.currentUser()
+    );
     const updateAuthUser = await this.supabaseClient!.auth.updateUser({
       email: update.email,
       password: update.password,
@@ -26,9 +31,9 @@ export class UserService {
         association: update.association,
         team: update.team,
         is_paid: true,
-        age: 0, // Default value, can be updated later
+        age: update.age,
       })
-      .eq('user_id', updateAuthUser.data.user?.id)
+      .eq('user_id', update.id)
       .select();
 
     if (updateAppUser.error) {
@@ -72,5 +77,11 @@ export class UserService {
 
   sendPasswordResetEmail(email: string) {
     return this.supabaseClient!.auth.resetPasswordForEmail(email);
+  }
+
+  getAge(team: string) {
+    const ageGroupRegex = /\b(\d{1,2}U)\b/;
+    const match = team.match(ageGroupRegex);
+    return match ? match[1] : null;
   }
 }

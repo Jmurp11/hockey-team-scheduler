@@ -26,13 +26,22 @@ import { TournamentCardHeaderComponent } from './tournament-card-header/tourname
         <app-tournament-card-content [tournament]="tournament" />
       </ng-template>
       <ng-template #footer>
-        <p-button
-          icon="pi pi-trophy"
-          iconPos="right"
-          label="Register"
-          variant="outlined"
-          (click)="registerForTournament(tournament)"
-      /></ng-template>
+        <span class="button-container"
+          ><p-button
+            icon="pi pi-trophy"
+            iconPos="right"
+            label="Register"
+            variant="outlined"
+            (click)="registerForTournament(tournament)"
+        /></span>
+        <span class="button-container">
+          <p-button
+            icon="pi pi-plus"
+            iconPos="right"
+            label="Add to Schedule"
+            variant="outlined"
+            (click)="addToSchedule(tournament)" /></span
+      ></ng-template>
     </app-card>
     }
   `,
@@ -45,5 +54,11 @@ export class TournamentsListComponent {
 
   registerForTournament(tournament: any) {
     window.open(tournament.registrationUrl, '_blank');
+  }
+
+  addToSchedule(tournament: any) {
+    console.log('Add to schedule', {
+      ...tournament
+    })
   }
 }
