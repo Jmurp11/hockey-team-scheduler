@@ -23,10 +23,8 @@ import { combineLatest, Observable, startWith } from 'rxjs';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
-import { SelectComponent } from '../../shared/components/select/select.component';
 import { SliderComponent } from '../../shared/components/slider/slider.component';
 import { LoadingService } from '../../shared/services/loading.service';
-import { SelectParams } from '../../shared/types/form-item.type';
 import { getFormControl } from '../../shared/utilities/form.utility';
 
 @Component({
@@ -41,7 +39,7 @@ import { getFormControl } from '../../shared/utilities/form.utility';
     SliderComponent,
     ButtonModule,
     IftaLabelModule,
-    SelectComponent,
+    // SelectComponent,
   ],
   providers: [LoadingService],
   template: `
@@ -75,13 +73,13 @@ import { getFormControl } from '../../shared/utilities/form.utility';
               />
             </div>
             }
-            <div>
+            <!-- <div>
               <app-select
                 [control]="getFormControl(opponentsForm, 'age')"
                 [options]="ageOptions"
                 label="Age"
               />
-            </div>
+            </div> -->
             <div class="slider-container">
               <p-iftalabel for="distance"
                 >Maximum Travel Distance (mi):
@@ -145,27 +143,27 @@ export class OpponentsFilterComponent implements OnInit {
 
   opponentsForm: FormGroup;
 
-  ages = [
-    { label: '19u', value: '19u' },
-    { label: '18u', value: '18u' },
-    { label: '16u', value: '16u' },
-    { label: '14u', value: '14u' },
-    { label: '13u', value: '13u' },
-    { label: '12u', value: '12u' },
-    { label: '11u', value: '11u' },
-    { label: '10u', value: '10u' },
-    { label: '9u', value: '9u' },
-  ];
+  // ages = [
+  //   { label: '19u', value: '19u' },
+  //   { label: '18u', value: '18u' },
+  //   { label: '16u', value: '16u' },
+  //   { label: '14u', value: '14u' },
+  //   { label: '13u', value: '13u' },
+  //   { label: '12u', value: '12u' },
+  //   { label: '11u', value: '11u' },
+  //   { label: '10u', value: '10u' },
+  //   { label: '9u', value: '9u' },
+  // ];
 
-  ageOptions: SelectParams<{ label: string; value: string }> = {
-    itemLabel: 'label',
-    listItems: this.ages,
-    placeholder: '',
-    isAutoComplete: false,
-    emptyMessage: 'No ages found',
-    errorMessage: 'ERROR',
-    showClear: true,
-  };
+  // ageOptions: SelectParams<{ label: string; value: string }> = {
+  //   itemLabel: 'label',
+  //   listItems: this.ages,
+  //   placeholder: '',
+  //   isAutoComplete: false,
+  //   emptyMessage: 'No ages found',
+  //   errorMessage: 'ERROR',
+  //   showClear: true,
+  // };
 
   ngOnInit(): void {
     this.opponentsForm = this.initializeForm();
@@ -181,30 +179,30 @@ export class OpponentsFilterComponent implements OnInit {
         }
       });
 
-    this.opponentsForm
-      .get('age')
-      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        switch (value?.value || value) {
-          case '19u':
-            this.opponentsForm.get('girlsOnly')?.setValue(true);
-            break;
-          case '13u':
-            this.opponentsForm.get('girlsOnly')?.setValue(false);
-            this.opponentsForm.get('girlsOnly')?.disable();
-            break;
-          case '11u':
-            this.opponentsForm.get('girlsOnly')?.setValue(false);
-            this.opponentsForm.get('girlsOnly')?.disable();
-            break;
-          case '9u':
-            this.opponentsForm.get('girlsOnly')?.setValue(false);
-            this.opponentsForm.get('girlsOnly')?.disable();
-            break;
-          default:
-            this.opponentsForm.get('girlsOnly')?.enable();
-        }
-      });
+    // this.opponentsForm
+    //   .get('age')
+    //   ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+    //   .subscribe((value) => {
+    //     switch (value?.value || value) {
+    //       case '19u':
+    //         this.opponentsForm.get('girlsOnly')?.setValue(true);
+    //         break;
+    //       case '13u':
+    //         this.opponentsForm.get('girlsOnly')?.setValue(false);
+    //         this.opponentsForm.get('girlsOnly')?.disable();
+    //         break;
+    //       case '11u':
+    //         this.opponentsForm.get('girlsOnly')?.setValue(false);
+    //         this.opponentsForm.get('girlsOnly')?.disable();
+    //         break;
+    //       case '9u':
+    //         this.opponentsForm.get('girlsOnly')?.setValue(false);
+    //         this.opponentsForm.get('girlsOnly')?.disable();
+    //         break;
+    //       default:
+    //         this.opponentsForm.get('girlsOnly')?.enable();
+    //     }
+    //   });
   }
 
   submit() {
@@ -213,12 +211,12 @@ export class OpponentsFilterComponent implements OnInit {
 
   initializeForm() {
     return new FormGroup({
-      age: new FormControl(
-        { label: '14u', value: '14u' },
-        {
-          validators: [Validators.required],
-        }
-      ),
+      // age: new FormControl(
+      //   { label: '14u', value: '14u' },
+      //   {
+      //     validators: [Validators.required],
+      //   }
+      // ),
       association: new FormControl(null, {
         validators: [Validators.required],
       }),

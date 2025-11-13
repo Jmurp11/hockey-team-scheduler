@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
-import { NearbyTeamsParams } from '../types/nearby-teams.type';
 import { environment } from '../../environments/environment';
+import { NearbyTeamsParams } from '../types/nearby-teams.type';
 
 export interface TeamsParams {
   association?: number;
@@ -15,6 +15,7 @@ export class TeamsService {
   private http = inject(HttpClient);
 
   teams(teamParams: TeamsParams) {
+    console.log({ teamParams });
     const params: any = {};
     if (teamParams.association) {
       params.association = teamParams.association.toString();

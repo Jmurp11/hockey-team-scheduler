@@ -13,6 +13,7 @@ import {
 } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Observable, startWith, switchMap } from 'rxjs';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -41,6 +42,7 @@ import { UserService } from '../user.service';
     PasswordComponent,
     AutoCompleteComponent,
     ButtonModule,
+    ProgressSpinnerModule,
   ],
   providers: [
     LoadingService,
@@ -55,6 +57,7 @@ import { UserService } from '../user.service';
       <app-card class="card">
         <ng-template #title>Complete Profile</ng-template>
         <ng-template #content>
+          @if (associations$ | async; as associations) {
           <form [formGroup]="registerForm" (ngSubmit)="submit()">
             <app-input
               [control]="getFormControl(registerForm, 'email')"
@@ -76,13 +79,12 @@ import { UserService } from '../user.service';
               label="Name"
             />
 
-            @if (associations$ | async; as associations) {
             <app-auto-complete
               [control]="getFormControl(registerForm, 'association')"
               label="Association"
               [items]="associations"
             />
-            } @if (teams$ | async; as teams) { @if (teams.length > 0) {
+            @if (teams$ | async; as teams) { @if (teams.length > 0) {
             <app-auto-complete
               [control]="getFormControl(registerForm, 'team')"
               label="Team"
@@ -101,7 +103,13 @@ import { UserService } from '../user.service';
               </p-button>
             </div>
           </form>
+          } @else {
+          <div class="loading-spinner">
+            <p-progressSpinner></p-progressSpinner>
+          </div>
+          }
         </ng-template>
+
         <ng-template #footer> </ng-template>
       </app-card>
     </app-auth-container>
@@ -184,7 +192,8 @@ export class RegisterComponent implements OnInit {
             observer.complete();
           });
         }
-        return this.teamsService.getTeams(association.value);
+
+        return this.teamsService.getTeams({ association: association.value });
       })
     );
   }
@@ -194,11 +203,13 @@ export class RegisterComponent implements OnInit {
       ...this.registerForm.value,
       association: this.registerForm.get('association')?.value?.value,
       team: this.registerForm.get('team')?.value?.value,
+      age: this.userService.getAge(this.registerForm.get('team')?.value?.label),
+      id: this.authService.session()?.user?.id,
     };
 
     await this.userService.updateUserProfile(submission);
 
-    this.navigation.navigateToLink('/app/dashboard');
+    this.navigation.navigateToLink('/app/schedule');
   }
 
   getPasswordErrors() {

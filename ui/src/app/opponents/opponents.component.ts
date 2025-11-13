@@ -45,7 +45,7 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
     <app-opponents
       (selectedInputs)="onSearchParamsChanged($event)"
       [associations$]="associations$"
-      [userDefault$]="user$"
+      [userDefault$]="userAssociation$"
     />
 
     @if (isLoading()) {
@@ -93,11 +93,12 @@ export class OpponentsComponent implements OnInit {
     sortDirection: 'asc',
   });
 
-  user$: Observable<SelectItem> = toObservable(
-    this.authService.currentUser
-  ).pipe(
+  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
     startWith(null),
-    filter((user) => user != null),
+    filter((user) => user != null)
+  );
+
+  userAssociation$: Observable<SelectItem> = this.user$.pipe(
     map((user) => ({
       label: user?.association_name,
       value: user?.association_id,
@@ -131,10 +132,11 @@ export class OpponentsComponent implements OnInit {
   }
 
   getNearbyTeams(params: any) {
+    console.log(this.authService.currentUser());
     return this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
-      p_age: params.age.value.toLowerCase(),
+      p_age: this.authService.currentUser().age.toLowerCase(),
       p_max_rating: params.rating[1],
       p_min_rating: params.rating[0],
       p_max_distance: params.distance,

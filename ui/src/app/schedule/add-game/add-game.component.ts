@@ -6,6 +6,7 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -13,6 +14,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Observable } from 'rxjs/internal/Observable';
+import { AuthService } from '../../auth/auth.service';
 import { SelectComponent, TeamsService } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
@@ -23,8 +27,6 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { getFormControl } from '../../shared/utilities/form.utility';
 import { getFormFields } from './add-game.constants';
 import { AddGameService } from './add-game.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-add-game',
@@ -39,9 +41,11 @@ import { Observable } from 'rxjs/internal/Observable';
     DialogComponent,
     ButtonModule,
     SelectButtonComponent,
+    ProgressSpinnerModule,
   ],
   providers: [LoadingService, TeamsService],
   template: `
+    @if (items$ | async; as items) {
     <form [formGroup]="addGameForm">
       <app-dialog [visible]="addGameService.isVisible()">
         <ng-template #header>
@@ -104,6 +108,11 @@ import { Observable } from 'rxjs/internal/Observable';
         </ng-template>
       </app-dialog>
     </form>
+    } @else {
+    <div class="loading-spinner">
+      <p-progressSpinner />
+    </div>
+    }
   `,
   styleUrls: ['./add-game.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,6 +120,8 @@ import { Observable } from 'rxjs/internal/Observable';
 export class AddGameComponent implements OnInit {
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);
+
+  private authService = inject(AuthService);
 
   addGameService = inject(AddGameService);
   teamsService = inject(TeamsService);
@@ -134,9 +145,11 @@ export class AddGameComponent implements OnInit {
 
   formFields = getFormFields;
 
+  currentUser = this.authService.currentUser();
+
   addGameForm: FormGroup = new FormGroup({
     opponent: new FormControl(null, {
-      validators: [Validators.required, Validators.email],
+      validators: [Validators.required, Validators.minLength(6)],
     }),
     rink: new FormControl(null, {
       validators: [Validators.required, Validators.minLength(6)],
@@ -162,21 +175,30 @@ export class AddGameComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // TODO: update endpoint to accept parameter for age group
-    this.items$ = this.teamsService.teams({ age: '16u' });
+    console.log({ cur: this.currentUser });
+    this.items$ = this.teamsService.teams({
+      age: this.currentUser.age,
+    });
 
     this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
+      console.log({ items });
       this.formFieldsData = getFormFields(items);
     });
   }
 
   submit() {
+    const dateValue = this.addGameForm.value.date;
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+
     const input = {
       ...this.addGameForm.value,
       country: this.addGameForm.value.country.value,
       state: this.addGameForm.value.state.value,
       opponent: this.addGameForm.value.opponent.value.id,
       isHome: this.addGameForm.value.isHome === 'home',
+      user: this.currentUser.user_id,
+      date: date.toISOString().split('T')[0], // YYYY-MM-DD
+      time: date.toTimeString().split(' ')[0],
     };
     this.addGameService
       .addGame(input)

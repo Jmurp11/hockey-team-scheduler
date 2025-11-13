@@ -4,6 +4,7 @@ export interface User {
   email: string;
   association: string;
   team: string;
+  age: string;
   stripeCustomerId?: string;
 }
 
