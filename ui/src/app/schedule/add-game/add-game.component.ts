@@ -2,9 +2,12 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
+  Input,
   OnInit,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -27,6 +30,7 @@ import { LoadingService } from '../../shared/services/loading.service';
 import { getFormControl } from '../../shared/utilities/form.utility';
 import { getFormFields } from './add-game.constants';
 import { AddGameService } from './add-game.service';
+import { Game } from '../../shared/types/game.type';
 
 @Component({
   selector: 'app-add-game',
@@ -50,7 +54,9 @@ import { AddGameService } from './add-game.service';
       <app-dialog [visible]="addGameService.isVisible()">
         <ng-template #header>
           <div class="dialog-header">
-            <span><h2>Add Game</h2></span>
+            <span
+              ><h2>{{ title() }}</h2></span
+            >
           </div>
         </ng-template>
         @if (formFieldsData.length > 0) {
@@ -118,6 +124,9 @@ import { AddGameService } from './add-game.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddGameComponent implements OnInit {
+  @Input() gameData: Game | null = null;
+  @Input() editMode: boolean = false;
+
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);
 
@@ -125,6 +134,9 @@ export class AddGameComponent implements OnInit {
 
   addGameService = inject(AddGameService);
   teamsService = inject(TeamsService);
+
+  private editModeSignal = signal(false);
+  title = computed(() => (this.editModeSignal() ? 'Update Game' : 'Add Game'));
 
   gameTypeOptions = [
     { label: 'League', value: 'league' },
@@ -147,42 +159,48 @@ export class AddGameComponent implements OnInit {
 
   currentUser = this.authService.currentUser();
 
-  addGameForm: FormGroup = new FormGroup({
-    opponent: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    rink: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    city: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    state: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    country: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    date: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    game_type: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-    isHome: new FormControl(null, {
-      validators: [Validators.required, Validators.minLength(6)],
-    }),
-  });
+  addGameForm: FormGroup;
 
   ngOnInit(): void {
-    console.log({ cur: this.currentUser });
+    console.log({gameData: this.gameData})
+    this.addGameForm = this.initGameForm();
+    this.editModeSignal.set(this.editMode);
+
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
     });
 
-    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
-      console.log({ items });
-      this.formFieldsData = getFormFields(items);
+    this.items$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((items) => (this.formFieldsData = getFormFields(items)));
+  }
+
+  initGameForm() {
+    return new FormGroup({
+      opponent: new FormControl(this.gameData?.opponent || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      rink: new FormControl(this.gameData?.rink || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      city: new FormControl(this.gameData?.city || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      state: new FormControl(this.gameData?.state || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      country: new FormControl(this.gameData?.country || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      date: new FormControl(this.gameData?.date || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      game_type: new FormControl(this.gameData?.game_type || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      isHome: new FormControl(this.gameData?.isHome || null, {
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
     });
   }
 
@@ -190,18 +208,24 @@ export class AddGameComponent implements OnInit {
     const dateValue = this.addGameForm.value.date;
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
 
-    const input = {
-      ...this.addGameForm.value,
-      country: this.addGameForm.value.country.value,
-      state: this.addGameForm.value.state.value,
-      opponent: this.addGameForm.value.opponent.value.id,
-      isHome: this.addGameForm.value.isHome === 'home',
-      user: this.currentUser.user_id,
-      date: date.toISOString().split('T')[0], // YYYY-MM-DD
-      time: date.toTimeString().split(' ')[0],
-    };
-    this.addGameService
-      .addGame(input)
+    const input = [
+      {
+        ...this.addGameForm.value,
+        country: this.addGameForm.value.country.value,
+        state: this.addGameForm.value.state.value,
+        opponent: this.addGameForm.value.opponent.value.id,
+        isHome: this.addGameForm.value.isHome === 'home',
+        user: this.currentUser.user_id,
+        date: date.toISOString().split('T')[0], // YYYY-MM-DD
+        time: date.toTimeString().split(' ')[0],
+      },
+    ];
+
+    const operation$ = this.editMode
+      ? this.addGameService.updateGame({ id: this.gameData!.id, ...input[0] })
+      : this.addGameService.addGame(input);
+
+    operation$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.addGameService.closeDialog());
   }

@@ -1,12 +1,13 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Patch,
-    Post,
-    Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { CreateGameDto, Game, GamesQueryDto } from '../types';
@@ -52,28 +53,28 @@ export class GamesController {
   @ApiResponse({ status: 404, description: 'Not Found.' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.gamesService.findOne(+id);
+    return this.gamesService.findOne(id);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'All records have been successfully returned.',
+    description: 'Updated a game record successfully.',
     type: [Game],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateGameDto: Partial<CreateGameDto>,
   ) {
-    return this.gamesService.update(+id, updateGameDto);
+    return this.gamesService.update(id, updateGameDto);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'All records have been successfully returned.',
+    description: 'Game record has been removed successfully.',
     type: [Game],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -81,6 +82,6 @@ export class GamesController {
   @ApiResponse({ status: 404, description: 'Not Found.' })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.gamesService.remove(+id);
+    return this.gamesService.remove(id);
   }
 }

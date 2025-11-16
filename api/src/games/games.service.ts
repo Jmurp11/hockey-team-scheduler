@@ -5,7 +5,6 @@ import { supabase } from '../supabase';
 @Injectable()
 export class GamesService {
   async create(createGameDto: CreateGameDto[]): Promise<Game[]> {
-    console.log('Creating game:', createGameDto);
 
     const { data, error } = await supabase
       .from('games')
@@ -21,18 +20,20 @@ export class GamesService {
 
   async findAll(query: GamesQueryDto): Promise<Game[]> {
     const { data, error } = await supabase
-      .from('games')
+      .from('gamesfull')
       .select('*')
       .match(query);
 
+    console.log('Fetched games with query', query, data);
     if (error) {
       console.error('Error fetching games:', error);
       throw new Error('Could not fetch games');
     }
+
     return data;
   }
 
-  async findOne(id: number): Promise<Game | null> {
+  async findOne(id: string): Promise<Game | null> {
     const { data, error } = await supabase
       .from('games')
       .select('*')
@@ -47,7 +48,7 @@ export class GamesService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateGameDto: Partial<CreateGameDto>,
   ): Promise<Game | null> {
     console.log('Updating game:', id, updateGameDto);
@@ -65,7 +66,7 @@ export class GamesService {
     return data;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const { error } = await supabase.from('games').delete().eq('id', id);
 
     if (error) {

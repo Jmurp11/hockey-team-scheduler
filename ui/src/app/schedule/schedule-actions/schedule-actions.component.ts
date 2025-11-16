@@ -3,9 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
   ViewContainerRef,
 } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
 import { AddGameService } from '../add-game/add-game.service';
 
@@ -16,28 +17,53 @@ import { AddGameService } from '../add-game/add-game.service';
   providers: [],
   template: `
     <div class="row">
-      <p-button
-        class="btn-1"
-        icon="pi pi-plus"
-        label="Add Game"
-        size="small"
-        (click)="openAddGameDialog()"
-      />
-      <p-button icon="pi pi-upload" label="Upload CSV" size="small" />
+      <div></div>
+      <div class="sub-row">
+        <p-button
+          class="btn-1"
+          icon="pi pi-plus"
+          label="Add Game"
+          size="small"
+          (click)="openAddGameDialog()"
+        />
+        <p-button icon="pi pi-upload" label="Upload CSV" size="small" />
+        <p-button
+          icon="pi pi-users"
+          label="Nearby Teams"
+          size="small"
+          (click)="findNearbyTeams()"
+        />
+        <p-button
+          icon="pi pi-trophy"
+          label="Add Tournaments"
+          size="small"
+          (click)="findTournaments()"
+        />
+      </div>
     </div>
   `,
   styleUrls: ['./schedule-actions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScheduleActionsComponent {
+export class ScheduleActionsComponent implements OnInit {
   addGameService = inject(AddGameService);
 
   private viewContainerRef = inject(ViewContainerRef);
+  private router = inject(Router);
 
+  ngOnInit(): void {
+    this.addGameService.setViewContainerRef(this.viewContainerRef);
+  }
+  
   async openAddGameDialog() {
-    const { AddGameComponent } = await import('../add-game/add-game.component');
-    this.viewContainerRef.clear();
-    this.viewContainerRef.createComponent(AddGameComponent);
     this.addGameService.openDialog();
+  }
+
+  findNearbyTeams() {
+    this.router.navigate(['/app/opponents']);
+  }
+
+  findTournaments() {
+    this.router.navigate(['/app/tournaments']);
   }
 }

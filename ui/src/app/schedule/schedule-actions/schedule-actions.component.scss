@@ -1,10 +1,23 @@
 @use "../../scss/mixins/_mixins.scss" as *;
 
+.sub-row {
+  @include flex(space-evenly, center, row);
+  width: 50%;
+
+  @media (max-width: 1024px) {
+    width: 75%;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
 .row {
-  @include flex(flex-end, center, row);
+  @include flex(space-between, center, row);
   width: 100%;
 }
 
 .btn-1 {
-    margin-right: 1rem;
+  margin-right: 1rem;
 }

@@ -32,6 +32,7 @@ export class UserService {
         team: update.team,
         is_paid: true,
         age: update.age,
+        name: update.name,
       })
       .eq('user_id', update.id)
       .select();

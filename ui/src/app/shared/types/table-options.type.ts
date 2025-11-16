@@ -12,5 +12,5 @@ export interface TableOptions {
   frozenValue?: any[];
   stateStorage: 'local' | 'session';
   stateKey?: string;
-  columns: { field: string; header: string, sortable: boolean }[];
+  columns: { field: string; header: string, sortable: boolean, width?: string; }[];
 }
