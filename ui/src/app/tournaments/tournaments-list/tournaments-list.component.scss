@@ -34,8 +34,4 @@ app-card {
   ::ng-deep .p-card-content {
     @include flex(center, center, row);
   }
-
-  .button-container {
-    padding: 1rem;
-  }
 }

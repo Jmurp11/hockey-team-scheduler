@@ -50,15 +50,12 @@ export class CallbackComponent implements OnInit {
       }
 
       if (data.session) {
-        console.log('User authenticated:', data.session.user);
-
-        // Check if user needs to complete profile
         const needsProfile = await this.checkUserProfile(data.session.user.id);
 
         if (needsProfile) {
           this.router.navigate(['/app/complete-profile']);
         } else {
-          this.router.navigate(['/app/dashboard']);
+          this.router.navigate(['/app/schedule']);
         }
       } else {
         console.log('No session found');
@@ -81,10 +78,14 @@ export class CallbackComponent implements OnInit {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Profile check error:', error);
-        return true; // Default to needing profile setup
+        return true;
       }
 
-      // Return true if profile doesn't exist or is incomplete
+      console.log('Profile data:', data);
+      console.log({noData: !data});
+      console.log({noName: !data.name});
+      console.log({noAssociation: !data.association});
+
       return !data || !data.name || !data.association;
     } catch (error) {
       console.error('Profile check unexpected error:', error);

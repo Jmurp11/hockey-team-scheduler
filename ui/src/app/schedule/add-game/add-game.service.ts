@@ -1,7 +1,16 @@
-import { inject, Injectable, signal } from '@angular/core';
+import {
+  ComponentRef,
+  inject,
+  Injectable,
+  signal,
+  ViewContainerRef,
+} from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { CreateGame } from '../../shared/types/game.type';
+import { CreateGame, Game } from '../../shared/types/game.type';
+import { AddGameComponent } from '../add-game/add-game.component';
+import { ScheduleService } from '../schedule.service';
+import { of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -10,13 +19,37 @@ export class AddGameService {
   private _isVisible = signal(false);
   private http = inject(HttpClient);
 
+  private componentRef: ComponentRef<AddGameComponent> | null = null;
+  private viewContainerRef: ViewContainerRef | null = null;
+  private scheduleService = inject(ScheduleService);
+
   isVisible = this._isVisible.asReadonly();
 
-  openDialog(): void {
+  setViewContainerRef(vcr: ViewContainerRef) {
+    this.viewContainerRef = vcr;
+  }
+
+  openDialog(gameData: any | null = null, editMode: boolean = false) {
+    if (this.componentRef) {
+      this.closeDialog();
+    }
+
+    if (this.viewContainerRef) {
+      this.componentRef =
+        this.viewContainerRef.createComponent(AddGameComponent);
+      this.componentRef.instance.gameData = gameData;
+      this.componentRef.instance.editMode = editMode;
+    }
+
     this._isVisible.set(true);
   }
 
-  closeDialog(): void {
+  closeDialog() {
+    if (this.componentRef) {
+      this.componentRef.destroy();
+      this.componentRef = null;
+    }
+
     this._isVisible.set(false);
   }
 
@@ -28,7 +61,25 @@ export class AddGameService {
     return this.http.get(`${environment.apiUrl}/games`);
   }
 
-  addGame(game: CreateGame) {
-    return this.http.post(`${environment.apiUrl}/games/add-games`, game);
+  addGame(games: CreateGame[]) {
+    return this.http.post(`${environment.apiUrl}/games/add-games`, games).pipe(
+      switchMap((response: any) => {
+        this.scheduleService.addGameCache(response);
+        console.log(
+          'Added game cache: ',
+          this.scheduleService.gamesCache.value
+        );
+        return of(response);
+      })
+    );
+  }
+
+  updateGame(game: Game) {
+    return this.http.put(`${environment.apiUrl}/games/${game.id}`, game).pipe(
+      switchMap((response: any) => {
+        this.scheduleService.updateGameCache(response);
+        return of(response);
+      })
+    );
   }
 }

@@ -80,7 +80,9 @@ import { TableOptions } from '../../types/table-options.type';
         <th>
           {{ col.header | titlecase }}
         </th>
-        }}
+        }} @if (hasActions) {
+        <th></th>
+        }
       </tr></ng-template
     >
     <ng-template pTemplate="body" let-rowData
@@ -121,6 +123,7 @@ export class TableComponent<T> {
   @Input() tableOpts: TableOptions;
   @Input() tableData: T[];
   @Input() exportColumns: ExportColumn[];
+  @Input() hasActions: boolean = false;
 
   onFilterInput(dt: Table, event: Event): void {
     const target = event.target as HTMLInputElement;

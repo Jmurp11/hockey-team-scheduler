@@ -1,37 +1,82 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  ViewContainerRef,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TableComponent } from '../shared/components/table/table.component';
 import { ExportColumn } from '../shared/types/export-column.type';
 import { TableOptions } from '../shared/types/table-options.type';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
+import {
+  filter,
+  map,
+  merge,
+  Observable,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import { ScheduleService } from './schedule.service';
+import { AuthService } from '../auth/auth.service';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
+import { AddGameService } from './add-game/add-game.service';
+import { Game } from '../shared/types/game.type';
 
 @Component({
   selector: 'app-schedule',
   standalone: true,
+  providers: [],
   imports: [
     CommonModule,
+    ButtonModule,
+    MenuModule,
     RouterModule,
     TableComponent,
     ScheduleActionsComponent,
   ],
   template: ` <div class="container">
-    <app-schedule-actions class="actions-container"></app-schedule-actions>
+    <app-schedule-actions class="actions-container" />
+    @if (tableData$ | async; as tableData) { @if (tableData.length > 0) {
     <app-table
       [tableOpts]="tableOpts"
       [tableData]="tableData"
       [exportColumns]="exportColumns"
+      [hasActions]="true"
     >
       <ng-template #header></ng-template>
       <ng-template #body let-rowData>
         <tr>
           @for (col of tableOpts.columns; track col.field) {
-          <td>
+          <td [ngStyle]="{ width: col.width }">
             {{ rowData[col.field] }}
           </td>
           }
-        </tr></ng-template
-      >
+          <td>
+            <p-button
+              (click)="actionsMenu.toggle($event)"
+              icon="pi pi-chevron-down"
+              label="Actions"
+              iconPos="right"
+              text="true"
+              rounded="true"
+              severity="primary"
+            />
+            <p-menu
+              #actionsMenu
+              [popup]="true"
+              [model]="actions"
+              (onShow)="getActions(rowData)"
+              appendTo="body"
+            />
+          </td></tr
+      ></ng-template>
       <ng-template #emptymessage>
         <tr>
           <td colspan="5">No data found.</td>
@@ -39,40 +84,17 @@ import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.co
       </ng-template>
       ></app-table
     >
+    } > }
   </div>`,
-  styles: [
-    `
-      @use '../scss/mixins/flex' as *;
-
-      .container {
-        @include flex(flex-start, stretch, column);
-        height: 100vh;
-        width: 100%;
-        padding: 1rem;
-        box-sizing: border-box;
-      }
-
-      .actions-container {
-        @include flex(flex-start, center, column);
-        height: auto;
-        width: 100%;
-        flex-shrink: 0;
-        margin-bottom: 1rem;
-      }
-
-      .table-container {
-        @include flex(flex-start, stretch, column);
-        flex: 1;
-        width: 100 %;
-
-        min-height: 0;
-        overflow: hidden;
-      }
-    `,
-  ],
+  styleUrls: ['./schedule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScheduleComponent {
+export class ScheduleComponent implements OnInit {
+  private authService = inject(AuthService);
+  private scheduleService = inject(ScheduleService);
+  private addGameService = inject(AddGameService);
+  private viewContainerRef = inject(ViewContainerRef);
+
   exportColumns: ExportColumn[];
 
   tableOpts: TableOptions = {
@@ -82,7 +104,7 @@ export class ScheduleComponent {
     sortField: 'date',
     sortOrder: 1,
     loading: false,
-    globalFilterFields: ['date', 'location', 'opponent', 'gameType'],
+    globalFilterFields: ['date', 'location', 'opponent', 'rink', 'gameType'],
     scrollable: true,
     scrollHeight: 'calc(100vh - 200px)',
     frozenValue: undefined,
@@ -92,179 +114,139 @@ export class ScheduleComponent {
     columns: [
       { field: 'date', header: 'Date', sortable: true },
       { field: 'time', header: 'Time', sortable: false },
-      { field: 'location', header: 'Location', sortable: false },
-      { field: 'opponent', header: 'Opponent', sortable: false },
-      { field: 'gameType', header: 'Game Type', sortable: false },
+      { field: 'rink', header: 'Rink', sortable: false },
+      {
+        field: 'location',
+        header: 'Location',
+        sortable: false,
+      },
+      {
+        field: 'displayOpponent',
+        header: 'Opponent',
+        sortable: false,
+      },
+      {
+        field: 'gameType',
+        header: 'Game Type',
+        sortable: false,
+      },
     ],
   };
 
-  tableData = [
-    {
-      id: 1,
-      date: '2025-09-15',
-      time: '19:30',
-      location: 'Scotiabank Arena',
-      opponent: 'Toronto Marauders',
-      gameType: 'Exhibition',
-    },
-    {
-      id: 2,
-      date: '2025-09-22',
-      time: '20:00',
-      location: 'Valley Ice Center',
-      opponent: 'Oakville Blades',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 3,
-      date: '2025-09-29',
-      time: '18:45',
-      location: 'Riverside Community Rink',
-      opponent: 'Hamilton Hawks',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 4,
-      date: '2025-10-06',
-      time: '19:00',
-      location: 'Memorial Sports Complex',
-      opponent: 'Mississauga Monarchs',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 5,
-      date: '2025-10-13',
-      time: '17:30',
-      location: 'Scotiabank Arena',
-      opponent: 'Burlington Bulldogs',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 6,
-      date: '2025-10-20',
-      time: '20:15',
-      location: 'East End Ice Palace',
-      opponent: 'Brampton Bears',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 7,
-      date: '2025-10-27',
-      time: '19:30',
-      location: 'Scotiabank Arena',
-      opponent: 'Vaughan Vikings',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 8,
-      date: '2025-11-03',
-      time: '18:00',
-      location: 'West Hill Arena',
-      opponent: 'Etobicoke Eagles',
-      gameType: 'Cup Tournament',
-    },
-    {
-      id: 9,
-      date: '2025-11-10',
-      time: '19:45',
-      location: 'Scotiabank Arena',
-      opponent: 'Richmond Hill Raiders',
-      gameType: 'Cup Tournament',
-    },
-    {
-      id: 10,
-      date: '2025-11-17',
-      time: '20:30',
-      location: 'Northern Community Center',
-      opponent: 'Markham Mustangs',
-      gameType: 'Cup Final',
-    },
-    {
-      id: 11,
-      date: '2025-11-24',
-      time: '19:15',
-      location: 'Caledon Centre',
-      opponent: 'Caledon Cougars',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 12,
-      date: '2025-12-01',
-      time: '18:30',
-      location: 'Pickering Recreation Complex',
-      opponent: 'Pickering Panthers',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 13,
-      date: '2025-12-08',
-      time: '20:45',
-      location: 'Aurora Community Centre',
-      opponent: 'Aurora Tigers',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 14,
-      date: '2025-12-15',
-      time: '17:45',
-      location: 'Newmarket Ice Palace',
-      opponent: 'Newmarket Hurricanes',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 15,
-      date: '2025-12-22',
-      time: '19:00',
-      location: 'Whitby Sports Centre',
-      opponent: 'Whitby Wolves',
-      gameType: 'Holiday Tournament',
-    },
-    {
-      id: 16,
-      date: '2025-12-29',
-      time: '18:15',
-      location: 'Oshawa Civic Centre',
-      opponent: 'Oshawa Generals',
-      gameType: 'Holiday Tournament',
-    },
-    {
-      id: 17,
-      date: '2026-01-05',
-      time: '20:00',
-      location: 'Ajax Community Centre',
-      opponent: 'Ajax Knights',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 18,
-      date: '2026-01-12',
-      time: '19:30',
-      location: 'Richmond Hill Arena',
-      opponent: 'Richmond Hill Rockets',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 19,
-      date: '2026-01-19',
-      time: '18:00',
-      location: 'Thornhill Community Centre',
-      opponent: 'Thornhill Thunder',
-      gameType: 'Regular Season',
-    },
-    {
-      id: 20,
-      date: '2026-01-26',
-      time: '20:15',
-      location: 'Scarborough Ice Arena',
-      opponent: 'Scarborough Sharks',
-      gameType: 'Playoff',
-    },
-  ];
+  user$: Observable<any> = toObservable(this.authService.currentUser);
+  tableData$: Observable<any[]> | undefined;
+
+  actions: any[] = [];
 
   constructor() {
     this.exportColumns = this.tableOpts.columns.map((col) => ({
       title: col.header,
       dataKey: col.field,
     }));
+  }
+
+  ngOnInit(): void {
+    this.addGameService.setViewContainerRef(this.viewContainerRef);
+
+    this.user$
+      .pipe(
+        filter((user) => !!user && !!user.user_id),
+        switchMap((user) => this.scheduleService.games(user.user_id)),
+        map((games) => this.transformGames(games)),
+        tap((games) => this.scheduleService.setGamesCache(games)),
+        take(1)
+      )
+      .subscribe();
+
+    this.tableData$ = this.scheduleService.gamesCache
+      .asObservable()
+      .pipe(map((games) => this.transformGames(games)));
+
+    this.tableData$.subscribe((c) => console.log('TABLE DATA: ', c));
+  }
+
+  private transformGames(games: any[]) {
+    
+    return games.map((game) => ({
+      ...game,
+      displayOpponent: game.opponent[0].id
+        ? game.opponent[0].name
+        : game.tournamentName,
+      location: `${game.city}, ${game.state}, ${game.country}`,
+      gameType:
+        game.game_type.charAt(0).toUpperCase() + game.game_type.slice(1),
+      originalTime: game.time,
+      time: this.formatTime(game.time),
+    }));
+  }
+
+  getActions(rowData: any) {
+    this.actions = [
+      {
+        label: 'Edit',
+        icon: 'pi pi-pencil',
+        iconPos: 'right',
+        command: () => {
+          this.addGameService.openDialog(this.formatUpdateData(rowData), true);
+        },
+      },
+      {
+        label: 'Delete',
+        icon: 'pi pi-trash',
+        iconPos: 'right',
+        command: () =>
+          this.scheduleService.deleteGame(rowData.id).pipe(take(1)).subscribe(),
+      },
+    ];
+  }
+
+  formatUpdateData(game: any & { originalTime?: string | undefined }) {
+    return {
+      ...game,
+      opponent: { label: game.opponent[0].name, value: game.opponent[0] },
+      date: this.combineDateAndTime(game.date.toString(), game.originalTime),
+      isHome: game.isHome ? 'home' : 'away',
+      state: this.setSelect(game.state),
+      country: this.setSelect(game.country),
+    };
+  }
+
+  setSelect(value: string | null | undefined) {
+    return { label: value, value };
+  }
+
+  // TODO: move to a util file
+  private formatTime(timeString: string): string {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  }
+
+  //TODO: move to a util file
+  private combineDateAndTime(dateString: string, timeString?: string): Date {
+    if (!timeString) return new Date(dateString);
+    const cleanTimeString = timeString.replace(/([+-]\d{2})$/, '');
+
+    const date = new Date(dateString); // base date (handles timezone on the input date)
+    const [h, m, s = '00'] = cleanTimeString.split(':');
+
+    const hours = Number(h);
+    const minutes = Number(m);
+    const seconds = Number(s);
+
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      hours,
+      minutes,
+      seconds
+    );
   }
 }

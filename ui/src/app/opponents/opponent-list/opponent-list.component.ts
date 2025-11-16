@@ -40,13 +40,25 @@ import { SortDirection } from '../../shared/components/sort-header/sort-header.t
         ></app-opponent-card-content>
       </ng-template>
       <ng-template #footer>
-        <p-button
-          icon="pi pi-user"
-          iconPos="right"
-          label="Contact Scheduler"
-          variant="outlined"
-          (click)="contactScheduler(opponent)"
-      /></ng-template>
+        <span class="button-container">
+          <p-button
+            icon="pi pi-user"
+            iconPos="right"
+            label="Contact Scheduler"
+            variant="outlined"
+            (click)="contactScheduler(opponent)"
+          />
+        </span>
+        <span class="button-container">
+          <p-button
+            icon="pi pi-plus"
+            iconPos="right"
+            label="Add Game"
+            variant="outlined"
+            (click)="addGame(opponent)"
+          />
+        </span>
+      </ng-template>
     </app-card>
     }
   `,
@@ -56,7 +68,7 @@ import { SortDirection } from '../../shared/components/sort-header/sort-header.t
 export class OpponentListComponent {
   @Input()
   opponents: any[];
-  
+
   private openAiService = inject(OpenAiService);
   destroyRef = inject(DestroyRef);
 
@@ -119,5 +131,10 @@ export class OpponentListComponent {
   formatLeagues(leagues: any): string {
     const raw = leagues.map((league: any) => JSON.parse(league));
     return raw.map((league: any) => league.abbreviation).join(', ');
+  }
+
+  addGame(opponent: any) {
+    console.log('Add game for opponent:', opponent);
+    // Implement the logic to add a game for the selected opponent
   }
 }
