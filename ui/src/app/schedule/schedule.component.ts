@@ -84,7 +84,13 @@ import { Game } from '../shared/types/game.type';
       </ng-template>
       ></app-table
     >
-    } > }
+    } @else {
+    <div class="no-games">
+      <p>
+        No games scheduled. Use the "Add Game" button to schedule a new game.
+      </p>
+    </div>
+    } }
   </div>`,
   styleUrls: ['./schedule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -148,25 +154,14 @@ export class ScheduleComponent implements OnInit {
   ngOnInit(): void {
     this.addGameService.setViewContainerRef(this.viewContainerRef);
 
-    this.user$
-      .pipe(
-        filter((user) => !!user && !!user.user_id),
-        switchMap((user) => this.scheduleService.games(user.user_id)),
-        map((games) => this.transformGames(games)),
-        tap((games) => this.scheduleService.setGamesCache(games)),
-        take(1)
-      )
-      .subscribe();
-
-    this.tableData$ = this.scheduleService.gamesCache
-      .asObservable()
-      .pipe(map((games) => this.transformGames(games)));
-
-    this.tableData$.subscribe((c) => console.log('TABLE DATA: ', c));
+    this.tableData$ = this.user$.pipe(
+      filter((user) => !!user && !!user.user_id),
+      switchMap(async (user) => this.scheduleService.gamesFull(user.user_id)),
+      map((games) => this.transformGames(games))
+    );
   }
 
   private transformGames(games: any[]) {
-    
     return games.map((game) => ({
       ...game,
       displayOpponent: game.opponent[0].id
