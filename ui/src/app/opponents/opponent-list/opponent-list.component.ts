@@ -3,17 +3,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  EventEmitter,
   inject,
   Input,
+  Output,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { map } from 'rxjs';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpenAiService } from '../../shared/services/openai.service';
+import { setSelect } from '../../shared/utilities/select.utility';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
-import { SortDirection } from '../../shared/components/sort-header/sort-header.type';
 
 @Component({
   selector: 'app-opponent-list',
@@ -69,7 +71,11 @@ export class OpponentListComponent {
   @Input()
   opponents: any[];
 
+  @Output()
+  opponentSelected = new EventEmitter<any>();
+
   private openAiService = inject(OpenAiService);
+
   destroyRef = inject(DestroyRef);
 
   async contactScheduler(opponent: any) {
@@ -84,7 +90,6 @@ export class OpponentListComponent {
         map((response: any) => JSON.parse(response.output_text))
       )
       .subscribe((response) => {
-        console.log({ response });
         window.alert(JSON.stringify(response));
       });
   }
@@ -111,20 +116,17 @@ export class OpponentListComponent {
   assignLabels(key: string, value: unknown) {
     switch (key) {
       case 'agd':
-        return { label: 'Avg Goal Diff', value: value };
+        return setSelect('Average Game Date', value);
       case 'record':
-        return { label: 'Record', value: value };
+        return setSelect('Record', value);
       case 'rating':
-        return { label: 'Rating', value: value };
+        return setSelect('Rating', value);
       case 'sched':
-        return { label: 'Strength of Schedule', value: value };
+        return setSelect('Strength of Schedule', value);
       case 'leagues':
-        return {
-          label: 'Leagues',
-          value: this.formatLeagues(value),
-        };
+        return setSelect('Leagues', this.formatLeagues(value));
       default:
-        return { label: key, value: value };
+        return setSelect(key, value);
     }
   }
 
@@ -134,7 +136,8 @@ export class OpponentListComponent {
   }
 
   addGame(opponent: any) {
-    console.log('Add game for opponent:', opponent);
-    // Implement the logic to add a game for the selected opponent
+    this.opponentSelected.emit({
+      opponent: setSelect(opponent.name, opponent),
+    });
   }
 }

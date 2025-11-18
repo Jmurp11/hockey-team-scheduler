@@ -6,28 +6,20 @@ import {
   OnInit,
   ViewContainerRef,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { filter, Observable, switchMap, take } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { CardComponent } from '../shared/components/card/card.component';
 import { TableComponent } from '../shared/components/table/table.component';
+import { AddGameService } from '../shared/services/add-game.service';
+import { ScheduleService } from '../shared/services/schedule.service';
 import { ExportColumn } from '../shared/types/export-column.type';
 import { TableOptions } from '../shared/types/table-options.type';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
-import {
-  filter,
-  map,
-  merge,
-  Observable,
-  startWith,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
-import { ScheduleService } from './schedule.service';
-import { AuthService } from '../auth/auth.service';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { ButtonModule } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
-import { AddGameService } from './add-game/add-game.service';
-import { Game } from '../shared/types/game.type';
 
 @Component({
   selector: 'app-schedule',
@@ -40,10 +32,16 @@ import { Game } from '../shared/types/game.type';
     RouterModule,
     TableComponent,
     ScheduleActionsComponent,
+    CardComponent,
+    ProgressSpinner,
   ],
   template: ` <div class="container">
     <app-schedule-actions class="actions-container" />
-    @if (tableData$ | async; as tableData) { @if (tableData.length > 0) {
+    @if (tableData$ | async; as tableData) { @if (tableData === null) {
+    <div class="loading-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+    } @else if (tableData.length > 0) {
     <app-table
       [tableOpts]="tableOpts"
       [tableData]="tableData"
@@ -75,20 +73,25 @@ import { Game } from '../shared/types/game.type';
               (onShow)="getActions(rowData)"
               appendTo="body"
             />
-          </td></tr
-      ></ng-template>
+          </td>
+        </tr>
+      </ng-template>
       <ng-template #emptymessage>
         <tr>
           <td colspan="5">No data found.</td>
         </tr>
       </ng-template>
-      ></app-table
-    >
+    </app-table>
     } @else {
     <div class="no-games">
-      <p>
-        No games scheduled. Use the "Add Game" button to schedule a new game.
-      </p>
+      <app-card class="card">
+        <ng-template #content>
+          <p>
+            You have no games scheduled. Click "Add Game" to get started! Click
+            Upload CSV to upload a batch of games
+          </p>
+        </ng-template>
+      </app-card>
     </div>
     } }
   </div>`,
@@ -140,7 +143,7 @@ export class ScheduleComponent implements OnInit {
   };
 
   user$: Observable<any> = toObservable(this.authService.currentUser);
-  tableData$: Observable<any[]> | undefined;
+  tableData$: Observable<any[] | null> | undefined;
 
   actions: any[] = [];
 
@@ -156,23 +159,8 @@ export class ScheduleComponent implements OnInit {
 
     this.tableData$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
-      switchMap(async (user) => this.scheduleService.gamesFull(user.user_id)),
-      map((games) => this.transformGames(games))
+      switchMap((user) => this.scheduleService.gamesFull(user.user_id))
     );
-  }
-
-  private transformGames(games: any[]) {
-    return games.map((game) => ({
-      ...game,
-      displayOpponent: game.opponent[0].id
-        ? game.opponent[0].name
-        : game.tournamentName,
-      location: `${game.city}, ${game.state}, ${game.country}`,
-      gameType:
-        game.game_type.charAt(0).toUpperCase() + game.game_type.slice(1),
-      originalTime: game.time,
-      time: this.formatTime(game.time),
-    }));
   }
 
   getActions(rowData: any) {
@@ -182,66 +170,21 @@ export class ScheduleComponent implements OnInit {
         icon: 'pi pi-pencil',
         iconPos: 'right',
         command: () => {
-          this.addGameService.openDialog(this.formatUpdateData(rowData), true);
+          this.addGameService.openDialog(
+            this.scheduleService.formatUpdateData(rowData),
+            true
+          );
         },
       },
       {
         label: 'Delete',
         icon: 'pi pi-trash',
         iconPos: 'right',
-        command: () =>
-          this.scheduleService.deleteGame(rowData.id).pipe(take(1)).subscribe(),
+        command: () => {
+          this.scheduleService.optimisticDeleteGame(rowData.id);
+          this.scheduleService.deleteGame(rowData.id).pipe(take(1)).subscribe();
+        },
       },
     ];
-  }
-
-  formatUpdateData(game: any & { originalTime?: string | undefined }) {
-    return {
-      ...game,
-      opponent: { label: game.opponent[0].name, value: game.opponent[0] },
-      date: this.combineDateAndTime(game.date.toString(), game.originalTime),
-      isHome: game.isHome ? 'home' : 'away',
-      state: this.setSelect(game.state),
-      country: this.setSelect(game.country),
-    };
-  }
-
-  setSelect(value: string | null | undefined) {
-    return { label: value, value };
-  }
-
-  // TODO: move to a util file
-  private formatTime(timeString: string): string {
-    const [hours, minutes] = timeString.split(':');
-    const date = new Date();
-    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  }
-
-  //TODO: move to a util file
-  private combineDateAndTime(dateString: string, timeString?: string): Date {
-    if (!timeString) return new Date(dateString);
-    const cleanTimeString = timeString.replace(/([+-]\d{2})$/, '');
-
-    const date = new Date(dateString); // base date (handles timezone on the input date)
-    const [h, m, s = '00'] = cleanTimeString.split(':');
-
-    const hours = Number(h);
-    const minutes = Number(m);
-    const seconds = Number(s);
-
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      hours,
-      minutes,
-      seconds
-    );
   }
 }

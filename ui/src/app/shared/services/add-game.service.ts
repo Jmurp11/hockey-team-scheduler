@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import {
   ComponentRef,
   inject,
@@ -6,11 +7,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { HttpClient } from '@angular/common/http';
-import { CreateGame, Game } from '../../shared/types/game.type';
-import { AddGameComponent } from '../add-game/add-game.component';
-import { ScheduleService } from '../schedule.service';
-import { of, switchMap } from 'rxjs';
+import { AddGameComponent } from '../../schedule/add-game/add-game.component';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +18,6 @@ export class AddGameService {
 
   private componentRef: ComponentRef<AddGameComponent> | null = null;
   private viewContainerRef: ViewContainerRef | null = null;
-  private scheduleService = inject(ScheduleService);
 
   isVisible = this._isVisible.asReadonly();
 
@@ -30,6 +26,7 @@ export class AddGameService {
   }
 
   openDialog(gameData: any | null = null, editMode: boolean = false) {
+    console.log({ gameData });
     if (this.componentRef) {
       this.closeDialog();
     }
@@ -61,11 +58,19 @@ export class AddGameService {
     return this.http.get(`${environment.apiUrl}/games`);
   }
 
-  addGame(games: CreateGame[]) {
-    return this.http.post(`${environment.apiUrl}/games/add-games`, games);
+  addGame(games: any[]) {
+    const input = games.map((game) => ({
+      ...game,
+      opponent: game.opponent[0].id,
+    }));
+    return this.http.post(`${environment.apiUrl}/games/add-games`, input);
   }
 
-  updateGame(game: Game) {
-    return this.http.put(`${environment.apiUrl}/games/${game.id}`, game);
+  updateGame(game: any) {
+    const input = {
+      ...game,
+      opponent: game.opponent[0].id,
+    };
+    return this.http.put(`${environment.apiUrl}/games/${game.id}`, input);
   }
 }

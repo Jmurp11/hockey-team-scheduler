@@ -4,6 +4,7 @@ import {
   Component,
   ContentChild,
   Input,
+  OnInit,
   TemplateRef,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
@@ -41,6 +42,7 @@ import { TableOptions } from '../../types/table-options.type';
     [sortField]="tableOpts.sortField"
     [sortOrder]="tableOpts.sortOrder"
     [rows]="tableOpts.rows"
+    [columns]="exportColumns"
     [rowsPerPageOptions]="tableOpts.rowsPerPageOptions"
     [tableStyle]="{ 'min-width': '85vw' }"
   >
@@ -64,7 +66,7 @@ import { TableOptions } from '../../types/table-options.type';
             icon="pi pi-external-link"
             size="small"
             label="Export"
-            (click)="exportCSV(dt)"
+            (click)="exportCSV()"
           />
         </div>
       </div>
@@ -115,7 +117,7 @@ import { TableOptions } from '../../types/table-options.type';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TableComponent<T> {
+export class TableComponent<T> implements OnInit {
   @ContentChild('header') header: TemplateRef<any> | undefined;
   @ContentChild('body') body: TemplateRef<any> | undefined;
   @ContentChild('emptymessage') emptymessage: TemplateRef<any> | undefined;
@@ -125,13 +127,58 @@ export class TableComponent<T> {
   @Input() exportColumns: ExportColumn[];
   @Input() hasActions: boolean = false;
 
+  ngOnInit(): void {
+    console.log({ exportCols: this.exportColumns });
+  }
   onFilterInput(dt: Table, event: Event): void {
     const target = event.target as HTMLInputElement;
     dt.filterGlobal(target.value, 'contains');
   }
 
-  exportCSV(dt: Table): void {
-    console.log(dt.value);
-    dt.exportCSV();
+  exportCSV(): void {
+    const data = this.createCsv(this.exportColumns, this.tableData);
+
+    const headers = this.exportColumns.map((col) => col.title).join(',');
+    const rows = this.formatRows(data);
+    const csv = [headers, ...rows].join('\n');
+
+    this.downloadCsv(csv, 'rinklink_team_schedule.csv');
+  }
+
+  createCsv(exportColumns: ExportColumn[], tableData: T[]): any[] {
+    return tableData.map((row) => {
+      const csvRow: any = {};
+      exportColumns.forEach((col) => {
+        csvRow[col.title] = row[col.dataKey as keyof T];
+      });
+      return csvRow;
+    });
+  }
+
+  formatRows(data: any[]) {
+    return data.map((row) =>
+      this.exportColumns
+        .map((col) => {
+          const value = row[col.title];
+          // Escape commas and quotes
+          return typeof value === 'string' &&
+            (value.includes(',') || value.includes('"'))
+            ? `"${value.replace(/"/g, '""')}"`
+            : value ?? '';
+        })
+        .join(',')
+    );
+  }
+
+  downloadCsv(csv: string, filename: string) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

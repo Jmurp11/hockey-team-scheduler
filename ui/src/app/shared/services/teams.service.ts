@@ -4,6 +4,7 @@ import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { NearbyTeamsParams } from '../types/nearby-teams.type';
+import { setSelect } from '../utilities/select.utility';
 
 export interface TeamsParams {
   association?: number;
@@ -15,7 +16,6 @@ export class TeamsService {
   private http = inject(HttpClient);
 
   teams(teamParams: TeamsParams) {
-    console.log({ teamParams });
     const params: any = {};
     if (teamParams.association) {
       params.association = teamParams.association.toString();
@@ -44,7 +44,7 @@ export class TeamsService {
   getTeams(teamParams: TeamsParams): Observable<SelectItem[]> {
     return this.teams(teamParams).pipe(
       map((teams) =>
-        (teams as any[]).map((team) => ({ label: team.name, value: team.id }))
+        (teams as any[]).map((team) => setSelect(team.name, team.id))
       )
     );
   }

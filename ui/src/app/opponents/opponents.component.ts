@@ -5,6 +5,7 @@ import {
   inject,
   OnInit,
   signal,
+  ViewContainerRef,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
@@ -25,10 +26,14 @@ import {
 import { AuthService } from '../auth/auth.service';
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
 import { SortDirection } from '../shared/components/sort-header/sort-header.type';
+import { AddGameService } from '../shared/services/add-game.service';
 import { AssociationService } from '../shared/services/associations.service';
 import { TeamsService } from '../shared/services/teams.service';
+import { setSelect } from '../shared/utilities/select.utility';
+import { sort } from '../shared/utilities/sort.utility';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -62,7 +67,10 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
       ></app-sort-header>
 
       <div class="opponent-list">
-        <app-opponent-list [opponents]="nearbyTeams" />
+        <app-opponent-list
+          [opponents]="nearbyTeams"
+          (opponentSelected)="onOpponentSelected($event)"
+        />
       </div>
     </div>
     } }
@@ -72,6 +80,9 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentsComponent implements OnInit {
+  private addGameService = inject(AddGameService);
+  private viewContainerRef = inject(ViewContainerRef);
+
   nearbyTeams$: Observable<any>;
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);
@@ -80,8 +91,8 @@ export class OpponentsComponent implements OnInit {
   isLoading = signal<boolean>(false);
 
   sortFields = [
-    { label: 'Distance', value: 'distance' },
-    { label: 'Rating', value: 'rating' },
+    setSelect('Distance', 'distance'),
+    setSelect('Rating', 'rating'),
   ];
 
   private searchParams$ = new BehaviorSubject<any>(null);
@@ -109,6 +120,8 @@ export class OpponentsComponent implements OnInit {
     this.associationService.getAssociations();
 
   ngOnInit(): void {
+    this.addGameService.setViewContainerRef(this.viewContainerRef);
+
     const teams$ = this.searchParams$.pipe(
       filter((params) => params !== null),
       switchMap((params) => this.getNearbyTeams(params)),
@@ -119,7 +132,9 @@ export class OpponentsComponent implements OnInit {
     this.nearbyTeams$ = combineLatest({
       teams: teams$,
       sort: this.currentSort$,
-    }).pipe(map(({ teams, sort }) => this.sort([...(teams as any[])], sort)));
+    }).pipe(
+      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir))
+    );
   }
 
   onSearchParamsChanged(params: any) {
@@ -132,7 +147,6 @@ export class OpponentsComponent implements OnInit {
   }
 
   getNearbyTeams(params: any) {
-    console.log(this.authService.currentUser());
     return this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
@@ -143,14 +157,7 @@ export class OpponentsComponent implements OnInit {
     });
   }
 
-  sort(teams: any[], sort: { field: string; sortDirection: SortDirection }) {
-    return teams.sort((a, b) => {
-      const fieldA = a[sort.field];
-      const fieldB = b[sort.field];
-
-      if (fieldA < fieldB) return sort.sortDirection === 'asc' ? -1 : 1;
-      if (fieldA > fieldB) return sort.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
+  onOpponentSelected(opponent: any) {
+    this.addGameService.openDialog(opponent, false);
   }
 }

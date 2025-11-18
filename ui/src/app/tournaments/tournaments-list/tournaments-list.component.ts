@@ -6,13 +6,13 @@ import {
   Input,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
-import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
-import { AddGameService } from '../../schedule/add-game/add-game.service';
-import { CreateGame } from '../../shared/types/game.type';
 import { take } from 'rxjs/internal/operators/take';
 import { AuthService } from '../../auth/auth.service';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { AddGameService } from '../../shared/services/add-game.service';
+import { CreateGame } from '../../shared/types/game.type';
+import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
+import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
 
 @Component({
   selector: 'app-tournaments-list',
@@ -69,10 +69,6 @@ export class TournamentsListComponent {
   }
 
   addToSchedule(tournament: any) {
-    console.log('Add to schedule', {
-      ...tournament,
-    });
-
     const location = tournament.location
       .split(',')
       .map((part: any) => part.trim());
