@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ChatSummary } from '../shared/types/chat-summary.type';
+import { setSelect } from '../shared/utilities/select.utility';
 import { ChatHeaderComponent } from './chat-header/chat-header.component';
 import { ChatInputComponent } from './chat-input/chat-input.component';
 import { ChatSidebarComponent } from './chat-sidebar/chat-sidebar.component';
@@ -32,24 +33,24 @@ export class ChatComponent {
     {
       title: 'Agent Details',
       content: [
-        { label: 'Model', value: 'GPT-5 Chat' },
-        { label: 'Status', value: 'Active' },
+        setSelect('Model', 'GPT-5 Chat'),
+        setSelect('Status', 'Active'),
       ],
     },
     {
       title: 'Manager Details',
       content: [
-        { label: 'Name', value: 'John Doe' },
-        { label: 'Team', value: 'Rye Rangers 14UAA TB' },
-        { label: 'Contact', value: '1 (222) 333-4444' },
+        setSelect('Name', 'John Doe'),
+        setSelect('Team', 'Rye Rangers 14UAA TB'),
+        setSelect('Contact', '1 (222) 333-4444'),
       ],
     },
     {
       title: 'Conversation Details',
       content: [
-        { label: 'Messages', value: '150' },
-        { label: 'Duration', value: '2 hrs' },
-        { label: 'Status', value: 'Active' },
+        setSelect('Messages', '150'),
+        setSelect('Duration', '2 hrs'),
+        setSelect('Status', 'Active'),
       ],
     },
   ];

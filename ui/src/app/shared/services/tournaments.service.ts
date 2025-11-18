@@ -12,7 +12,6 @@ export class TournamentsService {
   }
 
   nearByTournaments(params: NearbyTournamentsParams) {
-    console.log({ params });
     return this.http.get(`${environment.apiUrl}/tournaments/nearbyTournaments`, {
       params: {
         p_id: params.p_id.toString()

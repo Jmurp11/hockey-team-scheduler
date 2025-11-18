@@ -1,3 +1,5 @@
+import { setSelect } from '../../shared/utilities/select.utility';
+
 export function getFormFields(items: any[]) {
   return [
     {
@@ -6,7 +8,7 @@ export function getFormFields(items: any[]) {
       errorMessage: 'Please select an Opponent',
       autocomplete: false,
       controlType: 'autocomplete',
-      items: items.map((i) => ({ label: i.name, value: i })),
+      items: items.map((i) => setSelect(i.name, i)),
       section: 1,
     },
     {
@@ -49,8 +51,9 @@ export function getFormFields(items: any[]) {
             label: i.association.country,
             value: i.association.country,
           }))
-          .filter((item, index, self) => 
-            index === self.findIndex(t => t.value === item.value)
+          .filter(
+            (item, index, self) =>
+              index === self.findIndex((t) => t.value === item.value)
           )
           .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',
@@ -83,8 +86,9 @@ export function getFormFields(items: any[]) {
             label: i.association.state,
             value: i.association.state,
           }))
-          .filter((item, index, self) => 
-            index === self.findIndex(t => t.value === item.value)
+          .filter(
+            (item, index, self) =>
+              index === self.findIndex((t) => t.value === item.value)
           )
           .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',

@@ -8,7 +8,8 @@ import {
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
-import { AddGameService } from '../add-game/add-game.service';
+
+import { AddGameService } from '../../shared/services/add-game.service';
 
 @Component({
   selector: 'app-schedule-actions',
@@ -20,13 +21,12 @@ import { AddGameService } from '../add-game/add-game.service';
       <div></div>
       <div class="sub-row">
         <p-button
-          class="btn-1"
           icon="pi pi-plus"
           label="Add Game"
           size="small"
           (click)="openAddGameDialog()"
         />
-        <p-button icon="pi pi-upload" label="Upload CSV" size="small" />
+        <!-- <app-file-upload [fileUploadParams]="fileUploadParams" /> -->
         <p-button
           icon="pi pi-users"
           label="Nearby Teams"
@@ -51,10 +51,25 @@ export class ScheduleActionsComponent implements OnInit {
   private viewContainerRef = inject(ViewContainerRef);
   private router = inject(Router);
 
+  // fileUploadParams: FileUploadParams = {
+  //   mode: 'basic',
+  //   name: 'file',
+  //   chooseIcon: 'pi pi-upload',
+  //   url: '/api/upload',
+  //   accept: '.csv',
+  //   maxFileSize: 1000000,
+  //   auto: true,
+  //   chooseLabel: 'Upload Games',
+  //   styleClass: 'p-button-sm',
+  //   onUpload: (event: any) => {
+  //     console.log('File uploaded:', event);
+  //   },
+  // };
+
   ngOnInit(): void {
     this.addGameService.setViewContainerRef(this.viewContainerRef);
   }
-  
+
   async openAddGameDialog() {
     this.addGameService.openDialog();
   }
@@ -66,4 +81,6 @@ export class ScheduleActionsComponent implements OnInit {
   findTournaments() {
     this.router.navigate(['/app/tournaments']);
   }
+
+  // onUpload(event: any) {}
 }

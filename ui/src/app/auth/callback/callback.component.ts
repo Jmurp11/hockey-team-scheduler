@@ -81,11 +81,6 @@ export class CallbackComponent implements OnInit {
         return true;
       }
 
-      console.log('Profile data:', data);
-      console.log({noData: !data});
-      console.log({noName: !data.name});
-      console.log({noAssociation: !data.association});
-
       return !data || !data.name || !data.association;
     } catch (error) {
       console.error('Profile check unexpected error:', error);

@@ -18,6 +18,8 @@ import {
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ToastModule } from 'primeng/toast';
+import { take } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { AuthService } from '../../auth/auth.service';
 import { SelectComponent, TeamsService } from '../../shared';
@@ -26,11 +28,13 @@ import { DatePickerComponent } from '../../shared/components/date-picker/date-pi
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectButtonComponent } from '../../shared/components/select-button/select-button.component';
+import { AddGameService } from '../../shared/services/add-game.service';
 import { LoadingService } from '../../shared/services/loading.service';
-import { getFormControl } from '../../shared/utilities/form.utility';
-import { getFormFields } from './add-game.constants';
-import { AddGameService } from './add-game.service';
+import { ScheduleService } from '../../shared/services/schedule.service';
 import { Game } from '../../shared/types/game.type';
+import { getFormControl } from '../../shared/utilities/form.utility';
+import { setSelect } from '../../shared/utilities/select.utility';
+import { getFormFields } from './add-game.constants';
 
 @Component({
   selector: 'app-add-game',
@@ -46,6 +50,7 @@ import { Game } from '../../shared/types/game.type';
     ButtonModule,
     SelectButtonComponent,
     ProgressSpinnerModule,
+    ToastModule,
   ],
   providers: [LoadingService, TeamsService],
   template: `
@@ -131,6 +136,7 @@ export class AddGameComponent implements OnInit {
   protected destroyRef = inject(DestroyRef);
 
   private authService = inject(AuthService);
+  private scheduleService = inject(ScheduleService);
 
   addGameService = inject(AddGameService);
   teamsService = inject(TeamsService);
@@ -139,19 +145,16 @@ export class AddGameComponent implements OnInit {
   title = computed(() => (this.editModeSignal() ? 'Update Game' : 'Add Game'));
 
   gameTypeOptions = [
-    { label: 'League', value: 'league' },
-    { label: 'Playoff', value: 'playoff' },
-    { label: 'Tournament', value: 'tournament' },
-    { label: 'Exhibition', value: 'exhibition' },
+    setSelect('League', 'league'),
+    setSelect('Playoff', 'playoff'),
+    setSelect('Tournament', 'tournament'),
+    setSelect('Exhibition', 'exhibition'),
   ];
 
   items$: Observable<any>;
   formFieldsData: any[] = [];
 
-  isHomeOptions = [
-    { label: 'Home', value: 'home' },
-    { label: 'Away', value: 'away' },
-  ];
+  isHomeOptions = [setSelect('Home', 'home'), setSelect('Away', 'away')];
 
   getFormControl = getFormControl;
 
@@ -162,7 +165,6 @@ export class AddGameComponent implements OnInit {
   addGameForm: FormGroup;
 
   ngOnInit(): void {
-    console.log({gameData: this.gameData})
     this.addGameForm = this.initGameForm();
     this.editModeSignal.set(this.editMode);
 
@@ -213,7 +215,7 @@ export class AddGameComponent implements OnInit {
         ...this.addGameForm.value,
         country: this.addGameForm.value.country.value,
         state: this.addGameForm.value.state.value,
-        opponent: this.addGameForm.value.opponent.value.id,
+        opponent: [this.addGameForm.value.opponent.value],
         isHome: this.addGameForm.value.isHome === 'home',
         user: this.currentUser.user_id,
         date: date.toISOString().split('T')[0], // YYYY-MM-DD
@@ -221,13 +223,21 @@ export class AddGameComponent implements OnInit {
       },
     ];
 
+    // Optimistic update - update cache immediately
+    if (this.editMode) {
+      this.scheduleService.optimisticUpdateGame({ 
+        id: this.gameData!.id, 
+        ...input[0] 
+      });
+    } else {
+      this.scheduleService.optimisticAddGames(input);
+    }
+
     const operation$ = this.editMode
       ? this.addGameService.updateGame({ id: this.gameData!.id, ...input[0] })
       : this.addGameService.addGame(input);
 
-    operation$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.addGameService.closeDialog());
+    operation$.pipe(take(1)).subscribe(() => this.addGameService.closeDialog());
   }
 
   cancel() {

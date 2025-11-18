@@ -13,7 +13,12 @@ import { DialogModule } from 'primeng/dialog';
   standalone: true,
   imports: [CommonModule, DialogModule],
   template: `
-    <p-dialog [(visible)]="visible" [modal]="true" [closable]="false" class="dialog">
+    <p-dialog
+      [(visible)]="visible"
+      [modal]="true"
+      [closable]="false"
+      class="dialog"
+    >
       <ng-template pTemplate="header"
         ><ng-container *ngTemplateOutlet="header"></ng-container
       ></ng-template>
@@ -30,8 +35,4 @@ export class DialogComponent {
   @Input() visible: boolean;
   @ContentChild('header') header: TemplateRef<any> | undefined;
   @ContentChild('footer') footer: TemplateRef<any> | undefined;
-
-  ngOnInit() {
-    console.log('visible', this.visible);
-  }
 }
