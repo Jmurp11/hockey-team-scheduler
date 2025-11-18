@@ -5,7 +5,6 @@ import { supabase } from '../supabase';
 @Injectable()
 export class GamesService {
   async create(createGameDto: CreateGameDto[]): Promise<Game[]> {
-
     const { data, error } = await supabase
       .from('games')
       .insert(createGameDto)
@@ -35,7 +34,7 @@ export class GamesService {
 
   async findOne(id: string): Promise<Game | null> {
     const { data, error } = await supabase
-      .from('games')
+      .from('gamesfull')
       .select('*')
       .eq('id', id)
       .single();

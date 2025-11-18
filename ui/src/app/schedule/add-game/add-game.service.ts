@@ -62,24 +62,10 @@ export class AddGameService {
   }
 
   addGame(games: CreateGame[]) {
-    return this.http.post(`${environment.apiUrl}/games/add-games`, games).pipe(
-      switchMap((response: any) => {
-        this.scheduleService.addGameCache(response);
-        console.log(
-          'Added game cache: ',
-          this.scheduleService.gamesCache.value
-        );
-        return of(response);
-      })
-    );
+    return this.http.post(`${environment.apiUrl}/games/add-games`, games);
   }
 
   updateGame(game: Game) {
-    return this.http.put(`${environment.apiUrl}/games/${game.id}`, game).pipe(
-      switchMap((response: any) => {
-        this.scheduleService.updateGameCache(response);
-        return of(response);
-      })
-    );
+    return this.http.put(`${environment.apiUrl}/games/${game.id}`, game);
   }
 }
