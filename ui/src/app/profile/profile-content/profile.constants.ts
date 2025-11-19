@@ -7,7 +7,6 @@ export function getFormFields() {
       autocomplete: false,
       controlType: 'input',
       type: 'text',
-      section: 1,
     },
     {
       controlName: 'email',
@@ -16,7 +15,6 @@ export function getFormFields() {
       autocomplete: false,
       controlType: 'input',
       type: 'email',
-      section: 1,
     },
     {
       controlName: 'association',
@@ -24,7 +22,7 @@ export function getFormFields() {
       errorMessage: 'Please select an Association',
       autocomplete: false,
       controlType: 'autocomplete',
-      section: 1,
+      disabled: true,
     },
     {
       controlName: 'team',
@@ -32,7 +30,7 @@ export function getFormFields() {
       errorMessage: 'Please select a Team',
       autocomplete: false,
       controlType: 'autocomplete',
-      section: 1,
+      disabled: false,
     },
   ];
 }
