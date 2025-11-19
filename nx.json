@@ -1,0 +1,24 @@
+{
+  "installation": {
+    "version": "22.0.4",
+    "plugins": {
+      "@nx/eslint": "22.0.4",
+      "@nx/jest": "22.0.4",
+      "@nx/docker": "22.0.4"
+    }
+  },
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "plugins": [
+    {
+      "plugin": "@nx/docker",
+      "options": {
+        "buildTarget": {
+          "name": "docker:build"
+        },
+        "runTarget": {
+          "name": "docker:run"
+        }
+      }
+    }
+  ]
+}
