@@ -5,5 +5,7 @@ export interface Profile {
   age: string[];
   association_name: string;
   team_name: string[];
+  association: { label: string; value: any };
+  team: { label: string; value: any };
   team_rating: number;
 }

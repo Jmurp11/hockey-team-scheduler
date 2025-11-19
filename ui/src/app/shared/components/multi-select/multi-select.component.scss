@@ -1,0 +1,17 @@
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+p-multiSelect {
+    width: 100%;
+    height: 56px;
+
+    & ::ng-deep .p-multiselect-dropdown-icon {
+        color: var(--surface-500);
+    }
+}
+
+p-message {
+    margin-top: 5px;
+}

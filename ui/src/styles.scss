@@ -77,12 +77,18 @@ body {
   --p-select-focus-border-color: var(--secondary-600) !important;
   --p-select-focus-ring-shadow: var(--secondary-200) !important;
   --p-iftalabel-focus-color: var(--secondary-500) !important;
+
   --p-select-option-selected-background: transparent !important;
   --p-select-option-selected-color: var(--secondary-700) !important;
   --p-select-option-focus-background: var(--secondary-200) !important;
   --p-select-option-focus-color: var(--secondary-700) !important;
   --p-select-option-selected-focus-background: var(--secondary-200) !important;
   --p-select-option-selected-focus-color: var(--secondary-700) !important;
+
+  // --p-multiselect-border-color: var(--secondary-300) !important;
+  --p-multiselect-focus-border-color: var(--secondary-300) !important;
+  --p-multiselect-hover-border-color: var(--secondary-300) !important;
+  --p-multiselect-focus-ring-shadow: var(--secondary-200) !important;
 
   --p-button-outlined-primary-hover-background: var(--secondary-50) !important;
   --p-button-outlined-primary-color: var(--secondary-500) !important;

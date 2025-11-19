@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { of } from 'rxjs';
+import { filter, map, Observable, startWith } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { UserService } from '../auth/user.service';
+import { AssociationService } from '../shared/services/associations.service';
+import { NavigationService } from '../shared/services/navigation.service';
+import { setSelect } from '../shared/utilities/select.utility';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
 
@@ -14,27 +25,61 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
     ProfileContentComponent,
     ProfileHeaderComponent,
   ],
-  template: `@if (profile$ | async; as profile) {
+  template: ` @if (profile$ | async; as profile) {
+    <div class="profile-title">Profile</div>
     <app-profile-header [name]="profile.display_name" />
     <div class="container">
-      <app-profile-content [card]="profile" />
+      <app-profile-content
+        [card]="profile"
+        [associations$]="associations$"
+        (formSubmit)="onFormSubmit($event)"
+      />
     </div>
     }`,
+  providers: [AssociationService, NavigationService, UserService],
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
-  profile$ = of({
-    display_name: 'Jim Murphy',
-    association_name: 'Pelham Youth Hockey Association',
-    team_name: ['Pelham Pelicans 16U AA'],
-    user_id: '1beb8d79-b45a-4bed-a1f4-bc738c6ce572',
-    age: ['16u'],
-    association_id: 4918,
-    team_id: 52205,
-    team_rating: 82.77,
-    email: 'murphyj1011@gmail.com',
-  });
+  private associationsService = inject(AssociationService);
+  private authService = inject(AuthService);
+  private userService = inject(UserService);
+  private navigation = inject(NavigationService);
 
-  ngOnInit(): void {}
+  profile$: Observable<any>;
+
+  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
+    startWith(null),
+    filter((user) => user != null)
+  );
+  associations$ = this.associationsService.getAssociations();
+
+  ngOnInit(): void {
+    this.profile$ = this.user$.pipe(
+      map((user) => ({
+        ...user,
+        team: setSelect(user.team_name, user.team_id),
+        association: setSelect(user.association_name, user.association_id),
+      }))
+    );
+  }
+
+  async onFormSubmit(updatedProfile: any) {
+    const submission = {
+      ...updatedProfile,
+      association: updatedProfile.association?.value,
+      team: updatedProfile.team?.value,
+      age: this.userService.getAge(updatedProfile.team?.label),
+      id: this.authService.session()?.user?.id,
+    };
+
+    await this.userService.updateUserProfile(submission);
+
+    const userId = this.authService.session()?.user?.id;
+    if (userId) {
+      await this.authService.setCurrentUser(userId);
+    }
+
+    this.navigation.navigateToLink('/app/schedule');
+  }
 }

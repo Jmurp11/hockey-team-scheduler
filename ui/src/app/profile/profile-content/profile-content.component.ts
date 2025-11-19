@@ -1,35 +1,187 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { SelectItem } from 'primeng/api';
+import { Button } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { startWith } from 'rxjs';
+import { Observable } from 'rxjs/internal/Observable';
+import { switchMap } from 'rxjs/internal/operators/switchMap';
+import { tap } from 'rxjs/internal/operators/tap';
+import { TeamsService } from '../../shared';
+import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
+import { InputComponent } from '../../shared/components/input/input.component';
 import { Profile } from '../../shared/types/profile.type';
+import { getFormControl } from '../../shared/utilities/form.utility';
+import { getFormFields } from './profile.constants';
 
 @Component({
   selector: 'app-profile-content',
   standalone: true,
-  imports: [CommonModule, CardComponent],
-  template: `<app-card class="card">
-    <ng-template #title>User Information</ng-template>
-    <ng-template #content>
-      @for (field of card | keyvalue; track field.key) {
-      <div class="info-row">
-        <span class="info-row__label">{{ field.key | titlecase }}:</span>
-        <span class="info-row__value">
-          {{ checkField(field.value) }}
-        </span>
-      </div>
-      }
-    </ng-template>
-  </app-card>`,
-  styleUrl: './profile-content.component.scss',
+  providers: [TeamsService],
+  imports: [
+    CommonModule,
+    Button,
+    CardComponent,
+    InputComponent,
+    AutoCompleteComponent,
+    ReactiveFormsModule,
+    ProgressSpinnerModule,
+  ],
+  template: ` @if (associations$ | async; as associations) {
+    <app-card class="card">
+      <ng-template #title>Profile Information</ng-template>
+      <ng-template #subtitle>Update your profile information</ng-template>
+      <ng-template #content>
+        <form [formGroup]="profileUpdateForm">
+          <div class="info_row">
+            @for (field of formFields; track field.controlName) { @switch
+            (field.controlType) { @case ('input') {
+            <app-input
+              class="info_row__item"
+              [control]="getFormControl(profileUpdateForm, field.controlName)"
+              [label]="field.labelName"
+            />
+            } @case ('autocomplete') { @if (field.controlName === 'association')
+            {
+            <app-auto-complete
+              class="info_row__item"
+              [control]="getFormControl(profileUpdateForm, field.controlName)"
+              [label]="field.labelName"
+              [items]="associations || []"
+            />} @else if (field.controlName === 'team') {
+            <app-auto-complete
+              class="info_row__item"
+              [control]="getFormControl(profileUpdateForm, field.controlName)"
+              [label]="field.labelName"
+              [items]="(teams$ | async) || []"
+            />
+            } } }}
+          </div>
+        </form>
+      </ng-template>
+      <ng-template #footer>
+        <div class="button-group">
+          <p-button
+            label="Reset"
+            [text]="true"
+            severity="secondary"
+            (click)="cancel()"
+          />
+          <p-button
+            label="Submit"
+            (click)="submit()"
+            [disabled]="!profileUpdateForm.dirty || profileUpdateForm.invalid"
+          ></p-button>
+        </div>
+      </ng-template>
+    </app-card>
+    } @else {
+    <div class="loading-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+    }`,
+  styleUrls: ['./profile-content.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileContentComponent {
+export class ProfileContentComponent implements OnInit {
   @Input() card: Profile;
+  @Input() associations$: Observable<SelectItem[]> = new Observable<
+    SelectItem[]
+  >();
 
-  checkField(value: string | string[] | number): string {
+  @Output() formSubmit = new EventEmitter<any>();
+
+  private teamsService = inject(TeamsService);
+
+  teams$: Observable<SelectItem[]> = new Observable<SelectItem[]>();
+
+  formFields = getFormFields();
+
+  getFormControl = getFormControl;
+
+  profileUpdateForm: FormGroup;
+
+  destroyRef = inject(DestroyRef);
+
+  ngOnInit(): void {
+    this.profileUpdateForm = this.initProfileFormGroup();
+
+    this.teams$ = this.onAssociationChange();
+  }
+
+  initProfileFormGroup() {
+    return new FormGroup({
+      display_name: new FormControl(this.checkField(this.card.display_name)),
+      association: new FormControl(this.checkField(this.card.association)),
+      team: new FormControl(this.checkField(this.card.team)),
+      email: new FormControl(this.checkField(this.card.email)),
+    });
+  }
+
+  onAssociationChange(): Observable<SelectItem[]> {
+    const associationControl = this.profileUpdateForm.get('association');
+    if (!associationControl) {
+      return new Observable<SelectItem[]>();
+    }
+
+    return associationControl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      tap(() => this.profileUpdateForm.get('team')?.reset()),
+      startWith(associationControl.value),
+      switchMap((association) => {
+        console.log('Selected association:', association);
+        if (!association) {
+          return new Observable<SelectItem[]>((observer) => {
+            observer.next([]);
+            observer.complete();
+          });
+        }
+
+        return this.teamsService.getTeams({ association: association.value });
+      })
+    );
+  }
+
+  // ...existing code...
+  checkField(
+    value: string | string[] | number | { label: string; value: any }
+  ): string | { label: string; value: any } {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'object' && 'label' in value && 'value' in value) {
+      return value;
+    }
     if (Array.isArray(value)) {
       return value.length ? value.join(', ') : '';
     }
     return value.toString() || '';
+  }
+
+  cancel() {
+    this.profileUpdateForm.patchValue({
+      display_name: this.checkField(this.card.display_name),
+      association: this.checkField(this.card.association_name),
+      team: this.checkField(this.card.team_name),
+      age: this.checkField(this.card.age),
+      email: this.checkField(this.card.email),
+    });
+    this.profileUpdateForm.markAsPristine();
+  }
+
+  submit() {
+    this.formSubmit.emit(this.profileUpdateForm.value);
   }
 }

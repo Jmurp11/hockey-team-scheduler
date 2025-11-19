@@ -1,4 +1,12 @@
 .container {
-  width: 80%;
-  height: 40%;
+  width: 100%;
+  height: 70%;
+}
+
+.profile-title {
+  padding: 1rem 4rem 0rem;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: var(--primary-500);
 }

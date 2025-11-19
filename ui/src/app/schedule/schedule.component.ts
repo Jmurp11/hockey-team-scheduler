@@ -166,6 +166,14 @@ export class ScheduleComponent implements OnInit {
   getActions(rowData: any) {
     this.actions = [
       {
+        label: 'Contact Team Manager',
+        icon: 'pi pi-comment',
+        iconPos: 'right',
+        command: () => {
+          console.log('Contact Team Manager for game id:', rowData.id);
+        },
+      },
+      {
         label: 'Edit',
         icon: 'pi pi-pencil',
         iconPos: 'right',
