@@ -60,12 +60,14 @@ import { getFormFields } from './profile.constants';
               [control]="getFormControl(profileUpdateForm, field.controlName)"
               [label]="field.labelName"
               [items]="associations || []"
+              [disabled]="field.disabled || false"
             />} @else if (field.controlName === 'team') {
             <app-auto-complete
               class="info_row__item"
               [control]="getFormControl(profileUpdateForm, field.controlName)"
               [label]="field.labelName"
               [items]="(teams$ | async) || []"
+              [disabled]="field.disabled || false"
             />
             } } }}
           </div>
@@ -183,5 +185,6 @@ export class ProfileContentComponent implements OnInit {
 
   submit() {
     this.formSubmit.emit(this.profileUpdateForm.value);
+    this.profileUpdateForm.markAsPristine();
   }
 }

@@ -67,7 +67,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
           <ng-template #end>
             <div class="header__name">
               {{
-                authService.currentUser()?.displayName ||
+                authService.currentUser()?.display_name ||
                   authService.session()?.user?.email ||
                   'User' | uppercase
               }}

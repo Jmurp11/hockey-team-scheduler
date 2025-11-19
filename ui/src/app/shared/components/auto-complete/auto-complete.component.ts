@@ -40,6 +40,7 @@ interface AutoCompleteCompleteEvent {
           [suggestions]="filteredItems"
           (completeMethod)="filterItems($event)"
           [showClear]="true"
+          [disabled]="disabled"
           (onSelect)="onSelect($event)"
         >
           <ng-template let-item pTemplate="selectedItem">
@@ -67,6 +68,8 @@ export class AutoCompleteComponent {
 
   @Input()
   label: string;
+
+  @Input() disabled: boolean = false;
 
   filterService = inject(FilterService);
 

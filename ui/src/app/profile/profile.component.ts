@@ -79,7 +79,5 @@ export class ProfileComponent implements OnInit {
     if (userId) {
       await this.authService.setCurrentUser(userId);
     }
-
-    this.navigation.navigateToLink('/app/schedule');
   }
 }
