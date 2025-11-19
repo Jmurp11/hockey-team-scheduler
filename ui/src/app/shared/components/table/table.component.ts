@@ -4,8 +4,7 @@ import {
   Component,
   ContentChild,
   Input,
-  OnInit,
-  TemplateRef,
+  TemplateRef
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -117,7 +116,7 @@ import { TableOptions } from '../../types/table-options.type';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TableComponent<T> implements OnInit {
+export class TableComponent<T> {
   @ContentChild('header') header: TemplateRef<any> | undefined;
   @ContentChild('body') body: TemplateRef<any> | undefined;
   @ContentChild('emptymessage') emptymessage: TemplateRef<any> | undefined;
@@ -127,9 +126,6 @@ export class TableComponent<T> implements OnInit {
   @Input() exportColumns: ExportColumn[];
   @Input() hasActions: boolean = false;
 
-  ngOnInit(): void {
-    console.log({ exportCols: this.exportColumns });
-  }
   onFilterInput(dt: Table, event: Event): void {
     const target = event.target as HTMLInputElement;
     dt.filterGlobal(target.value, 'contains');

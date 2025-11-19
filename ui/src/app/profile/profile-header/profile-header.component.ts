@@ -15,7 +15,7 @@ import { AvatarModule } from 'primeng/avatar';
         shape="circle"
       />
 
-      <h1 class="page-title__title">{{ name }}</h1>
+      <div class="page-title__title">{{ name }}</div>
     </div>
   </div>`,
   styleUrl: './profile-header.component.scss',

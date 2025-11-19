@@ -59,7 +59,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
               (click)="navigation.navigateToLink('/app')"
             >
               <span class="title__left">{{
-                authService.currentUser()?.association_name || 'RinkLink.ai'
+                authService.currentUser()?.team_name || 'RinkLink.ai'
               }}</span>
             </a>
             }

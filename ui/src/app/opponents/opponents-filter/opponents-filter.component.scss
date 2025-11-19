@@ -7,6 +7,12 @@
     font-size: 14px;
   }
 
+  @media (max-width: 1290px) {
+    max-width: 888.25px;
+    width: 100%;
+    height: auto;
+  }
+
   @media (max-width: 1024px) {
     max-width: 888.25px;
     width: 100%;
@@ -25,7 +31,7 @@ form {
   width: 100%;
   height: fit-content;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 1290px) {
     padding: 1rem 1rem;
     max-width: 100%;
     height: auto;
@@ -45,6 +51,22 @@ form {
     @include flex(center, flex-start, column);
     flex: 1;
     gap: 1rem;
+
+    @media (max-width: 1290px) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem 1rem;
+    }
+
+    @media (max-width: 700px) {
+      @include flex(center, flex-start, column);
+      flex: 1;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 1290px) {
+    min-height: 300px;
   }
 }
 
@@ -62,6 +84,7 @@ form {
   @include flex(space-between, center, row);
   width: 100%;
 }
+
 .checkbox {
   @include flex(flex-start, center, row);
   width: 100%;

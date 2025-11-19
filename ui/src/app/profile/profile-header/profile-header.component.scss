@@ -9,10 +9,11 @@
   @include flex(flex-start, center, row);
   width: 100%;
   height: auto;
-  padding: 2.5rem;
+  padding: 0rem 4rem;
   text-align: left;
 }
 
 .page-title__title {
   padding-left: 1rem;
+  font-size: 20px;
 }

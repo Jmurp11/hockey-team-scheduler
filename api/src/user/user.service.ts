@@ -44,6 +44,7 @@ export class UserService {
             stripe_customer_id: stripeCustomerId,
             stripe_subscription_id: stripeSubscriptionId,
             user: data.user?.id,
+            email: email,
             is_paid: true,
           },
         ]);
