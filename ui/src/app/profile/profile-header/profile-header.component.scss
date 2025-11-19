@@ -1,0 +1,18 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+.avatar {
+  --p-avatar-background: var(--secondary-100);
+  --p-avatar-color: var(--primary-500);
+}
+
+.page-title__text-container {
+  @include flex(flex-start, center, row);
+  width: 100%;
+  height: auto;
+  padding: 2.5rem;
+  text-align: left;
+}
+
+.page-title__title {
+  padding-left: 1rem;
+}
