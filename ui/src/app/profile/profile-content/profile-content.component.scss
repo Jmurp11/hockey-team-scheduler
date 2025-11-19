@@ -1,0 +1,41 @@
+@use "../../scss/mixins/_mixins.scss" as *;
+
+:host {
+  width: 100%;
+  overflow: auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.card {
+  height: 100%;
+  width: 100%;
+
+  ::ng-deep .p-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+    background-color: white;
+
+    ::ng-deep .p-card-content {
+      width: 100% !important;
+      display: block !important;
+      justify-content: initial !important;
+      align-items: initial !important;
+      flex-direction: initial !important;
+    }
+  }
+
+  .info_row {
+    @include flex(space-between, center, row);
+    &__label {
+      font-weight: 600;
+      color: var(--primary-500);
+    }
+
+    &__value {
+      font-weight: 400;
+      color: var(--primary-900);
+    }
+  }
+}
