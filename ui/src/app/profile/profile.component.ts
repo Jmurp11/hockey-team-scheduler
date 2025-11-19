@@ -11,7 +11,6 @@ import { filter, map, Observable, startWith } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from '../auth/user.service';
 import { AssociationService } from '../shared/services/associations.service';
-import { NavigationService } from '../shared/services/navigation.service';
 import { setSelect } from '../shared/utilities/select.utility';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
@@ -31,12 +30,11 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
     <div class="container">
       <app-profile-content
         [card]="profile"
-        [associations$]="associations$"
         (formSubmit)="onFormSubmit($event)"
       />
     </div>
     }`,
-  providers: [AssociationService, NavigationService, UserService],
+  providers: [AssociationService, UserService],
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -44,7 +42,6 @@ export class ProfileComponent implements OnInit {
   private associationsService = inject(AssociationService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
-  private navigation = inject(NavigationService);
 
   profile$: Observable<any>;
 

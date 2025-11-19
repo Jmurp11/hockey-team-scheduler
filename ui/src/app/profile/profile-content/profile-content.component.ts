@@ -9,15 +9,11 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { startWith } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
-import { switchMap } from 'rxjs/internal/operators/switchMap';
-import { tap } from 'rxjs/internal/operators/tap';
 import { TeamsService } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -39,7 +35,8 @@ import { getFormFields } from './profile.constants';
     ReactiveFormsModule,
     ProgressSpinnerModule,
   ],
-  template: ` @if (associations$ | async; as associations) {
+  template: `
+    @if (teams$ | async; as teams) {
     <app-card class="card">
       <ng-template #title>Profile Information</ng-template>
       <ng-template #subtitle>Update your profile information</ng-template>
@@ -59,7 +56,7 @@ import { getFormFields } from './profile.constants';
               class="info_row__item"
               [control]="getFormControl(profileUpdateForm, field.controlName)"
               [label]="field.labelName"
-              [items]="associations || []"
+              [items]="[]"
               [disabled]="field.disabled || false"
             />} @else if (field.controlName === 'team') {
             <app-auto-complete
@@ -91,17 +88,15 @@ import { getFormFields } from './profile.constants';
     </app-card>
     } @else {
     <div class="loading-spinner">
-      <p-progressSpinner></p-progressSpinner>
+      <p-progressSpinner />
     </div>
-    }`,
+    }
+  `,
   styleUrls: ['./profile-content.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileContentComponent implements OnInit {
   @Input() card: Profile;
-  @Input() associations$: Observable<SelectItem[]> = new Observable<
-    SelectItem[]
-  >();
 
   @Output() formSubmit = new EventEmitter<any>();
 
@@ -120,7 +115,9 @@ export class ProfileContentComponent implements OnInit {
   ngOnInit(): void {
     this.profileUpdateForm = this.initProfileFormGroup();
 
-    this.teams$ = this.onAssociationChange();
+    this.teams$ = this.teamsService.getTeams({
+      association: this.card.association.value,
+    });
   }
 
   initProfileFormGroup() {
@@ -130,30 +127,6 @@ export class ProfileContentComponent implements OnInit {
       team: new FormControl(this.checkField(this.card.team)),
       email: new FormControl(this.checkField(this.card.email)),
     });
-  }
-
-  onAssociationChange(): Observable<SelectItem[]> {
-    const associationControl = this.profileUpdateForm.get('association');
-    if (!associationControl) {
-      return new Observable<SelectItem[]>();
-    }
-
-    return associationControl.valueChanges.pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap(() => this.profileUpdateForm.get('team')?.reset()),
-      startWith(associationControl.value),
-      switchMap((association) => {
-        console.log('Selected association:', association);
-        if (!association) {
-          return new Observable<SelectItem[]>((observer) => {
-            observer.next([]);
-            observer.complete();
-          });
-        }
-
-        return this.teamsService.getTeams({ association: association.value });
-      })
-    );
   }
 
   // ...existing code...
