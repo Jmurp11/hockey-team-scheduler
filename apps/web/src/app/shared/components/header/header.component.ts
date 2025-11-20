@@ -6,17 +6,16 @@ import {
   EventEmitter,
   inject,
   Input,
-  OnInit,
   Output,
-  TemplateRef,
+  TemplateRef
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { MenuItem } from 'primeng/api';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MenubarModule } from 'primeng/menubar';
 import { RippleModule } from 'primeng/ripple';
-import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 
 
 @Component({
@@ -30,7 +29,7 @@ import { NavigationService } from '@hockey-team-scheduler/shared-ui';
     FormsModule,
     RippleModule,
   ],
-  providers: [NavigationService],
+  providers: [],
   template: ` <p-menubar [model]="items">
     <ng-template pTemplate="start">
       @if (showHamburger) {
@@ -67,7 +66,7 @@ export class HeaderComponent {
   class: string | undefined;
 
   @Input() 
-  showHamburger: boolean = false;
+  showHamburger = false;
 
   @Output() 
   hamburgerClick = new EventEmitter<void>();

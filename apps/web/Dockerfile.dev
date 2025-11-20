@@ -4,20 +4,28 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Install Angular CLI globally
-RUN npm install -g @angular/cli
+# Install dependencies for Alpine
+RUN apk add --no-cache libc6-compat
 
-# Copy package files
+# Copy root package files first for better caching
 COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
 
-# Install dependencies
-RUN npm install 
+# Copy only necessary NX config files
+COPY jest.config.js jest.preset.js ./
 
-# Copy source code
-COPY . .
+# Install dependencies with optimization flags
+RUN npm ci --prefer-offline --no-audit
+
+# Copy shared libraries that web app depends on
+COPY libs/ ./libs/
+
+# Copy web app source
+COPY apps/web ./apps/web
 
 # Expose port 4200
 EXPOSE 4200
 
-# Start development server
-CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200"]
+# Start development server using NX
+CMD ["npm", "run", "start:web"]

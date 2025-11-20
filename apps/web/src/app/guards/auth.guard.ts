@@ -1,24 +1,29 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { AuthService, SupabaseService } from '@hockey-team-scheduler/shared-data-access';
 
-export const authGuard: CanActivateFn = async (route, state) => {
+export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => {
   const supabaseService = inject(SupabaseService);
   const authService = inject(AuthService);
   const router = inject(Router);
 
   try {
     // Get the current session
+    const client = supabaseService.getSupabaseClient();
+
+    if (!client) {
+      console.error('Supabase client not available');
+      return router.createUrlTree(['/login']);
+    }
+
     const {
       data: { session },
       error,
-    } = await supabaseService.getSupabaseClient()!.auth.getSession();
+    } = await client.auth.getSession();
 
     if (error) {
       console.error('Auth guard error:', error);
-      router.navigate(['/login']);
-      return false;
+      return router.createUrlTree(['/login']);
     }
 
     // Check if user is authenticated
@@ -29,11 +34,9 @@ export const authGuard: CanActivateFn = async (route, state) => {
 
     // No session found, redirect to login
     console.log('No session found, redirecting to login');
-    router.navigate(['/login']);
-    return false;
+    return router.createUrlTree(['/login']);
   } catch (error) {
     console.error('Auth guard unexpected error:', error);
-    router.navigate(['/login']);
-    return false;
+    return router.createUrlTree(['/login']);
   }
 };

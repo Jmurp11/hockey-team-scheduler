@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { APP_CONFIG, AppConfig } from '../config/app-config';
+import { APP_CONFIG } from '../config/app-config';
 
 export interface SchedulerProps {
   team: string;
@@ -14,7 +14,7 @@ export interface TournamentProps {
     userAssociation: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class OpenAiService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);

@@ -17,7 +17,13 @@ export * from './lib/shared-utilities/types/user.type';
 export * from './lib/shared-utilities/utilities/form.utility';
 export * from './lib/shared-utilities/utilities/last-message.utility';
 export * from './lib/shared-utilities/utilities/location.utility';
+export * from './lib/shared-utilities/utilities/password-match.validator';
+export * from './lib/shared-utilities/utilities/search.utility';
 export * from './lib/shared-utilities/utilities/select.utility';
 export * from './lib/shared-utilities/utilities/sort.utility';
 export * from './lib/shared-utilities/utilities/time.utility';
-export * from './lib/shared-utilities/utilities/password-match.validator';
+
+// Export all constants
+export * from './lib/shared-utilities/constants/add-game.constants';
+export * from './lib/shared-utilities/constants/profile.constants';
+

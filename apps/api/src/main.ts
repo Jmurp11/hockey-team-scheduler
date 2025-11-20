@@ -14,6 +14,7 @@ async function bootstrap() {
     cors: {
       origin: [
         'http://localhost:4200',
+        'http://localhost:64566',
         'http://localhost',
         'http://localhost:80',
         'http://127.0.0.1',

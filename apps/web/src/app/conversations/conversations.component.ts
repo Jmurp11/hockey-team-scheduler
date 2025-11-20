@@ -2,10 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+    Conversation,
+    getFormControl,
+    searchConversations,
+} from '@hockey-team-scheduler/shared-utilities';
 import { tap } from 'rxjs';
 import { InputComponent } from '../shared/components/input/input.component';
-import { Conversation } from '@hockey-team-scheduler/shared-utilities';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 import { ConversationItemComponent } from './conversation-item/conversation-item.component';
 import PageTitleComponent from './page-title/page-title.component';
 
@@ -98,18 +101,7 @@ export class ConversationsComponent implements OnInit {
 
   onSearchChange() {
     return this.getFormControl(this.form, 'search').valueChanges.pipe(
-      tap((search) => (this.filtered = this.search(search || '')))
+      tap((search) => (this.filtered = searchConversations(this.conversations, search || '')))
     );
-  }
-
-  search(search: string) {
-    const searchLower = search.toLowerCase();
-    const filtered = this.conversations.filter(
-      (conversation: Conversation) =>
-        conversation.managerName.toLowerCase().includes(searchLower) ||
-        conversation.managerTeam.toLowerCase().includes(searchLower)
-    );
-
-    return filtered;
   }
 }

@@ -16,31 +16,28 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import {
+  AddGameService, AuthService, ScheduleService,
+  TeamsService
+} from '@hockey-team-scheduler/shared-data-access';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
+import {
+  Game, getFormControl,
+  setSelect
+} from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { take } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { SelectComponent } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectButtonComponent } from '../../shared/components/select-button/select-button.component';
-import {
-  AddGameService,
-  ScheduleService,
-  TeamsService,
-} from '@hockey-team-scheduler/shared-data-access';
-import { LoadingService } from '@hockey-team-scheduler/shared-ui';
-import { Game } from '@hockey-team-scheduler/shared-utilities';
-import {
-  getFormControl,
-  setSelect,
-} from '@hockey-team-scheduler/shared-utilities';
-import { getFormFields } from './add-game.constants';
 import { AddGameDialogService } from './add-game-dialog.service';
+import { getFormFields } from './add-game.constants';
 
 @Component({
   selector: 'app-add-game',
@@ -58,7 +55,7 @@ import { AddGameDialogService } from './add-game-dialog.service';
     ProgressSpinnerModule,
     ToastModule,
   ],
-  providers: [LoadingService, TeamsService],
+  providers: [],
   template: `
     @if (items$ | async; as items) {
       <form [formGroup]="addGameForm">
@@ -142,7 +139,7 @@ import { AddGameDialogService } from './add-game-dialog.service';
 })
 export class AddGameComponent implements OnInit {
   @Input() gameData: Game | null = null;
-  @Input() editMode: boolean = false;
+  @Input() editMode = false;
 
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);

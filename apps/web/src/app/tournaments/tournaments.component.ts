@@ -7,6 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   BehaviorSubject,
   combineLatest,
@@ -17,12 +19,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
-import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
-import { TournamentsService } from '@hockey-team-scheduler/shared-data-access';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { SortHeaderComponent } from '../shared';
+import { SortDirection } from '../shared/components/sort-header/sort-header.type';
+import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
 
 @Component({
   selector: 'app-tournaments',
@@ -33,7 +32,7 @@ import { SortHeaderComponent } from '../shared';
     ProgressSpinnerModule,
     SortHeaderComponent,
   ],
-  providers: [TournamentsService],
+  providers: [],
   template: ` <div class="container">
     @if (isLoading()) {
     <div class="loading-spinner">

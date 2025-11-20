@@ -1,3 +1,29 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-split-pane contentId="main-content">
+    <!-- Side Menu -->
+    <ion-menu contentId="main-content" type="overlay" color="primary">
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>RinkLink.ai</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          @for (item of menuItems; track item.url) {
+            <ion-menu-toggle autoHide="false">
+              <ion-item [routerLink]="item.url" routerLinkActive="active" routerDirection="root" lines="none" detail="false">
+                <ion-icon slot="start" [name]="item.icon"></ion-icon>
+                <ion-label>{{ item.title }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          }
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+
+    <!-- Main Content -->
+    <div class="ion-page" id="main-content">
+      <ion-router-outlet></ion-router-outlet>
+    </div>
+  </ion-split-pane>
 </ion-app>

@@ -6,11 +6,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { TextAreaComponent } from '../../shared/components/text-area/text-area.component';
-import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 
@@ -25,7 +25,7 @@ import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
     TextAreaComponent,
     ButtonModule,
   ],
-  providers: [LoadingService],
+  providers: [],
   template: `
     <div class="contact-container">
       <app-card class="card">

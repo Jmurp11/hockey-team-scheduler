@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
-import { APP_CONFIG, AppConfig } from '../config/app-config';
+import { APP_CONFIG } from '../config/app-config';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AssociationService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);

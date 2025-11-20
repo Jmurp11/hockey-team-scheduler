@@ -1,20 +1,22 @@
 import { Component } from '@angular/core';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
+  IonButton,
+  IonButtons,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonButton,
-  IonIcon,
+  IonContent,
   IonFab,
   IonFabButton,
+  IonHeader,
+  IonIcon,
+  IonMenuButton,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, calendar, people, trophy } from 'ionicons/icons';
+import { add, calendar, menu, people, trophy } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -33,10 +35,12 @@ import { add, calendar, people, trophy } from 'ionicons/icons';
     IonIcon,
     IonFab,
     IonFabButton,
-  ],
+    IonButtons,
+    IonMenuButton,
+],
 })
 export class HomePage {
   constructor() {
-    addIcons({ add, calendar, people, trophy });
+    addIcons({ add, calendar, people, trophy, menu });
   }
 }

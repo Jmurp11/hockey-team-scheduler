@@ -1,11 +1,10 @@
+import { Location, NgClass } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   Input,
 } from '@angular/core';
-import { NgClass } from '@angular/common';
-import { Location } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -41,8 +40,8 @@ import { ButtonModule } from 'primeng/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatHeaderComponent {
-  @Input() managerName: string = 'Manager Name';
-  @Input() aiEnabled: boolean = true;
+  @Input() managerName = 'Manager Name';
+  @Input() aiEnabled = true;
 
   private location = inject(Location);
 

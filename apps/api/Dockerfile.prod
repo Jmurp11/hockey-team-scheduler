@@ -6,15 +6,24 @@ WORKDIR /app
 # Dependencies stage
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# Use --prefer-offline and --no-audit for faster installs
+RUN npm ci --omit=dev --prefer-offline --no-audit && npm cache clean --force
 
 # Build stage
 FROM base AS builder
 COPY package*.json ./
-RUN npm ci
-# Copy only API source and minimal required config
+COPY nx.json tsconfig.base.json ./
+COPY jest.config.js jest.preset.js ./
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --prefer-offline --no-audit
+
+# Copy shared libraries that API depends on
+COPY libs/ ./libs/
+
+# Copy only API source
 COPY apps/api ./apps/api
-COPY tsconfig.base.json ./
+
 # Build the API project
 RUN npm run build:api
 
@@ -26,9 +35,11 @@ RUN apk add --no-cache dumb-init curl && \
 
 WORKDIR /app
 
-# Copy production dependencies and build output
+# Copy production dependencies
 COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=deps --chown=nestjs:nodejs /app/package*.json ./
+
+# Copy build output
 COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api ./dist
 
 USER nestjs

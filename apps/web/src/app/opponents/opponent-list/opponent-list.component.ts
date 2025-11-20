@@ -9,11 +9,11 @@ import {
   Output,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
+import { setSelect } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { map } from 'rxjs';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect } from '@hockey-team-scheduler/shared-utilities';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
 
@@ -27,7 +27,7 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
   ],
-  providers: [OpenAiService],
+  providers: [],
   template: `
     @for (opponent of opponents; track opponent.team_name) {
     <app-card>

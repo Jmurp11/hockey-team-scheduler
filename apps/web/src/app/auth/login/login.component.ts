@@ -6,17 +6,17 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
-import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 
+import { UserService } from '@hockey-team-scheduler/shared-data-access';
 import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
-import { UserService } from '@hockey-team-scheduler/shared-data-access';
 
 @Component({
   selector: 'app-login',
@@ -30,7 +30,7 @@ import { UserService } from '@hockey-team-scheduler/shared-data-access';
     PasswordComponent,
     ButtonModule,
   ],
-  providers: [LoadingService, NavigationService, UserService],
+  providers: [],
   template: `
     <app-auth-container>
       <app-card class="card">

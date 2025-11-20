@@ -1,19 +1,19 @@
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    inject,
-    Input,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
 } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
+import { ButtonModule } from 'primeng/button';
 
 
 @Component({
   selector: 'app-get-started',
   standalone: true,
   imports: [CommonModule, ButtonModule],
-  providers: [NavigationService],
+  providers: [],
   template: `
     <p-button
       [rounded]="true"
