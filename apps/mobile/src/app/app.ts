@@ -9,5 +9,5 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
   styleUrl: './app.scss',
 })
 export class App {
-  protected title = 'Hockey Team Scheduler Mobile';
+  protected title = 'RinkLink.ai (Mobile)';
 }
