@@ -6,10 +6,10 @@ import {
   OnInit
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { MenuItem } from 'primeng/api';
 import { FooterComponent } from '../shared/components/footer/footer.component';
 import { HeaderComponent } from '../shared/components/header/header.component';
-import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { GetStartedComponent } from './get-started.component.ts/get-started.component';
 
 @Component({
@@ -22,7 +22,7 @@ import { GetStartedComponent } from './get-started.component.ts/get-started.comp
     FooterComponent,
     GetStartedComponent,
   ],
-  providers: [NavigationService],
+  providers: [],
   template: `<div class="container">
     <app-header [items]="items">
       <ng-template #start>

@@ -23,8 +23,8 @@ services:
   # UI Service (Angular) - Development
   ui-dev:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: ./apps/web/Dockerfile.dev
     container_name: hockey-scheduler-ui-dev
     restart: unless-stopped
     ports:

@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { NearbyTournamentsParams } from '@hockey-team-scheduler/shared-utilities';
 import { APP_CONFIG } from '../config/app-config';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class TournamentsService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);

@@ -2,6 +2,16 @@
   padding: 20px;
 }
 
+.brand-primary {
+  --color: var(--primary-500);
+  font-weight: bold;
+}
+
+.brand-accent {
+  --color: var(--secondary-500);
+  font-weight: bold;
+}
+
 ion-card {
   margin: 16px 0;
 }

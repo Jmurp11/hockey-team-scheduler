@@ -7,14 +7,14 @@ import {
   OnInit,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import { LoadingService, NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { BlockUIModule } from 'primeng/blockui';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { FooterComponent } from '../shared/components/footer/footer.component';
 import { HeaderComponent } from '../shared/components/header/header.component';
-import { LoadingService, NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { SidebarService } from '../sidebar/sidebar.service';
 
@@ -32,7 +32,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
     HeaderComponent,
     FooterComponent,
   ],
-  providers: [LoadingService, NavigationService],
+  providers: [],
   template: ` <div class="container">
       <div
         class="sidebar-wrapper"

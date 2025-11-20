@@ -1,9 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access'
-;
-import { AuthService } from './auth.service';
+import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
 import { UpdateUser } from '@hockey-team-scheduler/shared-utilities';
-@Injectable()
+import { AuthService } from './auth.service';
+@Injectable({providedIn: 'root'})
 export class UserService {
   supabaseClient = inject(SupabaseService).getSupabaseClient();
   authService = inject(AuthService);

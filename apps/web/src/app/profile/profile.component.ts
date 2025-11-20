@@ -7,10 +7,9 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { filter, map, Observable, startWith } from 'rxjs';
-import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
-import { AssociationService } from '@hockey-team-scheduler/shared-data-access';
+import { AssociationService, AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
 import { setSelect } from '@hockey-team-scheduler/shared-utilities';
+import { filter, map, Observable, startWith } from 'rxjs';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
 
@@ -33,7 +32,7 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
       />
     </div>
     }`,
-  providers: [AssociationService, UserService],
+  providers: [],
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

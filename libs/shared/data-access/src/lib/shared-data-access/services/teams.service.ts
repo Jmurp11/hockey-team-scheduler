@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { NearbyTeamsParams, setSelect } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
-import { NearbyTeamsParams, setSelect } from '@hockey-team-scheduler/shared-utilities';
 import { APP_CONFIG } from '../config/app-config';
 
 export interface TeamsParams {
@@ -10,7 +10,7 @@ export interface TeamsParams {
   age?: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class TeamsService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);

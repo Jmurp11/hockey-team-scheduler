@@ -6,18 +6,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
-import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities'
-;
-import { AuthContainerComponent } from '../auth-container/auth-container.component';
 import { UserService } from '@hockey-team-scheduler/shared-data-access';
-import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilities';
+import { confirmPasswordValidator, getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { AuthContainerComponent } from '../auth-container/auth-container.component';
 
 @Component({
   selector: 'app-update-password',
@@ -30,7 +28,7 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
     PasswordComponent,
     ButtonModule,
   ],
-  providers: [LoadingService, NavigationService, UserService],
+  providers: [],
   template: `
   <app-auth-container>
       <app-card class="card">

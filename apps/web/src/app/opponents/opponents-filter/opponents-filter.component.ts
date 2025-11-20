@@ -16,6 +16,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { IftaLabelModule } from 'primeng/iftalabel';
@@ -24,7 +25,6 @@ import { AutoCompleteComponent } from '../../shared/components/auto-complete/aut
 import { CardComponent } from '../../shared/components/card/card.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
 import { SliderComponent } from '../../shared/components/slider/slider.component';
-import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 
@@ -42,7 +42,7 @@ import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
     IftaLabelModule,
     // SelectComponent,
   ],
-  providers: [LoadingService],
+  providers: [],
   template: `
     <form [formGroup]="opponentsForm" (ngSubmit)="submit()">
       <app-card class="card">
