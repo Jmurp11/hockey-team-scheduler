@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   # API Service (NestJS) - Development
   api-dev:
     build:
-      context: ./api
-      dockerfile: Dockerfile
-      target: development
+      context: .
+      dockerfile: ./apps/api/Dockerfile
     container_name: hockey-scheduler-api-dev
     restart: unless-stopped
     ports:
@@ -15,9 +12,9 @@ services:
       - NODE_ENV=development
       - PORT=3000
     env_file:
-      - ./api/.env
+      - ./apps/api/.env
     volumes:
-      - ./api:/app
+      - .:/app
       - /app/node_modules
     networks:
       - hockey-network-dev
@@ -26,7 +23,7 @@ services:
   # UI Service (Angular) - Development
   ui-dev:
     build:
-      context: ./ui
+      context: ./apps/web
       dockerfile: Dockerfile.dev
     container_name: hockey-scheduler-ui-dev
     restart: unless-stopped
@@ -35,7 +32,7 @@ services:
     depends_on:
       - api-dev
     volumes:
-      - ./ui:/app
+      - ./apps/web:/app
       - /app/node_modules
     networks:
       - hockey-network-dev

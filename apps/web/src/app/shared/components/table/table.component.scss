@@ -1,0 +1,23 @@
+@use "../../../scss/mixins/flex" as *;
+
+.p-datatable-table-container {
+  height: calc(100vh - 26rem) !important;
+}
+
+.p-datatable-tbody {
+  height: 100% !important;
+}
+
+.center {
+  @include flex(center, center, column);
+}
+
+.caption {
+  @include flex(flex-end, center, row);
+  gap: 1rem;
+  width: 100%;
+}
+
+::ng-deep .p-datatable-table-container {
+  height: calc(100vh - 22rem);
+}
