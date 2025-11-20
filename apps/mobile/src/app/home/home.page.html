@@ -1,0 +1,77 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Hockey Team Scheduler
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Hockey Team Scheduler</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Welcome to Hockey Team Scheduler Mobile</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Manage your hockey team schedules, games, and tournaments on the go!
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="calendar"></ion-icon>
+          Upcoming Games
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        View and manage your team's upcoming games and schedules.
+        <ion-button fill="outline" size="small" class="mt-2">
+          View Games
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people"></ion-icon>
+          Team Management
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Manage team rosters, player information, and communication.
+        <ion-button fill="outline" size="small" class="mt-2">
+          Manage Teams
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="trophy"></ion-icon>
+          Tournaments
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Browse and register for hockey tournaments in your area.
+        <ion-button fill="outline" size="small" class="mt-2">
+          View Tournaments
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

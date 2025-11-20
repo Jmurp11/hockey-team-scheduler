@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": [],
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "preserveSymlinks": false
+  },
+  "include": [
+    "src/**/*.ts"
+, "../../libs/shared/utilities/src/lib/shared-utilities/types/user.type.ts", "../../libs/shared/utilities/src/lib/shared-utilities/utilities/password-match.validator.ts", "../../libs/shared/data-access/src/lib/shared-data-access/services/user.service.ts", "../../libs/shared/data-access/src/lib/shared-data-access/services/auth.service.ts"  ],
+  "exclude": [
+    "src/**/*.spec.ts"
+  ]
+}
