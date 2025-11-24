@@ -2,11 +2,10 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { formatLocation } from '@hockey-team-scheduler/shared-utilities';
 import {
-    IonCardHeader,
-    IonCardSubtitle,
-    IonCardTitle,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
 } from '@ionic/angular/standalone';
-import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-item.component';
 
 @Component({
   selector: 'app-opponent-card-header',
@@ -16,43 +15,49 @@ import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-i
     IonCardHeader,
     IonCardTitle,
     IonCardSubtitle,
-    OpponentStatItemComponent,
   ],
   template: `
     <ion-card-header>
-      <ion-card-title>{{ opponent.team_name }}</ion-card-title>
-      <ion-card-subtitle>
-        <div class="opponent-info">
-          <div>
-            {{ opponent.name }} -
-            {{ formatLocation(opponent.city, opponent.state, opponent.country) }}
-          </div>
+      <ion-card-title
+        ><div class="title-row">
+          <div class="opponent-info">{{ opponent.team_name }}</div>
           <div class="distance-info">
-            <app-opponent-stat-item
-              label="Distance"
-              [value]="formatDistance(opponent.distance)"
-            />
+            {{ opponent.distance | number: '1.1-1' }} mi
           </div>
+        </div></ion-card-title
+      >
+      <ion-card-subtitle>
+        <div>
+          {{ opponent.name }} -
+          {{ formatLocation(opponent.city, opponent.state, opponent.country) }}
         </div>
       </ion-card-subtitle>
     </ion-card-header>
   `,
-  styles: [`
-    ion-card-subtitle {
-      margin-top: 0.5rem;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    .opponent-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+      .title-row {
+        @include flex(space-between, flex-start, row);
+      }
 
-    .distance-info {
-      font-weight: 600;
-      color: var(--ion-color-primary);
-    }
-  `],
+      .opponent-info {
+        font-weight: 600;
+        color: var(--primary-500);
+        font-size: 1rem;
+        width: 50%;
+      }
+
+      .distance-info {
+        font-weight: 600;
+        color: var(--secondary-500);
+        font-size: 1rem;
+        width: 50%;
+        text-align: right;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentCardHeaderComponent {

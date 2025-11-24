@@ -16,9 +16,8 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
-  IonCardTitle,
   IonContent,
-  IonText,
+  IonText
 } from '@ionic/angular/standalone';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { CardComponent } from '../../shared/card/card.component';
@@ -34,7 +33,6 @@ import { PasswordInputComponent } from '../../shared/password-input/password-inp
     IonContent,
     CardComponent,
     IonCardHeader,
-    IonCardTitle,
     IonCardSubtitle,
     IonCardContent,
     IonText,

@@ -17,9 +17,9 @@ import {
 import { addIcons } from 'ionicons';
 import { addOutline, peopleOutline, trophyOutline } from 'ionicons/icons';
 import { filter, Observable, switchMap, take } from 'rxjs';
+import { FloatingActionButtonComponent } from '../shared/floating-action-button/floating-action-button.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { AddGameModalService } from './add-game/add-game-modal.service';
-import { AddGameComponent } from './add-game/add-game.component';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { ScheduleListComponent } from './schedule-list/schedule-list.component';
 
@@ -37,7 +37,7 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
     ScheduleActionsComponent,
     LoadingComponent,
     ScheduleListComponent,
-    AddGameComponent,
+    FloatingActionButtonComponent,
   ],
   template: `
     <ion-header>
@@ -50,7 +50,6 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
     </ion-header>
 
     <ion-content>
-      <app-schedule-actions />
       @if (games$ | async; as games) {
         @if (games === null) {
           <app-loading />
@@ -64,6 +63,14 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
         }
       }
     </ion-content>
+
+    <app-floating-action-button
+      [slot]="'fixed'"
+      [horizontal]="'end'"
+      [vertical]="'bottom'"
+    >
+      <app-schedule-actions />
+    </app-floating-action-button>
   `,
   styles: [
     `

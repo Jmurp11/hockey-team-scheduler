@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  TournamentsService,
+} from '@hockey-team-scheduler/shared-data-access';
 import {
   IonBackButton,
   IonButtons,
   IonContent,
   IonHeader,
   IonMenuButton,
-  IonSelectOption,
   IonTitle,
-  IonToolbar
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import {
   BehaviorSubject,
@@ -26,10 +28,7 @@ import {
 } from 'rxjs';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { SearchbarComponent } from '../shared/searchbar/searchbar.component';
-import { SelectComponent } from '../shared/select/select.component';
 import { TournamentListComponent } from './tournament-list/tournament-list.component';
-
-type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-tournaments',
@@ -47,70 +46,79 @@ type SortDirection = 'asc' | 'desc';
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
+    <ion-content>
       @if (isLoading()) {
         <div class="loading-container">
           <app-loading name="circular"></app-loading>
         </div>
       } @else {
         @if (nearbyTournaments$ | async; as tournaments) {
-          <div class="search-sort-container">
-            <app-searchbar
-              [placeholder]="'Search tournaments...'"
-              (ionChangeEvent)="onSearchChanged($event)"
-            ></app-searchbar>
-            
-            <app-select
-              [label]="'Sort By'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [value]="currentSort$.value.field"
-              (ionChangeEvent)="onSortFieldChanged($event)"
-            >
-              @for (field of sortFields; track field.value) {
-                <ion-select-option [value]="field.value">{{ field.label }}</ion-select-option>
-              }
-            </app-select>
+          <div class="fixed-header">
+            <div class="search-sort-container">
+              <app-searchbar
+                [placeholder]="'Search tournaments...'"
+                (ionInputEvent)="onSearchChanged($event)"
+              ></app-searchbar>
 
-            <app-select
-              [label]="'Direction'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [value]="currentSort$.value.sortDirection"
-              (ionChangeEvent)="onSortDirectionChanged($event)"
-            >
-              <ion-select-option value="asc">Ascending</ion-select-option>
-              <ion-select-option value="desc">Descending</ion-select-option>
-            </app-select>
-
-            <div class="results-count">
-              {{ tournaments?.length ?? 0 }} tournaments found
+              <div class="results-count">
+                {{ tournaments?.length ?? 0 }} tournaments found
+              </div>
             </div>
           </div>
 
-          <app-tournament-list [tournaments]="tournaments" />
+          <div class="scrollable-content">
+            <app-tournament-list [tournaments]="tournaments" />
+          </div>
         }
       }
     </ion-content>
   `,
-  styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    .search-sort-container {
-      margin-bottom: 1rem;
-    }
+      ion-content {
+        --padding-top: 0;
+        --padding-bottom: 0;
+        --padding-start: 0;
+        --padding-end: 0;
+      }
 
-    .results-count {
-      margin-top: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--ion-color-medium);
-    }
-  `],
+      .loading-container {
+        @include flex(center, center, row);
+        height: 100%;
+      }
+
+      .fixed-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--ion-background-color, #fff);
+        padding: 1rem;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+      }
+
+      .search-sort-container {
+        @include flex(center, center, column);
+        gap: 1rem;
+
+        app-searchbar {
+          width: 100%;
+        }
+      }
+
+      .results-count {
+        padding: 0.275rem;
+        font-size: 0.875rem;
+        color: var(--ion-color-medium);
+      }
+
+      .scrollable-content {
+        padding: 1rem;
+        overflow-y: auto;
+      }
+    `,
+  ],
   imports: [
     CommonModule,
     IonHeader,
@@ -120,9 +128,7 @@ type SortDirection = 'asc' | 'desc';
     IonButtons,
     IonBackButton,
     IonMenuButton,
-    IonSelectOption,
     SearchbarComponent,
-    SelectComponent,
     LoadingComponent,
     TournamentListComponent,
   ],
@@ -131,7 +137,7 @@ export class TournamentsPage implements OnInit {
   authService = inject(AuthService);
   tournamentsService = inject(TournamentsService);
   private route = inject(ActivatedRoute);
-  
+
   tournaments$: Observable<any> = new Observable<any>();
   nearbyTournaments$!: Observable<any>;
   user$: Observable<any> = toObservable(this.authService.currentUser);
@@ -142,39 +148,20 @@ export class TournamentsPage implements OnInit {
     { label: 'Distance', value: 'distance' },
     { label: 'Date', value: 'startDate' },
   ];
-  currentSort$ = new BehaviorSubject<{
-    field: string;
-    sortDirection: SortDirection;
-  }>({
-    field: 'distance',
-    sortDirection: 'asc',
-  });
+
   private searchParams$ = new BehaviorSubject<any>(null);
 
   ngOnInit(): void {
-    // Check if we came from the schedule page
-    this.route.queryParams.pipe(
-      tap((params) => {
-        this.showBackButton.set(params['from'] === 'schedule');
-      })
-    ).subscribe();
+    this.route.queryParams
+      .pipe(
+        tap((params) => {
+          this.showBackButton.set(params['from'] === 'schedule');
+        }),
+      )
+      .subscribe();
 
     this.tournaments$ = this.getNearbyTournaments();
     this.nearbyTournaments$ = this.createFilteredAndSortedTournaments$();
-  }
-
-  onSortFieldChanged(event: CustomEvent) {
-    this.currentSort$.next({
-      ...this.currentSort$.value,
-      field: event.detail.value,
-    });
-  }
-
-  onSortDirectionChanged(event: CustomEvent) {
-    this.currentSort$.next({
-      ...this.currentSort$.value,
-      sortDirection: event.detail.value,
-    });
   }
 
   onSearchChanged(event: CustomEvent) {
@@ -188,46 +175,48 @@ export class TournamentsPage implements OnInit {
       switchMap((user) =>
         this.tournamentsService.nearByTournaments({
           p_id: user.association_id,
-        })
+        }),
       ),
       tap(() => this.isLoading.set(false)),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 
   private createFilteredAndSortedTournaments$(): Observable<any[]> {
     return combineLatest({
       tournaments: this.tournaments$,
-      sort: this.currentSort$,
       search: this.searchParams$,
     }).pipe(
-      map(({ tournaments, sort, search }) => {
-        let filtered = tournaments;
-        if (search && search.trim().length > 0) {
-          const searchLower = search.toLowerCase();
-          filtered = tournaments.filter(
-            (tournament: any) =>
-              tournament.name.toLowerCase().includes(searchLower) ||
-              tournament.location.toLowerCase().includes(searchLower)
-          );
-        }
-        return this.sort([...filtered], sort);
-      }),
-      shareReplay(1)
+      map(({ tournaments, search }) =>
+        this.performSearchFilter(tournaments, search),
+      ),
+      shareReplay(1),
     );
   }
 
-  sort(
-    tournaments: any[],
-    sort: { field: string; sortDirection: SortDirection }
-  ) {
-    return tournaments.sort((a, b) => {
-      const fieldA = a[sort.field];
-      const fieldB = b[sort.field];
+  performSearchFilter(tournaments: any[], search: string): any[] {
+    let filtered = tournaments;
+    if (search && search.trim().length > 0) {
+      const searchLower = search.toLowerCase();
+      filtered = tournaments.filter((tournament: any) =>
+        this.filterBySearch(tournament, searchLower),
+      );
+    }
+    return filtered;
+  }
 
-      if (fieldA < fieldB) return sort.sortDirection === 'asc' ? -1 : 1;
-      if (fieldA > fieldB) return sort.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
+  filterBySearch(tournaments: any[], search: string): any[] {
+    const searchLower = search.toLowerCase();
+    return tournaments.filter(
+      (tournament: any) =>
+        tournament.name.toLowerCase().includes(searchLower) ||
+        tournament.location.toLowerCase().includes(searchLower) ||
+        tournament.ages[0]
+          .map((age: any) => age.toLowerCase())
+          .some((age: string) => age.includes(searchLower)) ||
+        tournament.levels
+          .map((level: any) => level[0].toLowerCase())
+          .some((level: string) => level.includes(searchLower)),
+    );
   }
 }

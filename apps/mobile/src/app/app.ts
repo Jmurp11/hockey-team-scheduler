@@ -27,6 +27,7 @@ import {
 } from 'ionicons/icons';
 
 @Component({
+  standalone: true,
   imports: [
     IonApp,
     IonRouterOutlet,

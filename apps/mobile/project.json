@@ -15,6 +15,9 @@
         "polyfills": ["zone.js"],
         "tsConfig": "apps/mobile/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/shared/ui/src/lib/scss", "libs"]
+        },
         "assets": [
           {
             "glob": "**/*",

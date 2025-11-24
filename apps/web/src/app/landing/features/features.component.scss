@@ -1,4 +1,4 @@
-@use "../../scss/mixins/_mixins.scss" as *;
+@use "mixins/mixins" as *;
 
 h2 {
   color: var(--primary-500);

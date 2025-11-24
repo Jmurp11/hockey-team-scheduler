@@ -13,7 +13,7 @@ import { IonSelect } from '@ionic/angular/standalone';
       [disabled]="disabled"
       [multiple]="multiple"
       [interface]="interface"
-      [interfaceOptions]="interfaceOptions"
+      [interfaceOptions]="interfaceOptions || {}"
       [color]="color"
       [label]="label"
       [labelPlacement]="labelPlacement"

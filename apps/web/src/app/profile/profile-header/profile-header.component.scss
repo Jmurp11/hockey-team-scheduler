@@ -1,4 +1,4 @@
-@use "../../scss/mixins/_mixins.scss" as *;
+@use "mixins/mixins" as *;
 
 .avatar {
   --p-avatar-background: var(--secondary-100);
