@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
+import { SortDirection } from '@hockey-team-scheduler/shared-utilities';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   BehaviorSubject,
@@ -20,7 +21,6 @@ import {
   tap,
 } from 'rxjs';
 import { SortHeaderComponent } from '../shared';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
 
 @Component({

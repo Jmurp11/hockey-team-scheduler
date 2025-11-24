@@ -10,7 +10,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { AssociationService, AuthService, TeamsService } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect, sort } from '@hockey-team-scheduler/shared-utilities';
+import { setSelect, sort, SortDirection } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -27,7 +27,6 @@ import {
 } from 'rxjs';
 import { AddGameDialogService } from '../schedule/add-game/add-game-dialog.service';
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
 
