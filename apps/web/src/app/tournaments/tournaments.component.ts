@@ -7,7 +7,10 @@ import {
   signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  TournamentsService,
+} from '@hockey-team-scheduler/shared-data-access';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   BehaviorSubject,
@@ -20,8 +23,8 @@ import {
   tap,
 } from 'rxjs';
 import { SortHeaderComponent } from '../shared';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
+import { SortDirection } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-tournaments',
@@ -35,25 +38,27 @@ import { TournamentsListComponent } from './tournaments-list/tournaments-list.co
   providers: [],
   template: ` <div class="container">
     @if (isLoading()) {
-    <div class="loading-spinner">
-      <p-progressSpinner></p-progressSpinner>
-    </div>
-    } @else { @if (nearbyTournaments$ | async; as tournaments) {
-    <div class="list-container">
-      <app-sort-header
-        class="sort-header"
-        (sortChanged)="onSortChanged($event)"
-        (searchChanged)="onSearchChanged($event)"
-        [resultsCount]="tournaments?.length ?? 0"
-        [sortFields]="sortFields"
-        [showSearch]="true"
-      ></app-sort-header>
-
-      <div class="tournament-list">
-        <app-tournaments-list [tournaments]="tournaments" />
+      <div class="loading-spinner">
+        <p-progressSpinner></p-progressSpinner>
       </div>
-    </div>
-    } }
+    } @else {
+      @if (nearbyTournaments$ | async; as tournaments) {
+        <div class="list-container">
+          <app-sort-header
+            class="sort-header"
+            (sortChanged)="onSortChanged($event)"
+            (searchChanged)="onSearchChanged($event)"
+            [resultsCount]="tournaments?.length ?? 0"
+            [sortFields]="sortFields"
+            [showSearch]="true"
+          ></app-sort-header>
+
+          <div class="tournament-list">
+            <app-tournaments-list [tournaments]="tournaments" />
+          </div>
+        </div>
+      }
+    }
   </div>`,
   styleUrls: ['./tournaments.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,10 +104,10 @@ export class TournamentsComponent implements OnInit {
       switchMap((user) =>
         this.tournamentsService.nearByTournaments({
           p_id: user.association_id,
-        })
+        }),
       ),
       tap(() => this.isLoading.set(false)),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 
@@ -119,18 +124,18 @@ export class TournamentsComponent implements OnInit {
           filtered = tournaments.filter(
             (tournament: any) =>
               tournament.name.toLowerCase().includes(searchLower) ||
-              tournament.location.toLowerCase().includes(searchLower)
+              tournament.location.toLowerCase().includes(searchLower),
           );
         }
         return this.sort([...filtered], sort);
       }),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 
   sort(
     tournaments: any[],
-    sort: { field: string; sortDirection: SortDirection }
+    sort: { field: string; sortDirection: SortDirection },
   ) {
     return tournaments.sort((a, b) => {
       const fieldA = a[sort.field];
