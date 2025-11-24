@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { formatTournamentLocation } from '@hockey-team-scheduler/shared-utilities';
 import {
-    IonCardHeader,
-    IonCardSubtitle,
-    IonCardTitle,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -13,35 +13,54 @@ import {
   imports: [CommonModule, IonCardHeader, IonCardTitle, IonCardSubtitle],
   template: `
     <ion-card-header>
-      <ion-card-title>{{ tournament.name }}</ion-card-title>
+      <ion-card-title>
+        <div class="title-row">
+          <div class="tournament-name">{{ tournament.name }}</div>
+          <div class="tournament-distance">
+            {{ tournament.distance | number: '1.1-1' }} mi
+          </div>
+        </div>
+      </ion-card-title>
       <ion-card-subtitle>
         <div class="location-info">
           <div>{{ formatLocation(tournament.location) }}</div>
           <div>
-            {{ tournament.startDate | date: 'MMM d, y' }} - 
+            {{ tournament.startDate | date: 'MMM d, y' }} -
             {{ tournament.endDate | date: 'MMM d, y' }}
           </div>
-        </div>
-        <div class="distance-info">
-          Distance: {{ formatDistance(tournament.distance) }}
         </div>
       </ion-card-subtitle>
     </ion-card-header>
   `,
-  styles: [`
-    ion-card-subtitle {
-      margin-top: 0.5rem;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    .location-info {
-      margin-bottom: 0.5rem;
-    }
+      ion-card-subtitle {
+        margin-top: 0.5rem;
+      }
 
-    .distance-info {
-      font-weight: 600;
-      color: var(--ion-color-primary);
-    }
-  `],
+      .title-row {
+        @include flex(space-between, flex-start, row);
+      }
+
+      .tournament-name {
+        font-weight: 600;
+        color: var(--primary-500);
+        font-size: 0.9rem;
+        width: 50%;
+      }
+
+      .tournament-distance {
+        font-weight: 600;
+        color: var(--secondary-500);
+        font-size: 0.9rem;
+        width: 50%;
+        text-align: right;
+      }
+
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TournamentCardHeaderComponent {
@@ -49,8 +68,4 @@ export class TournamentCardHeaderComponent {
   tournament: any;
 
   formatLocation = formatTournamentLocation;
-  
-  formatDistance(distance: string): string {
-    return `${distance} mi`;
-  }
 }

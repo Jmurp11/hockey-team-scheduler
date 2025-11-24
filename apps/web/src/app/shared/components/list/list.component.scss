@@ -1,4 +1,4 @@
-@use "../../../scss/mixins/_mixins.scss" as *;
+@use "mixins/mixins" as *;
 
 p-card {
   @include flex(center, center, column);

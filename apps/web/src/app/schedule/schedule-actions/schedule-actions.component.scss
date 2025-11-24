@@ -1,4 +1,4 @@
-@use "../../scss/mixins/_mixins.scss" as *;
+@use "mixins/mixins" as *;
 
 .sub-row {
   @include flex(space-evenly, center, row);

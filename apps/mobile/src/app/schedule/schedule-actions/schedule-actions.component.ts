@@ -1,64 +1,37 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  IonFabButton,
-  IonFabList,
-  IonIcon,
-} from '@ionic/angular/standalone';
+import { IonFabButton, IonFabList, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, peopleOutline, searchOutline, trophyOutline } from 'ionicons/icons';
-import { FloatingActionButtonComponent } from '../../shared/floating-action-button/floating-action-button.component';
+import {
+  addOutline,
+  peopleOutline,
+  searchOutline,
+  trophyOutline,
+} from 'ionicons/icons';
 import { AddGameModalService } from '../add-game/add-game-modal.service';
 
 @Component({
   selector: 'app-schedule-actions',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonIcon,
-    FloatingActionButtonComponent,
-    IonFabList,
-    IonFabButton
-  ],
+  imports: [CommonModule, IonIcon, IonFabList, IonFabButton],
   template: `
-    <app-floating-action-button
-      slot="fixed"
-      [vertical]="'bottom'"
-      [horizontal]="'end'"
-    >
-      <ion-fab-button>
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-list side="top">
-        @for (action of actions; track action.label) {
-          <ion-fab-button
-            (click)="action.action()"
-            [color]="action.color"
-            aria-label="{{ action.label }}"
-          >
-            <ion-icon name="{{ action.icon }}"></ion-icon>
-          </ion-fab-button>
-        }
-      </ion-fab-list>
-    </app-floating-action-button>
+    <ion-fab-button [color]="'secondary'" aria-label="Schedule Actions">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      @for (action of actions; track action.label) {
+        <ion-fab-button
+          (click)="action.action()"
+          [color]="action.color"
+          aria-label="{{ action.label }}"
+        >
+          <ion-icon name="{{ action.icon }}"></ion-icon>
+        </ion-fab-button>
+      }
+    </ion-fab-list>
   `,
-  styles: [
-    `
-      .actions-container {
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .secondary-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class ScheduleActionsComponent {
   private addGameModalService = inject(AddGameModalService);
@@ -93,10 +66,14 @@ export class ScheduleActionsComponent {
   }
 
   findNearbyTeams(): void {
-    this.router.navigate(['/app/opponents'], { queryParams: { from: 'schedule' } });
+    this.router.navigate(['/app/opponents'], {
+      queryParams: { from: 'schedule' },
+    });
   }
 
   findTournaments(): void {
-    this.router.navigate(['/app/tournaments'], { queryParams: { from: 'schedule' } });
+    this.router.navigate(['/app/tournaments'], {
+      queryParams: { from: 'schedule' },
+    });
   }
 }

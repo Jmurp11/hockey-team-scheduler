@@ -1,4 +1,4 @@
-@use "../../../scss/mixins/flex" as *;
+@use "mixins/flex" as *;
 
 .p-datatable-table-container {
   height: calc(100vh - 26rem) !important;

@@ -1,19 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Chip } from 'primeng/chip';
 import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-item.component';
 
 @Component({
   selector: 'app-opponent-card-content',
   standalone: true,
-  imports: [CommonModule, OpponentStatItemComponent],
+  imports: [CommonModule, OpponentStatItemComponent, Chip],
   template: `
     <div class="card-content">
       @for (item of values; track item.label) {
-      <app-opponent-stat-item
-        [label]="item.label"
-        [value]="item.value"
-      ></app-opponent-stat-item>
+        <app-opponent-stat-item [label]="item.label" [value]="item.value" />
       }
+      <app-opponent-stat-item
+        [label]="'Leagues'"
+        [value]="leagues.join(', ')"
+      />
     </div>
   `,
   styleUrls: [`./opponent-card-content.component.scss`],
@@ -22,4 +24,7 @@ import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-i
 export class OpponentCardContentComponent {
   @Input()
   values: { label: string; value: string }[];
+
+  @Input()
+  leagues: string[];
 }

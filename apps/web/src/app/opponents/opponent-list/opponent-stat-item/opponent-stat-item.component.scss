@@ -1,4 +1,4 @@
-@use "../../../scss/mixins/flex" as *;
+@use "mixins/flex" as *;
 
 .stat-item {
   @include flex(center, center, column);

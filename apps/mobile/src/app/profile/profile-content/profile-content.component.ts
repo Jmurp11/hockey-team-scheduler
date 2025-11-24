@@ -1,24 +1,29 @@
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  EventEmitter,
-  inject,
-  Input,
-  OnInit,
-  Output,
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    EventEmitter,
+    inject,
+    Input,
+    OnInit,
+    Output,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
-import { getFormControl, Profile } from '@hockey-team-scheduler/shared-utilities';
 import {
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonSelectOption,
-  IonSpinner,
+    checkProfileField,
+    getFormControl,
+    getInputType,
+    Profile,
+} from '@hockey-team-scheduler/shared-utilities';
+import {
+    IonCardContent,
+    IonCardHeader,
+    IonCardSubtitle,
+    IonCardTitle,
+    IonSelectOption,
+    IonSpinner,
 } from '@ionic/angular/standalone';
 import { SelectItem } from 'primeng/api';
 import { Observable } from 'rxjs/internal/Observable';
@@ -158,6 +163,8 @@ export class ProfileContentComponent implements OnInit {
   formFields = getFormFields();
 
   getFormControl = getFormControl;
+  getInputType = getInputType;
+  checkField = checkProfileField;
 
   profileUpdateForm!: FormGroup;
 
@@ -171,11 +178,6 @@ export class ProfileContentComponent implements OnInit {
     });
   }
 
-  getInputType(type?: string): 'text' | 'email' | 'number' | 'password' | 'tel' | 'url' {
-    const validTypes = ['text', 'email', 'number', 'password', 'tel', 'url'];
-    return validTypes.includes(type || '') ? type as 'text' | 'email' | 'number' | 'password' | 'tel' | 'url' : 'text';
-  }
-
   initProfileFormGroup() {
     return new FormGroup({
       display_name: new FormControl(this.checkField(this.card.display_name)),
@@ -183,21 +185,6 @@ export class ProfileContentComponent implements OnInit {
       team: new FormControl(this.checkField(this.card.team)),
       email: new FormControl(this.checkField(this.card.email)),
     });
-  }
-
-  checkField(
-    value: string | string[] | number | { label: string; value: string | number | null }
-  ): string | { label: string; value: string | number | null } {
-    if (!value) {
-      return '';
-    }
-    if (typeof value === 'object' && 'label' in value && 'value' in value) {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.length ? value.join(', ') : '';
-    }
-    return value.toString() || '';
   }
 
   cancel() {

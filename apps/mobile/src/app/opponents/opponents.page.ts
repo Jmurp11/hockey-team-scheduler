@@ -13,7 +13,11 @@ import {
   AuthService,
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect, sort, SortDirection } from '@hockey-team-scheduler/shared-utilities';
+import {
+  setSelect,
+  sort,
+  SortDirection,
+} from '@hockey-team-scheduler/shared-utilities';
 import {
   IonBackButton,
   IonButtons,
@@ -34,10 +38,12 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  take,
   tap,
 } from 'rxjs';
 // TODO: Implement AddGameDialogService for mobile
 // import { AddGameDialogService } from '../schedule/add-game/add-game-dialog.service';
+import { AccordionComponent } from '../shared/accordion/accordion.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { SelectComponent } from '../shared/select/select.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
@@ -55,11 +61,12 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
     IonButtons,
     IonBackButton,
     IonMenuButton,
-    IonSelectOption,
     OpponentsFilterComponent,
     OpponentsListComponent,
     LoadingComponent,
+    AccordionComponent,
     SelectComponent,
+    IonSelectOption,
   ],
   template: `
     <ion-header>
@@ -71,78 +78,107 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
             <ion-menu-button></ion-menu-button>
           }
         </ion-buttons>
-        <ion-title>Opponents</ion-title>
+        <ion-title>Find Opponents</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
-      <app-opponents-filter
-        (selectedInputs)="onSearchParamsChanged($event)"
-        [associations$]="associations$"
-        [userDefault$]="userAssociation$"
-      />
+    <ion-content [scrollY]="false" class="ion-padding">
+      <div class="content-wrapper">
+        <app-accordion [values]="['Filters', 'Sort By']">
+          <ng-template>
+            <app-opponents-filter
+              (selectedInputs)="onSearchParamsChanged($event)"
+              [associations$]="associations$"
+              [userDefault$]="userAssociation$"
+            />
+          </ng-template>
 
-      @if (isLoading()) {
-        <div class="loading-container">
-          <app-loading name="circular"></app-loading>
-        </div>
-      } @else {
-        @if (nearbyTeams$ | async; as nearbyTeams) {
-          <div class="sort-container">
-            <app-select
-              [label]="'Sort By'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [value]="currentSort$.value.field"
-              (ionChangeEvent)="onSortFieldChanged($event)"
-            >
-              @for (field of sortFields; track field.value) {
-                <ion-select-option [value]="field.value">{{ field.label }}</ion-select-option>
-              }
-            </app-select>
+          <ng-template>
+            <div>
+              <app-select
+                [label]="'Sort By'"
+                [labelPlacement]="'stacked'"
+                [fill]="'outline'"
+                [value]="currentSort$.value.field"
+                (ionChangeEvent)="onSortFieldChanged($event)"
+              >
+                @for (field of sortFields; track field.value) {
+                  <ion-select-option [value]="field.value">{{
+                    field.label
+                  }}</ion-select-option>
+                }
+              </app-select>
 
-            <app-select
-              [label]="'Direction'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [value]="currentSort$.value.sortDirection"
-              (ionChangeEvent)="onSortDirectionChanged($event)"
-            >
-              <ion-select-option value="asc">Ascending</ion-select-option>
-              <ion-select-option value="desc">Descending</ion-select-option>
-            </app-select>
+              <app-select
+                [label]="'Direction'"
+                [labelPlacement]="'stacked'"
+                [fill]="'outline'"
+                [value]="currentSort$.value.sortDirection"
+                (ionChangeEvent)="onSortDirectionChanged($event)"
+              >
+                <ion-select-option value="asc">Ascending</ion-select-option>
+                <ion-select-option value="desc">Descending</ion-select-option>
+              </app-select>
+            </div>
+          </ng-template>
+        </app-accordion>
 
+        @if (isLoading()) {
+          <div class="loading-container">
+            <app-loading name="circular"></app-loading>
+          </div>
+        } @else {
+          @if (nearbyTeams$ | async; as nearbyTeams) {
             <div class="results-count">
               {{ nearbyTeams?.length ?? 0 }} opponents found
             </div>
-          </div>
 
-          <app-opponents-list
-            [opponents]="nearbyTeams"
-            (opponentSelected)="onOpponentSelected($event)"
-          />
+            <div class="scrollable-list">
+              <app-opponents-list
+                [opponents]="nearbyTeams"
+                (opponentSelected)="onOpponentSelected($event)"
+              />
+            </div>
+          }
         }
-      }
+      </div>
     </ion-content>
   `,
-  styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    .sort-container {
-      margin: 1rem 0;
-    }
+      :host {
+        height: 100vh;
+        width: 100%;
+      }
 
-    .results-count {
-      margin-top: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--ion-color-medium);
-    }
-  `],
+      .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .loading-container {
+        @include flex(center, center, row);
+        flex: 1;
+      }
+
+      .results-count {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--ion-color-medium);
+        text-align: center;
+      }
+
+      .scrollable-list {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentsPage implements OnInit {
@@ -175,14 +211,14 @@ export class OpponentsPage implements OnInit {
 
   user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
     startWith(null),
-    filter((user) => user != null)
+    filter((user) => user != null),
   );
 
   userAssociation$: Observable<SelectItem> = this.user$.pipe(
     map((user) => ({
       label: user?.association_name,
       value: user?.association_id,
-    }))
+    })),
   );
 
   associations$: Observable<SelectItem[]> =
@@ -193,24 +229,27 @@ export class OpponentsPage implements OnInit {
     // this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
 
     // Check if we came from the schedule page
-    this.route.queryParams.pipe(
-      tap((params) => {
-        this.showBackButton.set(params['from'] === 'schedule');
-      })
-    ).subscribe();
+    this.route.queryParams
+      .pipe(
+        tap((params) => {
+          this.showBackButton.set(params['from'] === 'schedule');
+        }),
+        take(1),
+      )
+      .subscribe();
 
     const teams$ = this.searchParams$.pipe(
       filter((params) => params !== null),
       switchMap((params) => this.getNearbyTeams(params)),
       tap(() => this.isLoading.set(false)),
-      shareReplay(1)
+      shareReplay(1),
     );
 
     this.nearbyTeams$ = combineLatest({
       teams: teams$,
       sort: this.currentSort$,
     }).pipe(
-      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir))
+      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir)),
     );
   }
 

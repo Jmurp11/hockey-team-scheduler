@@ -15,15 +15,18 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@hockey-team-scheduler/shared": ["libs/shared/src/index.ts"],
       "@hockey-team-scheduler/shared-data-access": [
         "libs/shared/data-access/src/index.ts"
       ],
-      "@hockey-team-scheduler/shared-ui": ["libs/shared/ui/src/index.ts"],
+      "@hockey-team-scheduler/shared-test": [
+        "libs/shared/test/src/index.ts"
+      ],
+      "@hockey-team-scheduler/shared-ui": [
+        "libs/shared/ui/src/index.ts"
+      ],
       "@hockey-team-scheduler/shared-utilities": [
         "libs/shared/utilities/src/index.ts"
-      ],
-      "@hockey-team-scheduler/shared-test": ["libs/shared/test/src/index.ts"]
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

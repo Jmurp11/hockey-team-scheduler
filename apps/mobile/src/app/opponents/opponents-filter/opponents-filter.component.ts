@@ -1,32 +1,27 @@
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    DestroyRef,
-    EventEmitter,
-    inject,
-    Input,
-    OnInit,
-    Output,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
-import {
-    IonLabel,
-    IonList,
-    IonSelectOption,
-} from '@ionic/angular/standalone';
+import { IonLabel, IonList, IonSelectOption } from '@ionic/angular/standalone';
 import { SelectItem } from 'primeng/api';
 import { combineLatest, map, Observable, startWith } from 'rxjs';
 import { ButtonComponent } from '../../shared/button/button.component';
-import { CardComponent } from '../../shared/card/card.component';
 import { CheckboxComponent } from '../../shared/checkbox/checkbox.component';
 import { ItemComponent } from '../../shared/item/item.component';
 import { RangeComponent } from '../../shared/range/range.component';
@@ -41,7 +36,6 @@ import { SelectComponent } from '../../shared/select/select.component';
     IonLabel,
     IonList,
     IonSelectOption,
-    CardComponent,
     CheckboxComponent,
     RangeComponent,
     ButtonComponent,
@@ -50,108 +44,117 @@ import { SelectComponent } from '../../shared/select/select.component';
   ],
   template: `
     <form [formGroup]="opponentsForm" (ngSubmit)="submit()">
-      <app-card>
-        <ion-list>
-          <app-item [lines]="'none'">
-            <app-checkbox
-              slot="start"
-              [value]="opponentsForm.get('changeAssociation')?.value"
-              (ionChange)="onChangeAssociationToggle($event)"
-            />
-            <ion-label>Change Association</ion-label>
-          </app-item>
+      <ion-list>
+        <!-- <app-item [lines]="'none'">
+          <app-checkbox
+            slot="start"
+            [color]="'secondary'"
+            [value]="opponentsForm.get('changeAssociation')?.value"
+            (ionChange)="onChangeAssociationToggle($event)"
+          />
+          <ion-label>Change Association</ion-label>
+        </app-item> -->
 
+        @if (opponentsForm.get('changeAssociation')?.value) {
           <app-item [lines]="'none'">
-            <app-checkbox
-              slot="start"
-              [value]="opponentsForm.get('girlsOnly')?.value"
-              (ionChange)="onGirlsOnlyToggle($event)"
-            />
-            <ion-label>Girls Only</ion-label>
+            <app-select
+              [label]="'Association'"
+              [labelPlacement]="'stacked'"
+              [fill]="'outline'"
+              [value]="opponentsForm.get('association')?.value?.value"
+              (ionChangeEvent)="onAssociationChange($event)"
+            >
+              @for (assoc of associations$ | async; track assoc.value) {
+                <ion-select-option [value]="assoc.value">{{
+                  assoc.label
+                }}</ion-select-option>
+              }
+            </app-select>
           </app-item>
+        }
 
-          @if (opponentsForm.get('changeAssociation')?.value) {
-            <app-item [lines]="'none'">
-              <app-select
-                [label]="'Association'"
-                [labelPlacement]="'stacked'"
-                [fill]="'outline'"
-                [value]="opponentsForm.get('association')?.value?.value"
-                (ionChangeEvent)="onAssociationChange($event)"
+        <app-item [lines]="'none'">
+          <div class="range-container">
+            <ion-label>
+              Maximum Travel Distance:
+              <strong>{{ opponentsForm.get('distance')?.value }} mi</strong>
+            </ion-label>
+            <app-range
+              [min]="0"
+              [max]="300"
+              [step]="5"
+              [pin]="true"
+              [color]="'secondary'"
+              [value]="opponentsForm.get('distance')?.value"
+              (ionChange)="onDistanceChange($event)"
+            />
+          </div>
+        </app-item>
+
+        <app-item [lines]="'none'">
+          <div class="range-container">
+            <ion-label>
+              Rating Range:
+              <strong
+                >{{ opponentsForm.get('rating')?.value[0] }} -
+                {{ opponentsForm.get('rating')?.value[1] }}</strong
               >
-                @for (assoc of (associations$ | async); track assoc.value) {
-                  <ion-select-option [value]="assoc.value">{{ assoc.label }}</ion-select-option>
-                }
-              </app-select>
-            </app-item>
-          }
+            </ion-label>
+            <app-range
+              [min]="60"
+              [max]="100"
+              [dualKnobs]="true"
+              [pin]="true"
+              [color]="'secondary'"
+              [value]="{
+                lower: opponentsForm.get('rating')?.value[0],
+                upper: opponentsForm.get('rating')?.value[1],
+              }"
+              (ionChange)="onRatingChange($event)"
+            />
+          </div>
+        </app-item>
 
-          <app-item [lines]="'none'">
-            <div class="range-container">
-              <ion-label>
-                Maximum Travel Distance: 
-                <strong>{{ opponentsForm.get('distance')?.value }} mi</strong>
-              </ion-label>
-              <app-range
-                [min]="0"
-                [max]="300"
-                [step]="5"
-                [pin]="true"
-                [value]="opponentsForm.get('distance')?.value"
-                (ionChange)="onDistanceChange($event)"
-              />
-            </div>
-          </app-item>
+        <app-item [lines]="'none'">
+          <app-checkbox
+            slot="start"
+            [color]="'secondary'"
+            [value]="opponentsForm.get('girlsOnly')?.value"
+            (ionChange)="onGirlsOnlyToggle($event)"
+          />
+          <ion-label>Girls Only</ion-label>
+        </app-item>
+      </ion-list>
 
-          <app-item [lines]="'none'">
-            <div class="range-container">
-              <ion-label>
-                Rating Range: 
-                <strong>{{ opponentsForm.get('rating')?.value[0] }} - {{ opponentsForm.get('rating')?.value[1] }}</strong>
-              </ion-label>
-              <app-range
-                [min]="60"
-                [max]="100"
-                [dualKnobs]="true"
-                [pin]="true"
-                [value]="{ lower: opponentsForm.get('rating')?.value[0], upper: opponentsForm.get('rating')?.value[1] }"
-                (ionChange)="onRatingChange($event)"
-              />
-            </div>
-          </app-item>
-        </ion-list>
-
-        <div class="submit-button">
-          <app-button
-            [expand]="'block'"
-            [type]="'submit'"
-          >
-            Start Search
-          </app-button>
-        </div>
-      </app-card>
+      <div class="submit-button">
+        <app-button [expand]="'block'" [type]="'submit'" [color]="'secondary'">
+          Start Search
+        </app-button>
+      </div>
     </form>
   `,
-  styles: [`
-    .range-container {
-      width: 100%;
-      padding: 1rem 0;
-    }
+  styles: [
+    `
+      .range-container {
+        width: 100%;
+        padding: 1rem 0;
+      }
 
-    ion-label {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
+      ion-label {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
 
-    .submit-button {
-      padding: 1rem;
-    }
+      .submit-button {
+        padding: 1rem;
+      }
 
-    app-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-    }
-  `],
+      app-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentsFilterComponent implements OnInit {
@@ -221,7 +224,7 @@ export class OpponentsFilterComponent implements OnInit {
   onAssociationChange(event: CustomEvent) {
     const value = event.detail.value;
     const selectedAssoc = this.associations$.pipe(
-      map((assocs: SelectItem[]) => assocs.find((a) => a.value === value))
+      map((assocs: SelectItem[]) => assocs.find((a) => a.value === value)),
     );
     selectedAssoc.subscribe((assoc) => {
       this.opponentsForm.get('association')?.setValue(assoc);

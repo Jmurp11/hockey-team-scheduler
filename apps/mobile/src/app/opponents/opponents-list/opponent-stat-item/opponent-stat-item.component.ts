@@ -7,36 +7,41 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   imports: [CommonModule],
   template: `
     <div class="stat-item">
-      <span [ngClass]="label === 'Leagues' ? 'stat-value-leagues' : 'stat-value'">
+      <span
+        [ngClass]="label === 'Leagues' ? 'stat-value-leagues' : 'stat-value'"
+      >
         {{ value }}
       </span>
       <span class="stat-label">{{ label }}</span>
     </div>
   `,
-  styles: [`
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    .stat-value {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
+      .stat-item {
+        @include flex(center, center, column);
+        gap: 0.25rem;
+      }
 
-    .stat-value-leagues {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
+      .stat-value {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--primary-500);
+      }
 
-    .stat-label {
-      font-size: 0.875rem;
-      color: var(--ion-color-medium);
-    }
-  `],
+      .stat-value-leagues {
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--primary-500);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentStatItemComponent {

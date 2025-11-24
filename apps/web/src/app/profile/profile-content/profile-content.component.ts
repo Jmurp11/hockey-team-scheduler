@@ -1,25 +1,28 @@
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  EventEmitter,
-  inject,
-  Input,
-  OnInit,
-  Output,
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    EventEmitter,
+    inject,
+    Input,
+    OnInit,
+    Output,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
+import {
+    checkProfileField,
+    getFormControl,
+    Profile,
+} from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Observable } from 'rxjs/internal/Observable';
-import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
-import { Profile } from '@hockey-team-scheduler/shared-utilities';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 import { getFormFields } from './profile.constants';
 
 @Component({
@@ -107,6 +110,7 @@ export class ProfileContentComponent implements OnInit {
   formFields = getFormFields();
 
   getFormControl = getFormControl;
+  checkField = checkProfileField;
 
   profileUpdateForm: FormGroup;
 
@@ -127,22 +131,6 @@ export class ProfileContentComponent implements OnInit {
       team: new FormControl(this.checkField(this.card.team)),
       email: new FormControl(this.checkField(this.card.email)),
     });
-  }
-
-  // ...existing code...
-  checkField(
-    value: string | string[] | number | { label: string; value: any }
-  ): string | { label: string; value: any } {
-    if (!value) {
-      return '';
-    }
-    if (typeof value === 'object' && 'label' in value && 'value' in value) {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.length ? value.join(', ') : '';
-    }
-    return value.toString() || '';
   }
 
   cancel() {

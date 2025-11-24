@@ -1,4 +1,11 @@
-import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-empty-function */
+import {
+  Component,
+  EventEmitter,
+  forwardRef,
+  Input,
+  Output,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonSearchbar } from '@ionic/angular/standalone';
 
@@ -29,9 +36,9 @@ import { IonSearchbar } from '@ionic/angular/standalone';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => SearchbarComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class SearchbarComponent implements ControlValueAccessor {
   @Input() value?: string | null;
@@ -44,20 +51,19 @@ export class SearchbarComponent implements ControlValueAccessor {
   @Input() debounce = 250;
   @Input() searchIcon = 'search';
   @Output() ionChangeEvent = new EventEmitter<CustomEvent>();
+  @Output() ionInputEvent = new EventEmitter<CustomEvent>();
   @Output() ionClear = new EventEmitter<CustomEvent>();
   @Output() ionCancel = new EventEmitter<CustomEvent>();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onChange: (value: string | null | undefined) => void = (_value: string | null | undefined) => {
-    // Placeholder for ControlValueAccessor
-  };
-  private onTouched: () => void = () => {
-    // Placeholder for ControlValueAccessor
-  };
+  private onChange: (value: string | null | undefined) => void = (
+    _value: string | null | undefined,
+  ) => {};
+  private onTouched: () => void = () => {};
 
   onIonInput(event: CustomEvent): void {
     this.value = event.detail.value;
     this.onChange(this.value);
+    this.ionInputEvent.emit(event);
   }
 
   onIonChange(event: CustomEvent): void {

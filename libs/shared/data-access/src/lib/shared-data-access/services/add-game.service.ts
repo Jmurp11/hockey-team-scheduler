@@ -17,7 +17,7 @@ export class AddGameService {
   addGame(games: any[]) {
     const input = games.map((game) => ({
       ...game,
-      opponent: game.opponent[0].id,
+      opponent: game.opponent[0] ? game.opponent[0].id : game.opponent,
     }));
     return this.http.post(`${this.config.apiUrl}/games/add-games`, input);
   }

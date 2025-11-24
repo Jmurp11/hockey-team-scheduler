@@ -156,6 +156,16 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: var(--gray-200);
   --ion-color-light-tint: var(--gray-50);
+
+  .brand-primary {
+    --color: var(--primary-500);
+    font-weight: bold;
+  }
+
+  .brand-accent {
+    --color: var(--secondary-500);
+    font-weight: bold;
+  }
 }
 
 // /* Dark Mode Theme */
@@ -223,4 +233,21 @@ body {
 
 ion-app {
   font-family: 'Space Grotesk', 'Noto Sans', sans-serif;
+}
+
+/* Global Toolbar Styles */
+ion-header {
+  ion-toolbar {
+    --background: var(--primary-500);
+    --color: white;
+
+    ion-title,
+    ion-button,
+    ion-buttons,
+    ion-menu-button,
+    ion-back-button {
+      --color: white;
+      color: white;
+    }
+  }
 }

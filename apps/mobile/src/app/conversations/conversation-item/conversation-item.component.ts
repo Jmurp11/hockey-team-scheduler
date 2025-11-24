@@ -3,6 +3,7 @@ import { Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
     Conversation,
+    getInitials,
     getLastMessageTime,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
@@ -122,15 +123,9 @@ export class ConversationItemComponent {
   private router = inject(Router);
 
   getLastMessageTime = getLastMessageTime;
+  getInitials = getInitials;
 
   onMonitorClick() {
     this.router.navigate(['/app/chat', this.conversation.id]);
-  }
-
-  getInitials(name: string): string {
-    if (!name) return '';
-    const names = name.split(' ');
-    const initials = names.map((n) => n.charAt(0).toUpperCase());
-    return initials.join('');
   }
 }

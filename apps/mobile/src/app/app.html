@@ -1,21 +1,30 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
     <!-- Side Menu -->
-    <ion-menu contentId="main-content" type="overlay" color="primary">
+    <ion-menu contentId="main-content" type="overlay">
       <ion-header>
-        <ion-toolbar color="primary">
-          <ion-title>RinkLink.ai</ion-title>
+        <ion-toolbar>
+          <ion-title>
+            <span class="brand-primary">RinkLink</span>
+            <span class="brand-accent">.ai</span>
+          </ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-content>
         <ion-list>
           @for (item of menuItems; track item.url) {
-            <ion-menu-toggle autoHide="false">
-              <ion-item [routerLink]="item.url" routerLinkActive="active" routerDirection="root" lines="none" detail="false">
-                <ion-icon slot="start" [name]="item.icon"></ion-icon>
-                <ion-label>{{ item.title }}</ion-label>
-              </ion-item>
-            </ion-menu-toggle>
+          <ion-menu-toggle autoHide="false">
+            <ion-item
+              [routerLink]="item.url"
+              routerLinkActive="active"
+              routerDirection="root"
+              lines="none"
+              detail="false"
+            >
+              <ion-icon slot="start" [name]="item.icon"></ion-icon>
+              <ion-label>{{ item.title }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
           }
         </ion-list>
       </ion-content>
