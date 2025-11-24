@@ -27,9 +27,9 @@ import {
 } from 'rxjs';
 import { AddGameDialogService } from '../schedule/add-game/add-game-dialog.service';
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
-import { SortDirection } from '../shared/components/sort-header/sort-header.type';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
+import { SortDirection } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-dashboard',
