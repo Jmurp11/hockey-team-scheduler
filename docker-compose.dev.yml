@@ -14,7 +14,8 @@ services:
     env_file:
       - ./apps/api/.env
     volumes:
-      - .:/app
+      - ./apps/api:/app/apps/api
+      - ./libs:/app/libs
       - /app/node_modules
     networks:
       - hockey-network-dev
@@ -29,14 +30,17 @@ services:
     restart: unless-stopped
     ports:
       - "4200:4200"
+    environment:
+      - NODE_ENV=development
     depends_on:
       - api-dev
     volumes:
-      - ./apps/web:/app
+      - ./apps/web:/app/apps/web
+      - ./libs:/app/libs
       - /app/node_modules
     networks:
       - hockey-network-dev
-    command: ng serve --host 0.0.0.0 --port 4200
+    command: npm run start:web
 
 networks:
   hockey-network-dev:
