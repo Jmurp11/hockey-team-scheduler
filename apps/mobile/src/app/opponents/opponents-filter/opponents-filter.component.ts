@@ -137,12 +137,12 @@ import { SelectComponent } from '../../shared/select/select.component';
     `
       .range-container {
         width: 100%;
-        padding: 1rem 0;
+        padding: .1rem 0;
       }
 
       ion-label {
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.1rem;
       }
 
       .submit-button {

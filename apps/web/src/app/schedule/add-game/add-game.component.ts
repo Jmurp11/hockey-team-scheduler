@@ -11,10 +11,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
 import {
   AddGameService, AuthService, ScheduleService,
@@ -22,8 +20,12 @@ import {
 } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
-  Game, getFormControl,
-  setSelect
+  Game,
+  GAME_TYPE_OPTIONS,
+  getFormControl,
+  initAddGameForm,
+  IS_HOME_OPTIONS,
+  transformAddGameFormData
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -154,17 +156,12 @@ export class AddGameComponent implements OnInit {
   private editModeSignal = signal(false);
   title = computed(() => (this.editModeSignal() ? 'Update Game' : 'Add Game'));
 
-  gameTypeOptions = [
-    setSelect('League', 'league'),
-    setSelect('Playoff', 'playoff'),
-    setSelect('Tournament', 'tournament'),
-    setSelect('Exhibition', 'exhibition'),
-  ];
+  gameTypeOptions = GAME_TYPE_OPTIONS;
 
   items$: Observable<any>;
   formFieldsData: any[] = [];
 
-  isHomeOptions = [setSelect('Home', 'home'), setSelect('Away', 'away')];
+  isHomeOptions = IS_HOME_OPTIONS;
 
   getFormControl = getFormControl;
 
@@ -175,7 +172,7 @@ export class AddGameComponent implements OnInit {
   addGameForm: FormGroup;
 
   ngOnInit(): void {
-    this.addGameForm = this.initGameForm();
+    this.addGameForm = initAddGameForm(this.gameData);
     this.editModeSignal.set(this.editMode);
 
     this.items$ = this.teamsService.teams({
@@ -188,63 +185,27 @@ export class AddGameComponent implements OnInit {
   }
 
   initGameForm() {
-    return new FormGroup({
-      opponent: new FormControl(this.gameData?.opponent || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      rink: new FormControl(this.gameData?.rink || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      city: new FormControl(this.gameData?.city || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      state: new FormControl(this.gameData?.state || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      country: new FormControl(this.gameData?.country || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      date: new FormControl(this.gameData?.date || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      game_type: new FormControl(this.gameData?.game_type || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      isHome: new FormControl(this.gameData?.isHome || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-    });
+    return initAddGameForm(this.gameData);
   }
 
   submit() {
-    const dateValue = this.addGameForm.value.date;
-    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-
-    const input = [
-      {
-        ...this.addGameForm.value,
-        country: this.addGameForm.value.country.value,
-        state: this.addGameForm.value.state.value,
-        opponent: [this.addGameForm.value.opponent.value],
-        isHome: this.addGameForm.value.isHome === 'home',
-        user: this.currentUser.user_id,
-        date: date.toISOString().split('T')[0], // YYYY-MM-DD
-        time: date.toTimeString().split(' ')[0],
-      },
-    ];
+    const input = transformAddGameFormData(
+      this.addGameForm.value,
+      this.currentUser.user_id
+    );
 
     // Optimistic update - update cache immediately
-    if (this.editMode) {
+    if (this.editMode && this.gameData) {
       this.scheduleService.optimisticUpdateGame({
-        id: this.gameData!.id,
+        id: this.gameData.id,
         ...input[0],
       });
     } else {
       this.scheduleService.optimisticAddGames(input);
     }
 
-    const operation$ = this.editMode
-      ? this.addGameService.updateGame({ id: this.gameData!.id, ...input[0] })
+    const operation$ = this.editMode && this.gameData
+      ? this.addGameService.updateGame({ id: this.gameData.id, ...input[0] })
       : this.addGameService.addGame(input);
 
     operation$

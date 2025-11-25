@@ -1,24 +1,22 @@
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
+    ChangeDetectionStrategy,
+    Component,
+    inject,
+    signal,
 } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
+    FormGroup,
+    ReactiveFormsModule,
 } from '@angular/forms';
 import { UserService } from '@hockey-team-scheduler/shared-data-access';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { getFormControl, initMagicLinkForm } from '@hockey-team-scheduler/shared-utilities';
 import {
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonContent,
+    IonCardContent,
+    IonCardHeader,
+    IonCardSubtitle,
+    IonCardTitle,
+    IonContent,
 } from '@ionic/angular/standalone';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { CardComponent } from '../../shared/card/card.component';
@@ -124,11 +122,7 @@ export class NewUserComponent {
 
   emailSent = signal(false);
 
-  newUserForm: FormGroup = new FormGroup({
-    email: new FormControl(null, {
-      validators: [Validators.required, Validators.email],
-    }),
-  });
+  newUserForm: FormGroup = initMagicLinkForm();
 
   getFormControl = getFormControl;
 

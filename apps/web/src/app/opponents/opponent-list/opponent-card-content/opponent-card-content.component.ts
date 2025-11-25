@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Chip } from 'primeng/chip';
 import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-item.component';
 
 @Component({
   selector: 'app-opponent-card-content',
   standalone: true,
-  imports: [CommonModule, OpponentStatItemComponent, Chip],
+  imports: [CommonModule, OpponentStatItemComponent],
   template: `
     <div class="card-content">
       @for (item of values; track item.label) {

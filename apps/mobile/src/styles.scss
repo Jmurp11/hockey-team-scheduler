@@ -158,12 +158,12 @@
   --ion-color-light-tint: var(--gray-50);
 
   .brand-primary {
-    --color: var(--primary-500);
+    color: #ffffff;
     font-weight: bold;
   }
 
   .brand-accent {
-    --color: var(--secondary-500);
+    color: var(--secondary-500);
     font-weight: bold;
   }
 }

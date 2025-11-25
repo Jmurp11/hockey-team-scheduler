@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import {
-    AuthService,
-    SupabaseService,
+  AuthService,
+  SupabaseService,
 } from '@hockey-team-scheduler/shared-data-access';
 
 export const authGuard: CanActivateFn = async (): Promise<
@@ -31,8 +31,6 @@ export const authGuard: CanActivateFn = async (): Promise<
       return router.createUrlTree(['/auth/login']);
     }
 
-    console.log('Session data:', session);
-    // Check if user is authenticated
     if (session && session.user) {
       authService.setSession(session);
       return true;

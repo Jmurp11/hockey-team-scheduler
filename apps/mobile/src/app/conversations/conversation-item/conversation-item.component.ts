@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-    Conversation,
-    getInitials,
-    getLastMessageTime,
+  ConversationDisplay,
+  getInitials,
+  getLastMessageTime,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
-    IonBadge,
-    IonLabel,
-    IonNote,
+  IonBadge,
+  IonLabel,
+  IonNote,
 } from '@ionic/angular/standalone';
 import { AvatarComponent } from '../../shared/avatar/avatar.component';
 import { ItemComponent } from '../../shared/item/item.component';
@@ -64,7 +64,7 @@ import { ItemComponent } from '../../shared/item/item.component';
         align-items: center;
         justify-content: center;
         background-color: var(--secondary-100);
-        color: var(--primary-600);
+        color: var(--primary-500);
         font-weight: 600;
         font-size: 1.2rem;
         border-radius: 50%;
@@ -118,7 +118,7 @@ import { ItemComponent } from '../../shared/item/item.component';
   ],
 })
 export class ConversationItemComponent {
-  @Input() conversation!: Conversation;
+  @Input() conversation!: ConversationDisplay;
 
   private router = inject(Router);
 

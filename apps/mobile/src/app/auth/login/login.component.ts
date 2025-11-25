@@ -1,17 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
-  FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
 import { UserService } from '@hockey-team-scheduler/shared-data-access';
 import {
   LoadingService,
   NavigationService,
 } from '@hockey-team-scheduler/shared-ui';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { getFormControl, initLoginForm } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonCardContent,
   IonCardHeader,
@@ -185,14 +183,7 @@ export class LoginComponent {
 
   getFormControl = getFormControl;
 
-  loginForm: FormGroup = new FormGroup({
-    email: new FormControl(null, {
-      validators: [Validators.required, Validators.email],
-    }),
-    password: new FormControl(null, {
-      validators: [Validators.required],
-    }),
-  });
+  loginForm: FormGroup = initLoginForm();
 
   async onSubmit() {
     const data = await this.userService.login(

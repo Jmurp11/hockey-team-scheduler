@@ -18,64 +18,23 @@
   </ion-header>
 
   <div class="container">
-    <ion-card>
+    @for (card of cards; track card.title) {
+    <app-card>
       <ion-card-header>
-        <ion-card-title>Welcome to RinkLink.ai Mobile</ion-card-title>
+        @if (card.icon) {
+        <ion-icon [name]="card.icon" slot="start"></ion-icon>
+        }
+        <ion-card-title>{{ card.title }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        Manage your hockey team schedules, games, and tournaments on the go!
+        <div class="description">{{ card.description }}</div>
+        @if(card.buttonLabel) {
+        <app-button [color]="'secondary'" (click)="card.action()"
+          >{{ card.buttonLabel }}</app-button
+        >
+        }
       </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="calendar"></ion-icon>
-          Upcoming Games
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        View and manage your team's upcoming games and schedules.
-        <ion-button fill="outline" size="small" class="mt-2" color="secondary">
-          View Games
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="people"></ion-icon>
-          Team Management
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Manage team rosters, player information, and communication.
-        <ion-button fill="outline" size="small" class="mt-2" color="secondary">
-          Manage Teams
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="trophy"></ion-icon>
-          Tournaments
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Browse and register for hockey tournaments in your area.
-        <ion-button fill="outline" size="small" class="mt-2" color="secondary">
-          View Tournaments
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+    </app-card>
+    }
   </div>
-
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="secondary">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>

@@ -26,5 +26,5 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
 export default class PageTitleComponent {
   @Input() title: string;
 
-  @Input() newMessageCount: number = 0;
+  @Input() newMessageCount = 0;
 }
