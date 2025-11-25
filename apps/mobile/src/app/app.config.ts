@@ -14,7 +14,10 @@ import {
   TeamsService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
-import { LoadingService, NavigationService } from '@hockey-team-scheduler/shared-ui';
+import {
+  LoadingService,
+  NavigationService,
+} from '@hockey-team-scheduler/shared-ui';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
@@ -25,7 +28,7 @@ import { appRoutes } from './app.routes';
  */
 function initializeAuth(
   supabaseService: SupabaseService,
-  authService: AuthService
+  authService: AuthService,
 ) {
   return async () => {
     try {
@@ -41,7 +44,6 @@ function initializeAuth(
 
         // Listen for auth state changes
         client.auth.onAuthStateChange(async (event, session) => {
-          console.log('Auth state changed:', event, session);
           if (session) {
             await authService.setSession(session);
           } else {

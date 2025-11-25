@@ -11,7 +11,7 @@ import { locationOutline, timeOutline } from 'ionicons/icons';
   template: `
     <ion-list>
       @for (item of items; track item.label) {
-        <ion-item>
+        <ion-item lines="none">
           <ion-icon slot="start" [name]="item.icon" />
           <ion-label class="detail-label">{{ item.label }}</ion-label>
         </ion-item>

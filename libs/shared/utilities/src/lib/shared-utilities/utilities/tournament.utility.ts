@@ -17,18 +17,16 @@ export function getDatesBetween(startDate: Date, endDate: Date): Date[] {
 }
 
 /**
- * Parses tournament location string into city, state, and country components
+ * Parses tournament location string into city and state components
  */
 export function parseTournamentLocation(location: string): {
   city: string;
   state: string;
-  country: string;
 } {
   const parts = location.split(',').map((part: string) => part.trim());
   return {
     city: parts[0] || '',
     state: parts[1] || '',
-    country: parts[2] || '',
   };
 }
 
@@ -42,14 +40,12 @@ export function createTournamentGameInfo(
   const location = parseTournamentLocation(tournament.location);
 
   return {
-    tournamentName: tournament.name,
     rink: tournament.rink,
     city: location.city,
     state: location.state,
-    country: location.country,
     time: '12:00:00',
     opponent: -1,
-    game_type: 'tournament',
+    gameType: 'tournament',
     isHome: false,
     user: userId,
   };

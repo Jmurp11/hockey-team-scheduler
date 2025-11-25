@@ -1,23 +1,20 @@
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
+    ChangeDetectionStrategy,
+    Component,
+    inject,
+    signal,
 } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
+    FormGroup,
+    ReactiveFormsModule,
 } from '@angular/forms';
+import { UserService } from '@hockey-team-scheduler/shared-data-access';
+import { getFormControl, initMagicLinkForm } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities'
-;
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
-import { UserService } from '@hockey-team-scheduler/shared-data-access';
 
 @Component({
   selector: 'app-new-user',
@@ -76,16 +73,12 @@ export class NewUserComponent {
 
   emailSent = signal(false);
 
-  newUserForm: FormGroup = new FormGroup({
-    email: new FormControl(null, {
-      validators: [Validators.required, Validators.email],
-    }),
-  });
+  newUserForm: FormGroup = initMagicLinkForm();
 
   getFormControl = getFormControl;
 
   async magicLink() {
-    let { data, error } = await this.userService.loginWithMagicLink(
+    const { error } = await this.userService.loginWithMagicLink(
       this.newUserForm.get('email')?.value
     );
 

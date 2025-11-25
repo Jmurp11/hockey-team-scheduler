@@ -1,34 +1,50 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-    AddGameService,
-    AuthService,
-    ScheduleService,
-    TeamsService,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  AddGameService,
+  AuthService,
+  ScheduleService,
+  TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
-import { getAddGameFormFields, setSelect } from '@hockey-team-scheduler/shared-utilities';
 import {
-    IonButton,
-    IonButtons,
-    IonContent,
-    IonDatetime,
-    IonHeader,
-    IonItem,
-    IonLabel,
-    IonSelectOption,
-    IonTitle,
-    IonToolbar,
+  GAME_TYPE_OPTIONS,
+  initAddGameForm,
+  IS_HOME_OPTIONS,
+  transformAddGameFormData
+} from '@hockey-team-scheduler/shared-utilities';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonDatetime,
+  IonHeader,
+  IonItem,
+  IonLabel,
+  IonModal,
+  IonSelectOption,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
-import { take } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { DatetimeButtonComponent } from '../../shared/datetime-button/datetime-button.component';
 import { InputComponent } from '../../shared/input/input.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
-import { ModalComponent } from '../../shared/modal/modal.component';
 import { SelectComponent } from '../../shared/select/select.component';
 import { AddGameModalService } from './add-game-modal.service';
+import { getFormFields } from './add-game.constants';
 
 @Component({
   selector: 'app-add-game',
@@ -36,6 +52,7 @@ import { AddGameModalService } from './add-game-modal.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    IonModal,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -46,7 +63,6 @@ import { AddGameModalService } from './add-game-modal.service';
     IonLabel,
     IonDatetime,
     IonSelectOption,
-    ModalComponent,
     ButtonComponent,
     InputComponent,
     SelectComponent,
@@ -54,10 +70,7 @@ import { AddGameModalService } from './add-game-modal.service';
     DatetimeButtonComponent,
   ],
   template: `
-    <app-modal 
-      [isOpen]="addGameModalService.isOpen()" 
-      (didDismiss)="cancel()"
-    >
+    <ion-modal [isOpen]="addGameModalService.isOpen()" (didDismiss)="cancel()">
       <ion-header>
         <ion-toolbar>
           <ion-title>{{ title() }}</ion-title>
@@ -66,64 +79,67 @@ import { AddGameModalService } from './add-game-modal.service';
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      
+
       <ion-content class="ion-padding">
-        @if (loading()) {
-          <app-loading />
-        } @else {
+        @if (formFieldsData.length > 0) {
           <form [formGroup]="addGameForm">
-            @for (field of formFieldsData(); track field.controlName) {
-              @switch (field.controlType) {
-                @case ('input') {
-                  <app-input
-                    [type]="'text'"
-                    [label]="field.labelName"
-                    [labelPlacement]="'stacked'"
-                    [fill]="'outline'"
-                    [formControl]="getFormControl(field.controlName)"
-                  />
-                }
-                @case ('select') {
-                  <app-select
-                    [label]="field.labelName"
-                    [labelPlacement]="'stacked'"
-                    [fill]="'outline'"
-                    [formControl]="getFormControl(field.controlName)"
-                  >
-                    @for (option of field.options?.listItems; track option.value) {
-                      <ion-select-option [value]="option.value">
-                        {{ option.label }}
-                      </ion-select-option>
-                    }
-                  </app-select>
-                }
-                @case ('autocomplete') {
-                  <app-select
-                    [label]="field.labelName"
-                    [labelPlacement]="'stacked'"
-                    [fill]="'outline'"
-                    [interface]="'action-sheet'"
-                    [formControl]="getFormControl(field.controlName)"
-                  >
-                    @if (field.items) {
-                      @for (item of field.items; track item.value) {
-                        <ion-select-option [value]="item.value">
-                          {{ item.label }}
+            @for (field of formFieldsData; track field.controlName) {
+              @if (field && field.controlType) {
+                @switch (field.controlType) {
+                  @case ('input') {
+                    <app-input
+                      [type]="'text'"
+                      [label]="field.labelName"
+                      [labelPlacement]="'stacked'"
+                      [fill]="'outline'"
+                      [formControl]="getFormControl(field.controlName)"
+                    />
+                  }
+                  @case ('select') {
+                    <app-select
+                      [label]="field.labelName"
+                      [labelPlacement]="'stacked'"
+                      [fill]="'outline'"
+                      [formControl]="getFormControl(field.controlName)"
+                    >
+                      @for (
+                        option of field.options?.listItems;
+                        track option.value
+                      ) {
+                        <ion-select-option [value]="option.value">
+                          {{ option.label }}
                         </ion-select-option>
                       }
-                    }
-                  </app-select>
+                    </app-select>
+                  }
+                  @case ('autocomplete') {
+                    <app-select
+                      [label]="field.labelName"
+                      [labelPlacement]="'stacked'"
+                      [fill]="'outline'"
+                      [interface]="'action-sheet'"
+                      [formControl]="getFormControl(field.controlName)"
+                    >
+                      @if (field.items) {
+                        @for (item of field.items; track item.value) {
+                          <ion-select-option [value]="item.value">
+                            {{ item.label }}
+                          </ion-select-option>
+                        }
+                      }
+                    </app-select>
+                  }
                 }
               }
             }
 
             <ion-item>
               <ion-label position="stacked">Date & Time</ion-label>
-              <app-datetime-button datetime="game-datetime" />
+              <app-datetime-button [datetime]="'game-datetime'" />
             </ion-item>
-            
+
             <ion-item style="display: none;">
-              <ion-datetime 
+              <ion-datetime
                 id="game-datetime"
                 presentation="date-time"
                 [formControl]="getFormControl('date')"
@@ -157,16 +173,16 @@ import { AddGameModalService } from './add-game-modal.service';
             </app-select>
 
             <div class="button-container">
-              <app-button 
-                [expand]="'block'" 
+              <app-button
+                [expand]="'block'"
                 [color]="'medium'"
                 [fill]="'outline'"
                 (onClick)="cancel()"
               >
                 Cancel
               </app-button>
-              <app-button 
-                [expand]="'block'" 
+              <app-button
+                [expand]="'block'"
                 [color]="'primary'"
                 [disabled]="!addGameForm.valid"
                 (onClick)="submit()"
@@ -175,26 +191,40 @@ import { AddGameModalService } from './add-game-modal.service';
               </app-button>
             </div>
           </form>
+        } @else {
+          <div class="loading-container">
+            <app-loading [color]="'secondary'" />
+          </div>
         }
       </ion-content>
-    </app-modal>
+    </ion-modal>
   `,
-  styles: [`
-    .button-container {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
+  styles: [
+    `
+      @use 'mixins/flex' as *;
 
-    ion-item {
-      --padding-start: 0;
-      margin-bottom: 1rem;
-    }
+      .button-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
 
-    app-input, app-select {
-      margin-bottom: 1rem;
-    }
-  `],
+      .loading-container {
+        @include flex(center, center, column);
+        height: 100%;
+      }
+
+      ion-item {
+        --padding-start: 0;
+        margin-bottom: 1rem;
+      }
+
+      app-input,
+      app-select {
+        margin-bottom: 1rem;
+      }
+    `,
+  ],
 })
 export class AddGameComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
@@ -204,78 +234,35 @@ export class AddGameComponent implements OnInit {
   private addGameService = inject(AddGameService);
   addGameModalService = inject(AddGameModalService);
 
-  loading = signal(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formFieldsData = signal<any[]>([]);
-  
+  currentUser = this.authService.currentUser();
+
   editMode = this.addGameModalService.editMode;
   gameData = this.addGameModalService.gameData;
-  
+
+  items$!: Observable<any>;
+  formFieldsData: any[] = [];
+
   title = computed(() => (this.editMode() ? 'Update Game' : 'Add Game'));
-  
-  currentUser = this.authService.currentUser();
-  
-  gameTypeOptions = [
-    setSelect('League', 'league'),
-    setSelect('Playoff', 'playoff'),
-    setSelect('Tournament', 'tournament'),
-    setSelect('Exhibition', 'exhibition'),
-  ];
-  
-  isHomeOptions = [
-    setSelect('Home', 'home'), 
-    setSelect('Away', 'away')
-  ];
 
   addGameForm!: FormGroup;
 
-  ngOnInit(): void {
-    this.addGameForm = this.initGameForm();
-    this.loadTeamsAndFormFields();
-  }
+  gameTypeOptions = GAME_TYPE_OPTIONS;
 
-  private loadTeamsAndFormFields(): void {
-    this.loading.set(true);
-    this.teamsService
-      .teams({ age: this.currentUser.age })
+  isHomeOptions = IS_HOME_OPTIONS;
+
+  ngOnInit(): void {
+    this.addGameForm = initAddGameForm(this.gameData());
+    this.items$ = this.teamsService.teams({
+      age: this.currentUser.age,
+    });
+
+    this.items$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((items) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const formFields = getAddGameFormFields(items as any[]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.formFieldsData.set(formFields as any[]);
-        this.loading.set(false);
-      });
+      .subscribe((items) => (this.formFieldsData = getFormFields(items)));
   }
 
   private initGameForm(): FormGroup {
-    const data = this.gameData();
-    return new FormGroup({
-      opponent: new FormControl(data?.opponent || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      rink: new FormControl(data?.rink || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      city: new FormControl(data?.city || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      state: new FormControl(data?.state || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      country: new FormControl(data?.country || null, {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      date: new FormControl(data?.date || null, {
-        validators: [Validators.required],
-      }),
-      game_type: new FormControl(data?.game_type || null, {
-        validators: [Validators.required],
-      }),
-      isHome: new FormControl(data?.isHome || null, {
-        validators: [Validators.required],
-      }),
-    });
+    return initAddGameForm(this.gameData());
   }
 
   getFormControl(controlName: string): FormControl {
@@ -287,24 +274,13 @@ export class AddGameComponent implements OnInit {
       return;
     }
 
-    const dateValue = this.addGameForm.value.date;
-    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-
-    const input = [
-      {
-        ...this.addGameForm.value,
-        country: this.addGameForm.value.country.value || this.addGameForm.value.country,
-        state: this.addGameForm.value.state.value || this.addGameForm.value.state,
-        opponent: [this.addGameForm.value.opponent.value || this.addGameForm.value.opponent],
-        isHome: this.addGameForm.value.isHome === 'home',
-        user: this.currentUser.user_id,
-        date: date.toISOString().split('T')[0], // YYYY-MM-DD
-        time: date.toTimeString().split(' ')[0],
-      },
-    ];
+    const input = transformAddGameFormData(
+      this.addGameForm.value,
+      this.currentUser().user_id
+    );
 
     const data = this.gameData();
-    
+
     // Optimistic update
     if (this.editMode() && data) {
       this.scheduleService.optimisticUpdateGame({
@@ -315,9 +291,10 @@ export class AddGameComponent implements OnInit {
       this.scheduleService.optimisticAddGames(input);
     }
 
-    const operation$ = this.editMode() && data
-      ? this.addGameService.updateGame({ id: data.id, ...input[0] })
-      : this.addGameService.addGame(input);
+    const operation$ =
+      this.editMode() && data
+        ? this.addGameService.updateGame({ id: data.id, ...input[0] })
+        : this.addGameService.addGame(input);
 
     operation$
       .pipe(take(1))

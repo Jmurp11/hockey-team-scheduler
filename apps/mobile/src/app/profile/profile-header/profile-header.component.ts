@@ -19,47 +19,49 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
       </div>
     </div>
   `,
-  styles: [`
-    .profile-header {
-      padding: 1rem;
-      background: var(--ion-color-light);
-      border-bottom: 1px solid var(--ion-color-light-shade);
-      
-      &__content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      
-      &__avatar {
-        width: 64px;
-        height: 64px;
-        
-        ::ng-deep ion-avatar {
-          width: 100%;
-          height: 100%;
-          background: var(--ion-color-primary);
+  styles: [
+    `
+      .profile-header {
+        padding: 1rem;
+        background: var(--ion-color-light);
+        border-bottom: 1px solid var(--ion-color-light-shade);
+
+        &__content {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        &__avatar {
+          width: 64px;
+          height: 64px;
+
+          ::ng-deep ion-avatar {
+            width: 100%;
+            height: 100%;
+            background: var(--secondary-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+
+        &__icon {
+          font-size: 2rem;
+          color: white;
           display: flex;
           align-items: center;
           justify-content: center;
         }
+
+        &__title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: var(--primary-500);
+        }
       }
-      
-      &__icon {
-        font-size: 2rem;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      &__title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--ion-color-dark);
-      }
-    }
-  `],
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileHeaderComponent {

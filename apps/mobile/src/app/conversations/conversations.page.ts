@@ -3,18 +3,18 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
-  Conversation,
-  getFormControl,
-  searchConversations,
+    ConversationDisplay,
+    getFormControl,
+    searchConversations,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonMenuButton,
-  IonSearchbar,
-  IonTitle,
-  IonToolbar,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonMenuButton,
+    IonSearchbar,
+    IonTitle,
+    IonToolbar,
 } from '@ionic/angular/standalone';
 import { tap } from 'rxjs';
 import { ListComponent } from '../shared/list/list.component';
@@ -88,7 +88,7 @@ export class ConversationsPage implements OnInit {
     search: new FormControl(null),
   });
 
-  conversations: Conversation[] = [
+  conversations: ConversationDisplay[] = [
     {
       id: '1',
       managerName: 'John Smith',
@@ -127,7 +127,7 @@ export class ConversationsPage implements OnInit {
     },
   ];
 
-  filtered: Conversation[] = this.conversations;
+  filtered: ConversationDisplay[] = this.conversations;
 
   newMessageCount = this.conversations.reduce(
     (count, convo) => count + convo.unreadCount,

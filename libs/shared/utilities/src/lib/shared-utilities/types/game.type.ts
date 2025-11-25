@@ -1,17 +1,15 @@
 export interface Game {
   id: string;
-  createdAt: Date;
+  created_at: string;
   date: Date;
   time: string;
-  game_type: string;
+  gameType: string;
   city: string;
   state: string;
-  country: string;
   rink: string;
   opponent: number;
   user: number;
   isHome: boolean;
-  tournamentName?: string;
 }
 
-export type CreateGame = Omit<Game, 'id' | 'createdAt'>;
+export type CreateGame = Omit<Game, 'id' | 'created_at'>;

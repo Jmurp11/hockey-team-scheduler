@@ -94,7 +94,7 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
           </ng-template>
 
           <ng-template>
-            <div>
+            <div class="sort-container">
               <app-select
                 [label]="'Sort By'"
                 [labelPlacement]="'stacked'"
@@ -176,6 +176,16 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
         flex: 1;
         overflow-y: auto;
         min-height: 0;
+      }
+
+      .sort-container {
+        @include flex(flex-start, center, column);
+        gap: 0.5rem;
+        width: 100%;
+
+        app-select {
+          width: 100% !important;
+        }
       }
     `,
   ],

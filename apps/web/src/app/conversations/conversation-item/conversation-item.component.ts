@@ -1,9 +1,9 @@
 import { Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-    Conversation,
-    getInitials,
-    getLastMessageTime,
+  ConversationDisplay,
+  getInitials,
+  getLastMessageTime,
 } from '@hockey-team-scheduler/shared-utilities';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -18,7 +18,7 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
         [value]="conversation.unreadCount"
         severity="danger"
         [badgeDisabled]="conversation.unreadCount === 0"
-        size="small"
+        badgeSize="small"
       >
         <p-avatar
           [label]="getInitials(conversation.managerName)"
@@ -48,7 +48,7 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
   styleUrls: ['./conversation-item.component.scss'],
 })
 export class ConversationItemComponent {
-  @Input() conversation: Conversation;
+  @Input() conversation: ConversationDisplay;
 
   private router = inject(Router);
 

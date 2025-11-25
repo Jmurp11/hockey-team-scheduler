@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
-    IonCardHeader,
-    IonCardSubtitle,
-    IonCardTitle,
-    IonChip,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonChip,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -56,7 +56,7 @@ import {
 
         font-weight: 600;
         color: var(--primary-500);
-        font-size: 0.9rem;
+        font-size: 1rem;
         width: 50%;
       }
 
@@ -70,11 +70,9 @@ import {
     `,
   ],
 })
-export class ScheduleCardHeaderComponent implements OnInit {
+export class ScheduleCardHeaderComponent {
   @Input() game: any;
-  ngOnInit(): void {
-    console.log('Game input:', this.game);
-  }
+
   handleGameType(gameType: string): string {
     switch (gameType) {
       case 'League':

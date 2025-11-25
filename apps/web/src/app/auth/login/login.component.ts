@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
+    FormGroup,
+    ReactiveFormsModule,
 } from '@angular/forms';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
@@ -15,7 +13,7 @@ import { PasswordComponent } from '../../shared/components/password/password.com
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
 
 import { UserService } from '@hockey-team-scheduler/shared-data-access';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { getFormControl, initLoginForm } from '@hockey-team-scheduler/shared-utilities';
 import { AuthContainerComponent } from '../auth-container/auth-container.component';
 
 @Component({
@@ -80,14 +78,7 @@ export class LoginComponent {
 
   getFormControl = getFormControl;
 
-  loginForm: FormGroup = new FormGroup({
-    email: new FormControl(null, {
-      validators: [Validators.required, Validators.email],
-    }),
-    password: new FormControl(null, {
-      validators: [Validators.required],
-    }),
-  });
+  loginForm: FormGroup = initLoginForm();
 
   async onSubmit() {
     const data = await this.userService.login(

@@ -1,0 +1,9 @@
+{
+  "name": "@hockey-team-scheduler/root",
+  "scripts": {
+    "analyze:web": "nx run web:build --configuration=production --stats-json && npx webpack-bundle-analyzer dist/apps/web/stats.json --no-open",
+    "analyze:mobile": "nx run mobile:build --configuration=production --stats-json && npx webpack-bundle-analyzer dist/apps/mobile/stats.json --no-open",
+    "size:web": "nx run web:build --configuration=production && du -sh dist/apps/web",
+    "size:mobile": "nx run mobile:build --configuration=production && du -sh dist/apps/mobile"
+  }
+}

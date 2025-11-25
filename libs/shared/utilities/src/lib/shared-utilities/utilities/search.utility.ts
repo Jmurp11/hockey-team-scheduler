@@ -1,4 +1,4 @@
-import { Conversation } from '../types/conversation.type';
+import { ConversationDisplay } from '../types/conversation.type';
 
 /**
  * Search conversations by manager name or team name
@@ -7,9 +7,9 @@ import { Conversation } from '../types/conversation.type';
  * @returns Filtered array of conversations
  */
 export function searchConversations(
-  conversations: Conversation[],
+  conversations: ConversationDisplay[],
   searchTerm: string
-): Conversation[] {
+): ConversationDisplay[] {
   const searchLower = searchTerm.toLowerCase().trim();
   
   if (!searchLower) {
