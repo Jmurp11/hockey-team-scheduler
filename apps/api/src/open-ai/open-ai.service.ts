@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { env } from 'node:process';
-import openai from 'openai';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
-import { supabase } from '../supabase';
 import { z, ZodType } from 'zod/v3';
+import { supabase } from '../supabase';
 export interface SchedulerProps {
   team: string;
   location: string;

@@ -5,7 +5,7 @@ import { League } from '../types';
 // Mock the supabase module
 jest.mock('../supabase', () => ({
   supabase: {
-    from: jest.fn(),
+    from: jest.fn()
   },
 }));
 

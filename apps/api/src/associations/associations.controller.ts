@@ -48,6 +48,6 @@ export class AssociationsController {
     @Query('name') name?: string,
     @Query('state') state?: string,
   ): Promise<AssociationFull[]> {
-    return this.associationsService.getAssociations(name, city, state);
+    return this.associationsService.getAssociations(city, name, state);
   }
 }

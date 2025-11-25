@@ -5,7 +5,7 @@ import { League } from '../types';
 @Injectable()
 export class LeaguesService {
   async getLeague(abbreviation: string): Promise<League | null> {
-    let { data: leagueswithjoin, error } = await supabase
+    const { data: leagueswithjoin, error } = await supabase
       .from('leagueswithjoin')
       .select('*')
       .ilike('league_abbreviation', `${abbreviation}`)
@@ -15,17 +15,19 @@ export class LeaguesService {
       throw new Error('Failed to fetch league data');
     }
 
-    if (!leagueswithjoin || leagueswithjoin.length === 0) {
+    if (!leagueswithjoin) {
       console.warn(`No league found with abbreviation: ${abbreviation}`);
       return null;
     }
 
-    leagueswithjoin = leagueswithjoin.map((league) => ({
-      ...league,
-      associations: league.associations.map((assoc) => JSON.parse(assoc)),
-    }));
+    const processedLeague = {
+      ...leagueswithjoin,
+      associations: leagueswithjoin.associations.map((assoc: string) =>
+        JSON.parse(assoc),
+      ),
+    };
 
-    return leagueswithjoin as League;
+    return processedLeague as League;
   }
 
   async getLeagues(): Promise<League[]> {
