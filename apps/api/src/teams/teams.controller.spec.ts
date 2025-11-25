@@ -1,16 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Team, TeamsQueryDto } from '../types';
 import { TeamsController } from './teams.controller';
 import { TeamsService } from './teams.service';
-import { Team } from '../types';
 
 describe('TeamsController', () => {
   let controller: TeamsController;
-  let service: TeamsService;
 
   const mockTeamsService = {
     getTeam: jest.fn(),
     getTeams: jest.fn(),
-    getGirlsTeams: jest.fn(),
+    getNearbyTeams: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -25,8 +24,7 @@ describe('TeamsController', () => {
     }).compile();
 
     controller = module.get<TeamsController>(TeamsController);
-    service = module.get<TeamsService>(TeamsService);
-    
+
     // Reset all mocks
     jest.clearAllMocks();
   });
@@ -58,7 +56,7 @@ describe('TeamsController', () => {
 
       const result = await controller.getTeam(1);
 
-      expect(service.getTeam).toHaveBeenCalledWith(1);
+      expect(mockTeamsService.getTeam).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockTeam);
     });
 
@@ -67,7 +65,7 @@ describe('TeamsController', () => {
 
       const result = await controller.getTeam(999);
 
-      expect(service.getTeam).toHaveBeenCalledWith(999);
+      expect(mockTeamsService.getTeam).toHaveBeenCalledWith(999);
       expect(result).toBeNull();
     });
 
@@ -75,17 +73,17 @@ describe('TeamsController', () => {
       mockTeamsService.getTeam.mockRejectedValue(new Error('Service error'));
 
       await expect(controller.getTeam(1)).rejects.toThrow('Service error');
-      expect(service.getTeam).toHaveBeenCalledWith(1);
+      expect(mockTeamsService.getTeam).toHaveBeenCalledWith(1);
     });
 
     it('should handle different ID types', async () => {
       mockTeamsService.getTeam.mockResolvedValue(mockTeam);
 
       await controller.getTeam(123);
-      expect(service.getTeam).toHaveBeenCalledWith(123);
+      expect(mockTeamsService.getTeam).toHaveBeenCalledWith(123);
 
       await controller.getTeam(0);
-      expect(service.getTeam).toHaveBeenCalledWith(0);
+      expect(mockTeamsService.getTeam).toHaveBeenCalledWith(0);
     });
   });
 
@@ -126,119 +124,57 @@ describe('TeamsController', () => {
     ];
 
     it('should return teams by age group', async () => {
+      const query = { age: '12u' } as TeamsQueryDto;
       mockTeamsService.getTeams.mockResolvedValue(mockTeams);
 
-      const result = await controller.getTeams('12u');
+      const result = await controller.getTeams(query);
 
-      expect(service.getTeams).toHaveBeenCalledWith('12u');
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query);
       expect(result).toEqual(mockTeams);
-      expect(result).toHaveLength(2);
+      expect(result.length).toBe(2);
     });
 
     it('should return empty array when no teams found', async () => {
+      const query = { age: 'nonexistent' } as TeamsQueryDto;
       mockTeamsService.getTeams.mockResolvedValue([]);
 
-      const result = await controller.getTeams('nonexistent');
+      const result = await controller.getTeams(query);
 
-      expect(service.getTeams).toHaveBeenCalledWith('nonexistent');
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query);
       expect(result).toEqual([]);
     });
 
     it('should handle service errors', async () => {
+      const query = { age: '12u' } as TeamsQueryDto;
       mockTeamsService.getTeams.mockRejectedValue(new Error('Service error'));
 
-      await expect(controller.getTeams('12u')).rejects.toThrow('Service error');
-      expect(service.getTeams).toHaveBeenCalledWith('12u');
+      await expect(controller.getTeams(query)).rejects.toThrow('Service error');
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query);
     });
 
-    it('should handle different age formats', async () => {
+    it('should handle different query parameters', async () => {
       mockTeamsService.getTeams.mockResolvedValue(mockTeams);
 
-      await controller.getTeams('12u');
-      expect(service.getTeams).toHaveBeenCalledWith('12u');
+      const query1 = { age: '12u' } as TeamsQueryDto;
+      await controller.getTeams(query1);
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query1);
 
-      await controller.getTeams('14U');
-      expect(service.getTeams).toHaveBeenCalledWith('14U');
+      const query2 = { association: 5 } as TeamsQueryDto;
+      await controller.getTeams(query2);
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query2);
 
-      await controller.getTeams('16u');
-      expect(service.getTeams).toHaveBeenCalledWith('16u');
+      const query3 = { girls_only: true } as TeamsQueryDto;
+      await controller.getTeams(query3);
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query3);
     });
 
-    it('should handle empty age parameter', async () => {
+    it('should handle empty query', async () => {
+      const query = {} as TeamsQueryDto;
       mockTeamsService.getTeams.mockResolvedValue([]);
 
-      const result = await controller.getTeams('');
+      const result = await controller.getTeams(query);
 
-      expect(service.getTeams).toHaveBeenCalledWith('');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getGirlsTeams', () => {
-    const mockGirlsTeams: Team[] = [
-      {
-        id: '1',
-        name: 'Girls Team 1',
-        age: '14u',
-        rating: 1300,
-        record: '9-6-2',
-        agd: 2.2,
-        sched: 1050,
-        association: {
-          id: '1',
-          name: 'Girls Association',
-          city: 'Girls City',
-          state: 'Girls State',
-          country: 'Girls Country',
-        },
-      },
-    ];
-
-    it('should return girls teams by age group', async () => {
-      mockTeamsService.getGirlsTeams.mockResolvedValue(mockGirlsTeams);
-
-      const result = await controller.getGirlsTeams('14u');
-
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('14u');
-      expect(result).toEqual(mockGirlsTeams);
-      expect(result).toHaveLength(1);
-    });
-
-    it('should return empty array when no girls teams found', async () => {
-      mockTeamsService.getGirlsTeams.mockResolvedValue([]);
-
-      const result = await controller.getGirlsTeams('nonexistent');
-
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('nonexistent');
-      expect(result).toEqual([]);
-    });
-
-    it('should handle service errors', async () => {
-      mockTeamsService.getGirlsTeams.mockRejectedValue(new Error('Service error'));
-
-      await expect(controller.getGirlsTeams('14u')).rejects.toThrow('Service error');
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('14u');
-    });
-
-    it('should handle different age formats for girls teams', async () => {
-      mockTeamsService.getGirlsTeams.mockResolvedValue(mockGirlsTeams);
-
-      await controller.getGirlsTeams('14u');
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('14u');
-
-      await controller.getGirlsTeams('16U');
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('16U');
-
-      await controller.getGirlsTeams('18u');
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('18u');
-    });
-
-    it('should handle empty age parameter for girls teams', async () => {
-      mockTeamsService.getGirlsTeams.mockResolvedValue([]);
-
-      const result = await controller.getGirlsTeams('');
-
-      expect(service.getGirlsTeams).toHaveBeenCalledWith('');
+      expect(mockTeamsService.getTeams).toHaveBeenCalledWith(query);
       expect(result).toEqual([]);
     });
   });

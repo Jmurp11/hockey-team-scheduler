@@ -14,10 +14,14 @@ export function combineDateAndTime(
   dateString: string,
   timeString?: string
 ): Date {
-  if (!timeString) return new Date(dateString);
+  // Parse date components directly to avoid timezone issues
+  const [year, month, day] = dateString.split('-').map(Number);
+  
+  if (!timeString) {
+    return new Date(year, month - 1, day);
+  }
+  
   const cleanTimeString = timeString.replace(/([+-]\d{2})$/, '');
-
-  const date = new Date(dateString); // base date (handles timezone on the input date)
   const [h, m, s = '00'] = cleanTimeString.split(':');
 
   const hours = Number(h);
@@ -25,9 +29,9 @@ export function combineDateAndTime(
   const seconds = Number(s);
 
   return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
+    year,
+    month - 1, // Month is 0-indexed
+    day,
     hours,
     minutes,
     seconds

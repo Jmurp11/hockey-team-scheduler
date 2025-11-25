@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AssociationFull } from '../types';
 import { AssociationsController } from './associations.controller';
 import { AssociationsService } from './associations.service';
-import { AssociationFull } from '../types';
 
 describe('AssociationsController', () => {
   let controller: AssociationsController;
-  let service: AssociationsService;
 
   const mockAssociationsService = {
     getAssociation: jest.fn(),
@@ -24,8 +23,7 @@ describe('AssociationsController', () => {
     }).compile();
 
     controller = module.get<AssociationsController>(AssociationsController);
-    service = module.get<AssociationsService>(AssociationsService);
-    
+
     // Reset all mocks
     jest.clearAllMocks();
   });
@@ -74,7 +72,7 @@ describe('AssociationsController', () => {
 
       const result = await controller.getAssociation('1');
 
-      expect(service.getAssociation).toHaveBeenCalledWith(1);
+      expect(mockAssociationsService.getAssociation).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockAssociation);
     });
 
@@ -83,15 +81,19 @@ describe('AssociationsController', () => {
 
       const result = await controller.getAssociation('999');
 
-      expect(service.getAssociation).toHaveBeenCalledWith(999);
+      expect(mockAssociationsService.getAssociation).toHaveBeenCalledWith(999);
       expect(result).toBeNull();
     });
 
     it('should handle service errors', async () => {
-      mockAssociationsService.getAssociation.mockRejectedValue(new Error('Service error'));
+      mockAssociationsService.getAssociation.mockRejectedValue(
+        new Error('Service error'),
+      );
 
-      await expect(controller.getAssociation('1')).rejects.toThrow('Service error');
-      expect(service.getAssociation).toHaveBeenCalledWith(1);
+      await expect(controller.getAssociation('1')).rejects.toThrow(
+        'Service error',
+      );
+      expect(mockAssociationsService.getAssociation).toHaveBeenCalledWith(1);
     });
 
     it('should parse string ID to number', async () => {
@@ -99,7 +101,7 @@ describe('AssociationsController', () => {
 
       await controller.getAssociation('123');
 
-      expect(service.getAssociation).toHaveBeenCalledWith(123);
+      expect(mockAssociationsService.getAssociation).toHaveBeenCalledWith(123);
     });
 
     it('should handle invalid ID format', async () => {
@@ -108,7 +110,7 @@ describe('AssociationsController', () => {
       await controller.getAssociation('invalid');
 
       // parseInt('invalid') returns NaN, but the service should handle this
-      expect(service.getAssociation).toHaveBeenCalledWith(NaN);
+      expect(mockAssociationsService.getAssociation).toHaveBeenCalledWith(NaN);
     });
   });
 
@@ -135,59 +137,111 @@ describe('AssociationsController', () => {
     ];
 
     it('should return associations with city and state filters', async () => {
-      mockAssociationsService.getAssociations.mockResolvedValue(mockAssociations);
+      mockAssociationsService.getAssociations.mockResolvedValue(
+        mockAssociations,
+      );
 
-      const result = await controller.getAssociations('Test City', 'Test State');
+      const result = await controller.getAssociations(
+        'Test City',
+        undefined,
+        'Test State',
+      );
 
-      expect(service.getAssociations).toHaveBeenCalledWith('Test City', 'Test State');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        'Test City',
+        undefined,
+        'Test State',
+      );
       expect(result).toEqual(mockAssociations);
       expect(result).toHaveLength(2);
     });
 
     it('should return associations with default empty filters', async () => {
-      mockAssociationsService.getAssociations.mockResolvedValue(mockAssociations);
+      mockAssociationsService.getAssociations.mockResolvedValue(
+        mockAssociations,
+      );
 
       const result = await controller.getAssociations();
 
-      expect(service.getAssociations).toHaveBeenCalledWith('', '');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(result).toEqual(mockAssociations);
     });
 
     it('should return empty array when no associations found', async () => {
       mockAssociationsService.getAssociations.mockResolvedValue([]);
 
-      const result = await controller.getAssociations('Nonexistent', 'Nonexistent');
+      const result = await controller.getAssociations(
+        'Nonexistent',
+        undefined,
+        'Nonexistent',
+      );
 
-      expect(service.getAssociations).toHaveBeenCalledWith('Nonexistent', 'Nonexistent');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        'Nonexistent',
+        undefined,
+        'Nonexistent',
+      );
       expect(result).toEqual([]);
     });
 
     it('should handle service errors', async () => {
-      mockAssociationsService.getAssociations.mockRejectedValue(new Error('Service error'));
+      mockAssociationsService.getAssociations.mockRejectedValue(
+        new Error('Service error'),
+      );
 
-      await expect(controller.getAssociations('Test', 'Test')).rejects.toThrow('Service error');
-      expect(service.getAssociations).toHaveBeenCalledWith('Test', 'Test');
+      await expect(
+        controller.getAssociations('Test', undefined, 'Test'),
+      ).rejects.toThrow('Service error');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        'Test',
+        undefined,
+        'Test',
+      );
     });
 
     it('should handle undefined query parameters', async () => {
-      mockAssociationsService.getAssociations.mockResolvedValue(mockAssociations);
+      mockAssociationsService.getAssociations.mockResolvedValue(
+        mockAssociations,
+      );
 
-      const result = await controller.getAssociations(undefined, undefined);
+      const result = await controller.getAssociations(
+        undefined,
+        undefined,
+        undefined,
+      );
 
-      expect(service.getAssociations).toHaveBeenCalledWith('', '');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(result).toEqual(mockAssociations);
     });
 
     it('should handle partial query parameters', async () => {
-      mockAssociationsService.getAssociations.mockResolvedValue(mockAssociations);
+      mockAssociationsService.getAssociations.mockResolvedValue(
+        mockAssociations,
+      );
 
       // Test with only city
       await controller.getAssociations('Test City');
-      expect(service.getAssociations).toHaveBeenCalledWith('Test City', '');
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        'Test City',
+        undefined,
+        undefined,
+      );
 
-      // Test with only state (city as undefined)
-      await controller.getAssociations(undefined, 'Test State');
-      expect(service.getAssociations).toHaveBeenCalledWith('', 'Test State');
+      // Test with only name (city and state as undefined)
+      await controller.getAssociations(undefined, 'Test Name', undefined);
+      expect(mockAssociationsService.getAssociations).toHaveBeenCalledWith(
+        undefined,
+        'Test Name',
+        undefined,
+      );
     });
   });
 });

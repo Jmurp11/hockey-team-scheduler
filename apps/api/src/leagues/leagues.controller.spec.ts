@@ -8,7 +8,7 @@ describe('LeagueController', () => {
   let service: LeaguesService;
 
   const mockLeaguesService = {
-    getLeague: jest.fn(),
+    getLeague: jest.fn()
   };
 
   beforeEach(async () => {

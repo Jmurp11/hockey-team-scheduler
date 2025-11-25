@@ -1,7 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access'
-;
+import { SupabaseService } from './supabase.service';
 
 @Injectable({
   providedIn: 'root',

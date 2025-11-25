@@ -12,7 +12,7 @@ export async function runETL(props: TournamentProps) {
     console.log({ foundTournaments });
     const newTournaments = output.filter((t: any) => {
       return !foundTournaments.data?.some(
-        (ft: any) => ft.registration_link === t.registration_link
+        (ft: any) => ft.registration_link === t.registrationUrl
       );
     });
 

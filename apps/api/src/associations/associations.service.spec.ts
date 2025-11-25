@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssociationsService } from './associations.service';
-import { AssociationFull } from '../types';
 
 // Mock the supabase module
 jest.mock('../supabase', () => ({
@@ -21,7 +20,7 @@ describe('AssociationsService', () => {
     }).compile();
 
     service = module.get<AssociationsService>(AssociationsService);
-    
+
     // Reset all mocks
     jest.clearAllMocks();
   });
@@ -104,7 +103,9 @@ describe('AssociationsService', () => {
         eq: mockEq,
       });
 
-      await expect(service.getAssociation(1)).rejects.toThrow('Failed to fetch association data');
+      await expect(service.getAssociation(1)).rejects.toThrow(
+        'Failed to fetch association data',
+      );
     });
 
     it('should parse JSON fields correctly', async () => {
@@ -133,15 +134,15 @@ describe('AssociationsService', () => {
 
       expect(result?.leagues).toHaveLength(1);
       expect(result?.leagues[0]).toEqual({
-        id: "1",
-        name: "Hockey League",
-        abbreviation: "HL"
+        id: '1',
+        name: 'Hockey League',
+        abbreviation: 'HL',
       });
       expect(result?.teams).toHaveLength(1);
       expect(result?.teams[0]).toEqual({
-        id: "1",
-        name: "Test Team",
-        age: "12u"
+        id: '1',
+        name: 'Test Team',
+        age: '12u',
       });
     });
   });
@@ -189,7 +190,11 @@ describe('AssociationsService', () => {
         ilike: mockIlike2,
       });
 
-      const result = await service.getAssociations('Test City', 'Test State');
+      const result = await service.getAssociations(
+        'Test City',
+        undefined,
+        'Test State',
+      );
 
       expect(mockSupabase.from).toHaveBeenCalledWith('associationsfull');
       expect(mockSelect).toHaveBeenCalledWith('*');
@@ -219,7 +224,11 @@ describe('AssociationsService', () => {
         ilike: mockIlike2,
       });
 
-      const result = await service.getAssociations('Nonexistent', 'Nonexistent');
+      const result = await service.getAssociations(
+        'Nonexistent',
+        undefined,
+        'Nonexistent',
+      );
 
       expect(result).toEqual([]);
     });
@@ -245,34 +254,41 @@ describe('AssociationsService', () => {
         ilike: mockIlike2,
       });
 
-      await expect(service.getAssociations('Test', 'Test')).rejects.toThrow('Failed to fetch associations data');
+      await expect(service.getAssociations('Test', 'Test')).rejects.toThrow(
+        'Failed to fetch associations data',
+      );
     });
 
     it('should handle empty search parameters', async () => {
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockIlike1 = jest.fn().mockReturnThis();
-      const mockIlike2 = jest.fn().mockResolvedValue({
-        data: mockAssociationsData,
-        error: null,
+      const mockQuery = {
+        ilike: jest.fn().mockReturnThis(),
+        then: jest.fn(),
+      };
+
+      // Create a thenable object that resolves to the data
+      Object.assign(mockQuery, {
+        then(onfulfilled: any) {
+          return Promise.resolve({
+            data: mockAssociationsData,
+            error: null,
+          }).then(onfulfilled);
+        },
       });
+
+      const mockSelect = jest.fn().mockReturnValue(mockQuery);
 
       mockSupabase.from.mockReturnValue({
         select: mockSelect,
-        ilike: mockIlike1,
       } as any);
 
-      mockSelect.mockReturnValue({
-        ilike: mockIlike1,
-      });
+      const result = await service.getAssociations(
+        undefined,
+        undefined,
+        undefined,
+      );
 
-      mockIlike1.mockReturnValue({
-        ilike: mockIlike2,
-      });
-
-      const result = await service.getAssociations('', '');
-
-      expect(mockIlike1).toHaveBeenCalledWith('city', '%%');
-      expect(mockIlike2).toHaveBeenCalledWith('state', '%%');
+      expect(mockSelect).toHaveBeenCalledWith('*');
+      expect(mockQuery.ilike).not.toHaveBeenCalled();
       expect(result).toHaveLength(2);
     });
   });

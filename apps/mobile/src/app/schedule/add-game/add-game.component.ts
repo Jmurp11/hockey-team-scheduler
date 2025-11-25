@@ -1,17 +1,7 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  OnInit
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AddGameService,
   AuthService,
@@ -22,7 +12,7 @@ import {
   GAME_TYPE_OPTIONS,
   initAddGameForm,
   IS_HOME_OPTIONS,
-  transformAddGameFormData
+  transformAddGameFormData,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButton,
@@ -33,15 +23,18 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonSegmentButton,
   IonSelectOption,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Observable, take } from 'rxjs';
+import { AutocompleteComponent } from '../../shared/autocomplete/autocomplete.component';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { DatetimeButtonComponent } from '../../shared/datetime-button/datetime-button.component';
 import { InputComponent } from '../../shared/input/input.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
+import { SegmentComponent } from '../../shared/segment/segment.component';
 import { SelectComponent } from '../../shared/select/select.component';
 import { AddGameModalService } from './add-game-modal.service';
 import { getFormFields } from './add-game.constants';
@@ -68,6 +61,9 @@ import { getFormFields } from './add-game.constants';
     SelectComponent,
     LoadingComponent,
     DatetimeButtonComponent,
+    SegmentComponent,
+    IonSegmentButton,
+    AutocompleteComponent,
   ],
   template: `
     <ion-modal [isOpen]="addGameModalService.isOpen()" (didDismiss)="cancel()">
@@ -87,58 +83,57 @@ import { getFormFields } from './add-game.constants';
               @if (field && field.controlType) {
                 @switch (field.controlType) {
                   @case ('input') {
-                    <app-input
-                      [type]="'text'"
-                      [label]="field.labelName"
-                      [labelPlacement]="'stacked'"
-                      [fill]="'outline'"
-                      [formControl]="getFormControl(field.controlName)"
-                    />
+                    <ion-item lines="none">
+                      <app-input
+                        [type]="'text'"
+                        [label]="field.labelName"
+                        [labelPlacement]="'stacked'"
+                        [fill]="'outline'"
+                        [formControl]="getFormControl(field.controlName)"
+                      />
+                    </ion-item>
                   }
                   @case ('select') {
-                    <app-select
-                      [label]="field.labelName"
-                      [labelPlacement]="'stacked'"
-                      [fill]="'outline'"
-                      [formControl]="getFormControl(field.controlName)"
-                    >
-                      @for (
-                        option of field.options?.listItems;
-                        track option.value
-                      ) {
-                        <ion-select-option [value]="option.value">
-                          {{ option.label }}
-                        </ion-select-option>
-                      }
-                    </app-select>
-                  }
-                  @case ('autocomplete') {
-                    <app-select
-                      [label]="field.labelName"
-                      [labelPlacement]="'stacked'"
-                      [fill]="'outline'"
-                      [interface]="'action-sheet'"
-                      [formControl]="getFormControl(field.controlName)"
-                    >
-                      @if (field.items) {
-                        @for (item of field.items; track item.value) {
-                          <ion-select-option [value]="item.value">
-                            {{ item.label }}
+                    <ion-item lines="none">
+                      <app-select
+                        [label]="field.labelName"
+                        [labelPlacement]="'stacked'"
+                        [fill]="'outline'"
+                        [formControl]="getFormControl(field.controlName)"
+                      >
+                        @for (
+                          option of field.options?.listItems;
+                          track option.value
+                        ) {
+                          <ion-select-option [value]="option.value">
+                            {{ option.label }}
                           </ion-select-option>
                         }
-                      }
-                    </app-select>
+                      </app-select>
+                    </ion-item>
+                  }
+                  @case ('autocomplete') {
+                    <ion-item lines="none">
+                      <app-autocomplete
+                        [label]="field.labelName"
+                        [labelPlacement]="'stacked'"
+                        [fill]="'outline'"
+                        [interface]="'action-sheet'"
+                        [formControl]="getFormControl(field.controlName)"
+                        [options]="field.items"
+                      />
+                    </ion-item>
                   }
                 }
               }
             }
 
-            <ion-item>
+            <ion-item lines="none">
               <ion-label position="stacked">Date & Time</ion-label>
               <app-datetime-button [datetime]="'game-datetime'" />
             </ion-item>
 
-            <ion-item style="display: none;">
+            <ion-item lines="none" style="display: none;">
               <ion-datetime
                 id="game-datetime"
                 presentation="date-time"
@@ -146,31 +141,31 @@ import { getFormFields } from './add-game.constants';
               />
             </ion-item>
 
-            <app-select
-              [label]="'Game Type'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [formControl]="getFormControl('game_type')"
-            >
-              @for (option of gameTypeOptions; track option.value) {
-                <ion-select-option [value]="option.value">
-                  {{ option.label }}
-                </ion-select-option>
-              }
-            </app-select>
+            <ion-item lines="none">
+              <app-segment
+                [value]="gameTypeOptions[0].value"
+                [formControl]="getFormControl('game_type')"
+              >
+                @for (option of gameTypeOptions; track option.value) {
+                  <ion-segment-button [value]="option.value">
+                    <ion-label>{{ option.label }}</ion-label>
+                  </ion-segment-button>
+                }
+              </app-segment>
+            </ion-item>
 
-            <app-select
-              [label]="'Home/Away'"
-              [labelPlacement]="'stacked'"
-              [fill]="'outline'"
-              [formControl]="getFormControl('isHome')"
-            >
-              @for (option of isHomeOptions; track option.value) {
-                <ion-select-option [value]="option.value">
-                  {{ option.label }}
-                </ion-select-option>
-              }
-            </app-select>
+            <ion-item lines="none">
+              <app-segment
+                [value]="isHomeOptions[0].value"
+                [formControl]="getFormControl('is_home')"
+              >
+                @for (option of isHomeOptions; track option.value) {
+                  <ion-segment-button [value]="option.value">
+                    <ion-label>{{ option.label }}</ion-label>
+                  </ion-segment-button>
+                }
+              </app-segment>
+            </ion-item>
 
             <div class="button-container">
               <app-button
@@ -276,7 +271,7 @@ export class AddGameComponent implements OnInit {
 
     const input = transformAddGameFormData(
       this.addGameForm.value,
-      this.currentUser().user_id
+      this.currentUser().user_id,
     );
 
     const data = this.gameData();

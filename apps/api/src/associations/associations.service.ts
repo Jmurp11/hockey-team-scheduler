@@ -29,8 +29,8 @@ export class AssociationsService {
 
   // ...existing code...
   async getAssociations(
-    name?: string,
     city?: string,
+    name?: string,
     state?: string,
   ): Promise<AssociationFull[]> {
     const filters = [
