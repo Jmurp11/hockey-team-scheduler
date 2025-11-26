@@ -4,10 +4,10 @@ import { LoadingService } from './loading.service';
 describe('LoadingService', () => {
   let service: LoadingService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       providers: [LoadingService],
-    });
+    }).compileComponents();
     service = TestBed.inject(LoadingService);
   });
 

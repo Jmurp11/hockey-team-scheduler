@@ -5,26 +5,29 @@ import { AuthService, SupabaseService } from '@hockey-team-scheduler/shared-data
 import { authGuard } from './auth.guard';
 
 describe('authGuard', () => {
-  let mockSupabaseService: jasmine.SpyObj<SupabaseService>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockSupabaseService: jest.Mocked<SupabaseService>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockRouter: jest.Mocked<Router>;
   let mockSupabaseClient: any;
 
   beforeEach(() => {
     mockSupabaseClient = {
       auth: {
-        getSession: jasmine.createSpy('getSession'),
+        getSession: jest.fn(),
       },
     };
 
-    mockSupabaseService = jasmine.createSpyObj('SupabaseService', [
-      'getSupabaseClient',
-    ]);
-    mockSupabaseService.getSupabaseClient.and.returnValue(mockSupabaseClient);
+    mockSupabaseService = {
+      getSupabaseClient: jest.fn().mockReturnValue(mockSupabaseClient),
+    };
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['setSession']);
+    mockAuthService = {
+      setSession: jest.fn(),
+    };
 
-    mockRouter = jasmine.createSpyObj('Router', ['createUrlTree']);
+    mockRouter = {
+      createUrlTree: jest.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -41,7 +44,7 @@ describe('authGuard', () => {
       access_token: 'token-123',
     };
 
-    mockSupabaseClient.auth.getSession.and.returnValue(
+    mockSupabaseClient.auth.getSession.mockReturnValue(
       Promise.resolve({ data: { session: mockSession }, error: null })
     );
 
@@ -54,10 +57,10 @@ describe('authGuard', () => {
 
   it('should redirect to login when no session exists', async () => {
     const urlTree = {} as UrlTree;
-    mockSupabaseClient.auth.getSession.and.returnValue(
+    mockSupabaseClient.auth.getSession.mockReturnValue(
       Promise.resolve({ data: { session: null }, error: null })
     );
-    mockRouter.createUrlTree.and.returnValue(urlTree);
+    mockRouter.createUrlTree.mockReturnValue(urlTree);
 
     const result = await TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 
@@ -68,10 +71,10 @@ describe('authGuard', () => {
 
   it('should redirect to login when auth error occurs', async () => {
     const urlTree = {} as UrlTree;
-    mockSupabaseClient.auth.getSession.and.returnValue(
+    mockSupabaseClient.auth.getSession.mockReturnValue(
       Promise.resolve({ data: { session: null }, error: new Error('Auth error') })
     );
-    mockRouter.createUrlTree.and.returnValue(urlTree);
+    mockRouter.createUrlTree.mockReturnValue(urlTree);
 
     const result = await TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 
@@ -81,8 +84,8 @@ describe('authGuard', () => {
 
   it('should redirect to login when Supabase client is not available', async () => {
     const urlTree = {} as UrlTree;
-    mockSupabaseService.getSupabaseClient.and.returnValue(undefined);
-    mockRouter.createUrlTree.and.returnValue(urlTree);
+    mockSupabaseService.getSupabaseClient.mockReturnValue(undefined);
+    mockRouter.createUrlTree.mockReturnValue(urlTree);
 
     const result = await TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 
@@ -92,8 +95,8 @@ describe('authGuard', () => {
 
   it('should redirect to login when unexpected error occurs', async () => {
     const urlTree = {} as UrlTree;
-    mockSupabaseClient.auth.getSession.and.throwError('Unexpected error');
-    mockRouter.createUrlTree.and.returnValue(urlTree);
+    mockSupabaseClient.auth.getSession.mockRejectedValue(new Error('Unexpected error'));
+    mockRouter.createUrlTree.mockReturnValue(urlTree);
 
     const result = await TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 
@@ -108,10 +111,10 @@ describe('authGuard', () => {
       access_token: 'token-123',
     };
 
-    mockSupabaseClient.auth.getSession.and.returnValue(
+    mockSupabaseClient.auth.getSession.mockReturnValue(
       Promise.resolve({ data: { session: mockSession }, error: null })
     );
-    mockRouter.createUrlTree.and.returnValue(urlTree);
+    mockRouter.createUrlTree.mockReturnValue(urlTree);
 
     const result = await TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 

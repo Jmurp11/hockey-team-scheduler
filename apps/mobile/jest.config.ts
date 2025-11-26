@@ -1,6 +1,7 @@
 export default {
   displayName: 'mobile',
   preset: '../../jest.preset.js',
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/apps/mobile',
   transform: {

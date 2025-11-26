@@ -7,24 +7,25 @@ import { CallbackComponent } from './callback.component';
 describe('CallbackComponent', () => {
   let component: CallbackComponent;
   let fixture: ComponentFixture<CallbackComponent>;
-  let mockSupabaseService: jasmine.SpyObj<SupabaseService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockSupabaseService: jest.Mocked<SupabaseService>;
+  let mockRouter: jest.Mocked<Router>;
   let mockSupabaseClient: any;
 
   beforeEach(async () => {
     mockSupabaseClient = {
       auth: {
-        exchangeCodeForSession: jasmine.createSpy('exchangeCodeForSession'),
-        getSession: jasmine.createSpy('getSession'),
+        exchangeCodeForSession: jest.fn(),
+        getSession: jest.fn(),
       },
     };
 
-    mockSupabaseService = jasmine.createSpyObj('SupabaseService', [
-      'getSupabaseClient',
-    ]);
-    mockSupabaseService.getSupabaseClient.and.returnValue(mockSupabaseClient);
+    mockSupabaseService = {
+      getSupabaseClient: jest.fn().mockReturnValue(mockSupabaseClient),
+    };
 
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = {
+      navigate: jest.fn(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [CallbackComponent],
