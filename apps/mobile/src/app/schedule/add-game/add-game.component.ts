@@ -136,6 +136,7 @@ import { getFormFields } from './add-game.constants';
             <ion-item lines="none" style="display: none;">
               <ion-datetime
                 id="game-datetime"
+                name="game-datetime"
                 presentation="date-time"
                 [formControl]="getFormControl('date')"
               />
@@ -144,7 +145,7 @@ import { getFormFields } from './add-game.constants';
             <ion-item lines="none">
               <app-segment
                 [value]="gameTypeOptions[0].value"
-                [formControl]="getFormControl('game_type')"
+                [formControl]="getFormControl('gameType')"
               >
                 @for (option of gameTypeOptions; track option.value) {
                   <ion-segment-button [value]="option.value">
@@ -157,7 +158,7 @@ import { getFormFields } from './add-game.constants';
             <ion-item lines="none">
               <app-segment
                 [value]="isHomeOptions[0].value"
-                [formControl]="getFormControl('is_home')"
+                [formControl]="getFormControl('isHome')"
               >
                 @for (option of isHomeOptions; track option.value) {
                   <ion-segment-button [value]="option.value">
@@ -261,7 +262,16 @@ export class AddGameComponent implements OnInit {
   }
 
   getFormControl(controlName: string): FormControl {
-    return this.addGameForm.get(controlName) as FormControl;
+    if (!controlName || !this.addGameForm) {
+      console.warn('Invalid control name or form not initialized:', controlName);
+      return new FormControl();
+    }
+    const control = this.addGameForm.get(controlName);
+    if (!control) {
+      console.warn('Form control not found:', controlName);
+      return new FormControl();
+    }
+    return control as FormControl;
   }
 
   submit(): void {

@@ -6,6 +6,7 @@ export interface Game {
   gameType: string;
   city: string;
   state: string;
+  country: string;
   rink: string;
   opponent: number;
   user: number;
