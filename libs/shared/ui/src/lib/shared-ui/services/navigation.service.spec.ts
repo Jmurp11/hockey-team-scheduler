@@ -6,18 +6,18 @@ describe('NavigationService', () => {
   let service: NavigationService;
   let mockRouter: jest.Mocked<Router>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockRouter = {
       navigate: jest.fn(),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       providers: [
         NavigationService,
         { provide: Router, useValue: mockRouter },
       ],
-    });
+    }).compileComponents();
 
     service = TestBed.inject(NavigationService);
   });

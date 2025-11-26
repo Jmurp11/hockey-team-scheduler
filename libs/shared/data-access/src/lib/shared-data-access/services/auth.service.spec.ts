@@ -8,7 +8,7 @@ describe('AuthService', () => {
   let mockSupabaseClient: any;
   let mockSupabaseService: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockSupabaseClient = {
       from: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
@@ -20,12 +20,12 @@ describe('AuthService', () => {
       getSupabaseClient: jest.fn().mockReturnValue(mockSupabaseClient),
     };
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       providers: [
         AuthService,
         { provide: SupabaseService, useValue: mockSupabaseService },
       ],
-    });
+    }).compileComponents();
 
     service = TestBed.inject(AuthService);
   });

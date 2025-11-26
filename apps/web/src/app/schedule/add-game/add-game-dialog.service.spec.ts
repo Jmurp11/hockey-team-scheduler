@@ -5,7 +5,7 @@ import { AddGameComponent } from './add-game.component';
 
 describe('AddGameDialogService', () => {
   let service: AddGameDialogService;
-  let mockViewContainerRef: jasmine.SpyObj<ViewContainerRef>;
+  let mockViewContainerRef: jest.Mocked<ViewContainerRef>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockComponentRef: any;
 
@@ -15,14 +15,14 @@ describe('AddGameDialogService', () => {
         gameData: null,
         editMode: false,
       },
-      destroy: jasmine.createSpy('destroy'),
+      destroy: jest.fn(),
     };
 
-    mockViewContainerRef = jasmine.createSpyObj('ViewContainerRef', [
-      'createComponent',
-      'clear',
-    ]);
-    mockViewContainerRef.createComponent.and.returnValue(mockComponentRef);
+    mockViewContainerRef = {
+      createComponent: jest.fn().mockReturnValue(mockComponentRef),
+      clear: jest.fn(),
+    } as any;
+    mockViewContainerRef.createComponent.mockReturnValue(mockComponentRef);
 
     TestBed.configureTestingModule({
       providers: [AddGameDialogService],

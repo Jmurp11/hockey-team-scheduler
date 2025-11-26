@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { AuthService, SupabaseService } from '@hockey-team-scheduler/shared-data-access';
+import { AuthService, SupabaseService, APP_CONFIG } from '@hockey-team-scheduler/shared-data-access';
 import { PrimeNG } from 'primeng/config';
 import { App } from './app.component';
 
 describe('App', () => {
   let component: App;
   let fixture: ComponentFixture<App>;
-  let mockSupabaseService: jasmine.SpyObj<SupabaseService>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockSupabaseService: jest.Mocked<SupabaseService>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockRouter: jest.Mocked<Router>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockPrimeNG: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,10 +18,10 @@ describe('App', () => {
   beforeEach(async () => {
     const mockSupabaseClient = {
       auth: {
-        onAuthStateChange: jasmine
-          .createSpy('onAuthStateChange')
+        onAuthStateChange: jest
+          .fn()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .and.callFake((callback: any) => {
+          .mockImplementation((callback: any) => {
             authStateCallback = callback;
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             return { data: { subscription: { unsubscribe: () => {} } } };
@@ -29,21 +29,24 @@ describe('App', () => {
       },
     };
 
-    mockSupabaseService = jasmine.createSpyObj('SupabaseService', [
-      'getSupabaseClient',
-    ]);
-    mockSupabaseService.getSupabaseClient.and.returnValue(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockSupabaseClient as any,
-    );
+    mockSupabaseService = {
+      getSupabaseClient: jest.fn().mockReturnValue(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockSupabaseClient as any,
+      ),
+    };
 
-    mockAuthService = jasmine.createSpyObj('AuthService', ['setSession']);
+    mockAuthService = {
+      setSession: jest.fn(),
+    };
 
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = {
+      navigate: jest.fn(),
+    };
 
     mockPrimeNG = {
       ripple: {
-        set: jasmine.createSpy('set'),
+        set: jest.fn(),
       },
     };
 
@@ -54,6 +57,7 @@ describe('App', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
         { provide: PrimeNG, useValue: mockPrimeNG },
+        { provide: APP_CONFIG, useValue: { supabaseUrl: 'https://test.supabase.co', supabaseAnonKey: 'test-key', apiUrl: 'https://test-api.com' } },
       ],
     }).compileComponents();
 
