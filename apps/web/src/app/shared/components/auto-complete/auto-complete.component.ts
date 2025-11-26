@@ -6,6 +6,7 @@ import {
   Input,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { inputId } from '@hockey-team-scheduler/shared-utilities';
 import { FilterService, SelectItem } from 'primeng/api';
 import {
   AutoCompleteModule,
@@ -13,7 +14,6 @@ import {
 } from 'primeng/autocomplete';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
-import { inputId } from '@hockey-team-scheduler/shared-utilities';
 
 interface AutoCompleteCompleteEvent {
   originalEvent: Event;
@@ -69,7 +69,7 @@ export class AutoCompleteComponent {
   @Input()
   label: string;
 
-  @Input() disabled: boolean = false;
+  @Input() disabled = false;
 
   filterService = inject(FilterService);
 
@@ -82,7 +82,7 @@ export class AutoCompleteComponent {
   }
 
   filterItems(event: AutoCompleteCompleteEvent) {
-    let query = event.query;
+    const query = event.query;
 
     this.filteredItems = this.items.filter((item: SelectItem) =>
       item.label?.toLowerCase().includes(query.toLowerCase())

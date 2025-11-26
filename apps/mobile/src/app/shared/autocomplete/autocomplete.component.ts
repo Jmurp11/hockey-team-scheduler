@@ -1,14 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
-import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
-    IonButton,
-    IonContent,
-    IonItem,
-    IonLabel,
-    IonList,
-    IonModal,
-    IonSearchbar,
+  Component,
+  EventEmitter,
+  forwardRef,
+  Input,
+  Output,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
+import {
+  IonButton,
+  IonContent,
+  IonItem,
+  IonList,
+  IonModal,
+  IonSearchbar,
 } from '@ionic/angular/standalone';
 import { InputComponent } from '../input/input.component';
 
@@ -26,28 +35,24 @@ export interface AutocompleteOption {
     IonSearchbar,
     IonList,
     IonItem,
-    IonLabel,
     IonModal,
     IonButton,
     IonContent,
     InputComponent,
   ],
   template: `
-    <ion-item lines="none">
-      <ion-label [position]="labelPlacement">{{ label }}</ion-label>
-      <app-input
-        [readonly]="true"
-        [value]="selectedLabel"
-        [placeholder]="label"
-        (click)="openModal()"
-        [fill]="fill"
-        style="width: 100%; border: none; background: transparent; padding: 8px 0;"
-      />
-    </ion-item>
+    <app-input
+      [readonly]="true"
+      [value]="selectedLabel"
+      [label]="label"
+      [labelPlacement]="'stacked'"
+      [fill]="fill"
+      (click)="openModal()"
+      style="width: 100%; border: none; background: transparent; padding: 8px 0;"
+    />
     <ion-modal [isOpen]="modalOpen" (didDismiss)="closeModal()">
       <ion-content>
         <ion-searchbar
-          [placeholder]="label"
           [(ngModel)]="searchTerm"
           (ionInput)="onSearchChange()"
           [debounce]="debounce"
@@ -58,17 +63,15 @@ export interface AutocompleteOption {
         @if (filteredOptions.length > 0 && searchTerm) {
           <ion-list>
             @for (option of filteredOptions; track option.value) {
-              <ion-item
-                lines="none"
-                button
-                (click)="selectOption(option)"
-              >
+              <ion-item lines="none" button (click)="selectOption(option)">
                 {{ option.label }}
               </ion-item>
             }
           </ion-list>
         }
-        <ion-button expand="block" fill="clear" (click)="closeModal()">Cancel</ion-button>
+        <ion-button expand="block" fill="clear" (click)="closeModal()"
+          >Cancel</ion-button
+        >
       </ion-content>
     </ion-modal>
   `,
@@ -93,9 +96,9 @@ export interface AutocompleteOption {
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AutocompleteComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class AutocompleteComponent implements ControlValueAccessor {
   @Input() options: AutocompleteOption[] = [];
@@ -112,10 +115,12 @@ export class AutocompleteComponent implements ControlValueAccessor {
   filteredOptions: AutocompleteOption[] = [];
   modalOpen = false;
   selectedLabel = '';
-  value: any = null;
+  value: string | number | null | undefined = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onChange: (value: any) => void = (_value: any) => {
+   
+  private onChange: (value: string | number | null | undefined) => void = (
+    _value: string | number | null | undefined,
+  ) => {
     // Placeholder for ControlValueAccessor
   };
   private onTouched: () => void = () => {
@@ -149,14 +154,16 @@ export class AutocompleteComponent implements ControlValueAccessor {
   }
 
   // ControlValueAccessor implementation
-  writeValue(value: any): void {
+  writeValue(value: string | number | null | undefined): void {
     this.value = value;
     // Find the option with this value to set the label
-    const option = this.options.find(opt => opt.value === value);
+    const option = this.options.find((opt) => opt.value === value);
     this.selectedLabel = option ? option.label : '';
   }
 
-  registerOnChange(fn: (value: any) => void): void {
+  registerOnChange(
+    fn: (value: string | number | null | undefined) => void,
+  ): void {
     this.onChange = fn;
   }
 
