@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
     IonButton,
     IonContent,
@@ -89,8 +89,15 @@ export interface AutocompleteOption {
       }
     `,
   ],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => AutocompleteComponent),
+      multi: true
+    }
+  ]
 })
-export class AutocompleteComponent {
+export class AutocompleteComponent implements ControlValueAccessor {
   @Input() options: AutocompleteOption[] = [];
   @Input() label = 'Search';
   @Input() labelPlacement: 'start' | 'end' | 'fixed' | 'stacked' | 'floating' =
@@ -105,6 +112,15 @@ export class AutocompleteComponent {
   filteredOptions: AutocompleteOption[] = [];
   modalOpen = false;
   selectedLabel = '';
+  value: any = null;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private onChange: (value: any) => void = (_value: any) => {
+    // Placeholder for ControlValueAccessor
+  };
+  private onTouched: () => void = () => {
+    // Placeholder for ControlValueAccessor
+  };
 
   openModal(): void {
     this.modalOpen = true;
@@ -125,7 +141,30 @@ export class AutocompleteComponent {
 
   selectOption(option: AutocompleteOption): void {
     this.selectedLabel = option.label;
+    this.value = option.value;
+    this.onChange(this.value);
+    this.onTouched();
     this.optionSelected.emit(option);
     this.closeModal();
+  }
+
+  // ControlValueAccessor implementation
+  writeValue(value: any): void {
+    this.value = value;
+    // Find the option with this value to set the label
+    const option = this.options.find(opt => opt.value === value);
+    this.selectedLabel = option ? option.label : '';
+  }
+
+  registerOnChange(fn: (value: any) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
   }
 }

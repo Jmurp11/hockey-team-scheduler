@@ -38,6 +38,9 @@ export function initAddGameForm(gameData: Game | null = null): FormGroup {
     city: new FormControl(gameData?.city || null, {
       validators: [Validators.required, Validators.minLength(6)],
     }),
+    country: new FormControl(gameData?.country || null, {
+      validators: [Validators.required],
+    }),
     state: new FormControl(gameData?.state || null, {
       validators: [Validators.required, Validators.minLength(6)],
     }),

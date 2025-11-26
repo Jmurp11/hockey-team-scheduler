@@ -22,11 +22,13 @@ export function getDatesBetween(startDate: Date, endDate: Date): Date[] {
 export function parseTournamentLocation(location: string): {
   city: string;
   state: string;
+  country: string;
 } {
   const parts = location.split(',').map((part: string) => part.trim());
   return {
     city: parts[0] || '',
     state: parts[1] || '',
+    country: parts[2] || 'USA',
   };
 }
 
@@ -43,6 +45,7 @@ export function createTournamentGameInfo(
     rink: tournament.rink,
     city: location.city,
     state: location.state,
+    country: location.country || 'USA',
     time: '12:00:00',
     opponent: -1,
     gameType: 'tournament',
