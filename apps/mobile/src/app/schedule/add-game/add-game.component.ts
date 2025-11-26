@@ -85,6 +85,7 @@ import { getFormFields } from './add-game.constants';
                   @case ('input') {
                     <ion-item lines="none">
                       <app-input
+                        class="form-field"
                         [type]="'text'"
                         [label]="field.labelName"
                         [labelPlacement]="'stacked'"
@@ -96,6 +97,7 @@ import { getFormFields } from './add-game.constants';
                   @case ('select') {
                     <ion-item lines="none">
                       <app-select
+                        class="form-field"
                         [label]="field.labelName"
                         [labelPlacement]="'stacked'"
                         [fill]="'outline'"
@@ -115,6 +117,7 @@ import { getFormFields } from './add-game.constants';
                   @case ('autocomplete') {
                     <ion-item lines="none">
                       <app-autocomplete
+                        class="form-field"
                         [label]="field.labelName"
                         [labelPlacement]="'stacked'"
                         [fill]="'outline'"
@@ -129,30 +132,19 @@ import { getFormFields } from './add-game.constants';
             }
 
             <ion-item lines="none">
-              <ion-label position="stacked">Date & Time</ion-label>
-              <app-datetime-button [datetime]="'game-datetime'" />
-            </ion-item>
-
-            <ion-item lines="none" style="display: none;">
-              <ion-datetime
-                id="game-datetime"
-                name="game-datetime"
-                presentation="date-time"
-                [formControl]="getFormControl('date')"
-              />
-            </ion-item>
-
-            <ion-item lines="none">
-              <app-segment
-                [value]="gameTypeOptions[0].value"
+              <app-select
+                class="form-field"
+                label="Game Type"
+                [labelPlacement]="'stacked'"
+                [fill]="'outline'"
                 [formControl]="getFormControl('gameType')"
               >
                 @for (option of gameTypeOptions; track option.value) {
-                  <ion-segment-button [value]="option.value">
-                    <ion-label>{{ option.label }}</ion-label>
-                  </ion-segment-button>
+                  <ion-select-option [value]="option.value">
+                    {{ option.label }}
+                  </ion-select-option>
                 }
-              </app-segment>
+              </app-select>
             </ion-item>
 
             <ion-item lines="none">
@@ -161,17 +153,21 @@ import { getFormFields } from './add-game.constants';
                 [formControl]="getFormControl('isHome')"
               >
                 @for (option of isHomeOptions; track option.value) {
-                  <ion-segment-button [value]="option.value">
+                  <ion-segment-button [value]="option.value" color="secondary">
                     <ion-label>{{ option.label }}</ion-label>
                   </ion-segment-button>
                 }
               </app-segment>
             </ion-item>
 
+            <ion-item lines="none" class="date-time">
+              <ion-label position="stacked">Date & Time</ion-label>
+              <app-datetime-button [datetime]="'game-datetime'" />
+            </ion-item>
             <div class="button-container">
               <app-button
                 [expand]="'block'"
-                [color]="'medium'"
+                [color]="'secondary'"
                 [fill]="'outline'"
                 (onClick)="cancel()"
               >
@@ -179,7 +175,7 @@ import { getFormFields } from './add-game.constants';
               </app-button>
               <app-button
                 [expand]="'block'"
-                [color]="'primary'"
+                [color]="'secondary'"
                 [disabled]="!addGameForm.valid"
                 (onClick)="submit()"
               >
@@ -199,8 +195,18 @@ import { getFormFields } from './add-game.constants';
     `
       @use 'mixins/flex' as *;
 
+      .form-field {
+        width: 100%;
+        height: 45px;
+        margin: 0.75rem 0rem;
+        padding: 0rem 0.5rem;
+      }
+
+      .date-time {
+        @include flex(center, center, row);
+      }
       .button-container {
-        display: flex;
+        @include flex(space-between, center, row);
         gap: 1rem;
         margin-top: 2rem;
       }
@@ -263,7 +269,10 @@ export class AddGameComponent implements OnInit {
 
   getFormControl(controlName: string): FormControl {
     if (!controlName || !this.addGameForm) {
-      console.warn('Invalid control name or form not initialized:', controlName);
+      console.warn(
+        'Invalid control name or form not initialized:',
+        controlName,
+      );
       return new FormControl();
     }
     const control = this.addGameForm.get(controlName);

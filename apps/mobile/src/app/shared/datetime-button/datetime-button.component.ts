@@ -1,15 +1,19 @@
 import { Component, Input } from '@angular/core';
-import { IonDatetimeButton } from '@ionic/angular/standalone';
+import { IonDatetime, IonDatetimeButton, IonModal } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-datetime-button',
   standalone: true,
-  imports: [IonDatetimeButton],
+  imports: [IonDatetimeButton, IonModal, IonDatetime],
   template: `
-    <ion-datetime-button [datetime]="datetime" [disabled]="disabled">
-    </ion-datetime-button>
+    <ion-datetime-button [datetime]="datetime" [disabled]="disabled" />
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="datetime"></ion-datetime>
+      </ng-template>
+    </ion-modal>
   `,
-  styles: []
+  styles: [],
 })
 export class DatetimeButtonComponent {
   @Input() datetime!: string;
