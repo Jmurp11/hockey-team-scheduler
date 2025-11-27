@@ -1,5 +1,5 @@
 import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonInput } from '@ionic/angular/standalone';
 
 @Component({
@@ -10,7 +10,7 @@ import { IonInput } from '@ionic/angular/standalone';
     <ion-input
       [type]="type"
       [placeholder]="placeholder"
-      [value]="value"
+      [value]="formControl?.value || value"
       [disabled]="disabled"
       [readonly]="readonly"
       [clearInput]="clearInput"
@@ -48,11 +48,12 @@ export class InputComponent implements ControlValueAccessor {
   @Input() fill?: 'outline' | 'solid';
   @Input() shape?: 'round';
   @Input() required = false;
+  @Input() formControl?: FormControl;
   @Output() ionInput = new EventEmitter<CustomEvent>();
   @Output() ionChangeEvent = new EventEmitter<CustomEvent>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onChange: (value: string | number | null | undefined) => void = (_value: string | number | null | undefined) => {
+  private onChange: (value: string | number | null) => void = (_value: string | number | null) => {
     // Placeholder for ControlValueAccessor
   };
   private onTouched: () => void = () => {
@@ -60,8 +61,15 @@ export class InputComponent implements ControlValueAccessor {
   };
 
   onIonInput(event: CustomEvent): void {
-    this.value = event.detail.value;
-    this.onChange(this.value);
+    const value = event.detail.value;
+    this.value = value;
+    
+    // Support both FormControl and ControlValueAccessor patterns
+    if (this.formControl) {
+      this.formControl.setValue(value);
+    }
+    this.onChange(value);
+    
     this.ionInput.emit(event);
   }
 
@@ -70,14 +78,19 @@ export class InputComponent implements ControlValueAccessor {
   }
 
   onBlur(): void {
+    // Support both FormControl and ControlValueAccessor patterns
+    if (this.formControl) {
+      this.formControl.markAsTouched();
+    }
     this.onTouched();
   }
 
+  // ControlValueAccessor implementation
   writeValue(value: string | number | null): void {
     this.value = value;
   }
 
-  registerOnChange(fn: (value: string | number | null | undefined) => void): void {
+  registerOnChange(fn: (value: string | number | null) => void): void {
     this.onChange = fn;
   }
 

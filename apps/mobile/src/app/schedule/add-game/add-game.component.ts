@@ -19,6 +19,7 @@ import {
   IonButtons,
   IonContent,
   IonDatetime,
+  IonDatetimeButton,
   IonHeader,
   IonItem,
   IonLabel,
@@ -31,13 +32,12 @@ import {
 import { Observable, take } from 'rxjs';
 import { AutocompleteComponent } from '../../shared/autocomplete/autocomplete.component';
 import { ButtonComponent } from '../../shared/button/button.component';
-import { DatetimeButtonComponent } from '../../shared/datetime-button/datetime-button.component';
-import { InputComponent } from '../../shared/input/input.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
 import { SegmentComponent } from '../../shared/segment/segment.component';
 import { SelectComponent } from '../../shared/select/select.component';
 import { AddGameModalService } from './add-game-modal.service';
 import { getFormFields } from './add-game.constants';
+import { InputComponent } from '../../shared/input/input.component';
 
 @Component({
   selector: 'app-add-game',
@@ -55,140 +55,158 @@ import { getFormFields } from './add-game.constants';
     IonItem,
     IonLabel,
     IonDatetime,
+    IonDatetimeButton,
+    IonModal,
     IonSelectOption,
     ButtonComponent,
     InputComponent,
     SelectComponent,
     LoadingComponent,
-    DatetimeButtonComponent,
     SegmentComponent,
     IonSegmentButton,
     AutocompleteComponent,
   ],
   template: `
     <ion-modal [isOpen]="addGameModalService.isOpen()" (didDismiss)="cancel()">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>{{ title() }}</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="cancel()">Close</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{ title() }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="cancel()">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
 
-      <ion-content class="ion-padding">
-        @if (formFieldsData.length > 0) {
-          <form [formGroup]="addGameForm">
-            @for (field of formFieldsData; track field.controlName) {
-              @if (field && field.controlType) {
-                @switch (field.controlType) {
-                  @case ('input') {
-                    <ion-item lines="none">
-                      <app-input
-                        class="form-field"
-                        [type]="'text'"
-                        [label]="field.labelName"
-                        [labelPlacement]="'stacked'"
-                        [fill]="'outline'"
-                        [formControl]="getFormControl(field.controlName)"
-                      />
-                    </ion-item>
-                  }
-                  @case ('select') {
-                    <ion-item lines="none">
-                      <app-select
-                        class="form-field"
-                        [label]="field.labelName"
-                        [labelPlacement]="'stacked'"
-                        [fill]="'outline'"
-                        [formControl]="getFormControl(field.controlName)"
-                      >
-                        @for (
-                          option of field.options?.listItems;
-                          track option.value
-                        ) {
-                          <ion-select-option [value]="option.value">
-                            {{ option.label }}
-                          </ion-select-option>
-                        }
-                      </app-select>
-                    </ion-item>
-                  }
-                  @case ('autocomplete') {
-                    <ion-item lines="none">
-                      <app-autocomplete
-                        class="form-field"
-                        [label]="field.labelName"
-                        [labelPlacement]="'stacked'"
-                        [fill]="'outline'"
-                        [interface]="'action-sheet'"
-                        [formControl]="getFormControl(field.controlName)"
-                        [options]="field.items"
-                      />
-                    </ion-item>
+        <ion-content class="ion-padding">
+          @if (formFieldsData.length > 0) {
+            <form [formGroup]="addGameForm">
+              @for (field of formFieldsData; track field.controlName) {
+                @if (field && field.controlType) {
+                  @switch (field.controlType) {
+                    @case ('input') {
+                      @if (getFormControl(field.controlName)) {
+                        <ion-item lines="none">
+                          <app-input
+                            class="form-field"
+                            [type]="'text'"
+                            [label]="field.labelName"
+                            [labelPlacement]="'stacked'"
+                            [fill]="'outline'"
+                            [formControl]="getFormControl(field.controlName)!"
+                          />
+                        </ion-item>
+                      }
+                    }
+                    @case ('select') {
+                      @if (getFormControl(field.controlName)) {
+                        <ion-item lines="none">
+                          <app-select
+                            class="form-field"
+                            [label]="field.labelName"
+                            [interface]="'action-sheet'"
+                            [labelPlacement]="'stacked'"
+                            [fill]="'outline'"
+                            [formControl]="getFormControl(field.controlName)!"
+                          >
+                            @for (
+                              option of field.options?.listItems;
+                              track option.value
+                            ) {
+                              <ion-select-option [value]="option.value">
+                                {{ option.label }}
+                              </ion-select-option>
+                            }
+                          </app-select>
+                        </ion-item>
+                      }
+                    }
+                    @case ('autocomplete') {
+                      @if (getFormControl(field.controlName)) {
+                        <ion-item lines="none">
+                          <app-autocomplete
+                            class="form-field"
+                            [label]="field.labelName"
+                            [labelPlacement]="'stacked'"
+                            [fill]="'outline'"
+                            [control]="getFormControl(field.controlName)!"
+                            [items]="field.items"
+                          />
+                        </ion-item>
+                      }
+                    }
+                    @case ('date-picker') {
+                      <ion-item lines="none" class="date-time">
+                        <ion-label position="stacked">Date & Time</ion-label>
+
+                        <ion-datetime-button
+                          datetime="datetime"
+                        ></ion-datetime-button>
+
+                        <ion-modal [keepContentsMounted]="true">
+                          <ng-template>
+                            <ion-datetime id="datetime"></ion-datetime>
+                          </ng-template>
+                        </ion-modal>
+                      </ion-item>
+                    }
                   }
                 }
               }
-            }
 
-            <ion-item lines="none">
-              <app-select
-                class="form-field"
-                label="Game Type"
-                [labelPlacement]="'stacked'"
-                [fill]="'outline'"
-                [formControl]="getFormControl('gameType')"
-              >
-                @for (option of gameTypeOptions; track option.value) {
-                  <ion-select-option [value]="option.value">
-                    {{ option.label }}
-                  </ion-select-option>
-                }
-              </app-select>
-            </ion-item>
+              @if (getFormControl('gameType')) {
+                <ion-item lines="none">
+                  <app-select
+                    class="form-field"
+                    label="Game Type"
+                    [interface]="'action-sheet'"
+                    [labelPlacement]="'stacked'"
+                    [fill]="'outline'"
+                    [formControl]="getFormControl('gameType')!"
+                  >
+                    @for (option of gameTypeOptions; track option.value) {
+                      <ion-select-option [value]="option.value">
+                        {{ option.label }}
+                      </ion-select-option>
+                    }
+                  </app-select>
+                </ion-item>
+              }
 
-            <ion-item lines="none">
-              <app-segment
-                [value]="isHomeOptions[0].value"
-                [formControl]="getFormControl('isHome')"
-              >
-                @for (option of isHomeOptions; track option.value) {
-                  <ion-segment-button [value]="option.value" color="secondary">
-                    <ion-label>{{ option.label }}</ion-label>
-                  </ion-segment-button>
-                }
-              </app-segment>
-            </ion-item>
-
-            <ion-item lines="none" class="date-time">
-              <ion-label position="stacked">Date & Time</ion-label>
-              <app-datetime-button [datetime]="'game-datetime'" />
-            </ion-item>
-            <div class="button-container">
-              <app-button
-                [expand]="'block'"
-                [color]="'secondary'"
-                [fill]="'outline'"
-                (onClick)="cancel()"
-              >
-                Cancel
-              </app-button>
-              <app-button
-                [expand]="'block'"
-                [color]="'secondary'"
-                [disabled]="!addGameForm.valid"
-                (onClick)="submit()"
-              >
-                {{ editMode() ? 'Update' : 'Add' }} Game
-              </app-button>
+              @if (getFormControl('isHome')) {
+                <ion-item lines="none">
+                  <app-segment [formControl]="getFormControl('isHome')!">
+                    @for (option of isHomeOptions; track option.value) {
+                      <ion-segment-button
+                        [value]="option.value"
+                        color="secondary"
+                      >
+                        <ion-label>{{ option.label }}</ion-label>
+                      </ion-segment-button>
+                    }
+                  </app-segment>
+                </ion-item>
+              }
+            </form>
+          } @else {
+            <div class="loading-container">
+              <app-loading [color]="'secondary'" />
             </div>
-          </form>
-        } @else {
-          <div class="loading-container">
-            <app-loading [color]="'secondary'" />
-          </div>
-        }
-      </ion-content>
+          }
+        </ion-content>
+
+        <!-- Fixed bottom button -->
+        <div class="bottom-button-container">
+          <app-button
+            [expand]="'block'"
+            [color]="'secondary'"
+            [disabled]="!addGameForm.valid"
+            (onClick)="submit()"
+          >
+            {{ editMode() ? 'Update' : 'Add' }} Game
+          </app-button>
+        </div>
+      </ng-template>
     </ion-modal>
   `,
   styles: [
@@ -204,7 +222,13 @@ import { getFormFields } from './add-game.constants';
 
       .date-time {
         @include flex(center, center, row);
+        padding: 0rem 1rem;
+
+        ion-datetime-button {
+          padding: 0.5rem;
+        }
       }
+
       .button-container {
         @include flex(space-between, center, row);
         gap: 1rem;
@@ -224,6 +248,21 @@ import { getFormFields } from './add-game.constants';
       app-input,
       app-select {
         margin-bottom: 1rem;
+      }
+
+      .bottom-button-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: var(--ion-background-color, #ffffff);
+        border-top: 1px solid var(--ion-border-color, #e0e0e0);
+        z-index: 1000;
+      }
+
+      ion-content {
+        --padding-bottom: 80px; /* Add padding to prevent content from being hidden behind button */
       }
     `,
   ],
@@ -258,27 +297,23 @@ export class AddGameComponent implements OnInit {
       age: this.currentUser.age,
     });
 
-    this.items$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((items) => (this.formFieldsData = getFormFields(items)));
+    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
+      this.formFieldsData = getFormFields(items);
+    });
   }
 
-  private initGameForm(): FormGroup {
-    return initAddGameForm(this.gameData());
-  }
-
-  getFormControl(controlName: string): FormControl {
+  getFormControl(controlName: string): FormControl | null {
     if (!controlName || !this.addGameForm) {
       console.warn(
         'Invalid control name or form not initialized:',
         controlName,
       );
-      return new FormControl();
+      return null;
     }
     const control = this.addGameForm.get(controlName);
     if (!control) {
       console.warn('Form control not found:', controlName);
-      return new FormControl();
+      return null;
     }
     return control as FormControl;
   }

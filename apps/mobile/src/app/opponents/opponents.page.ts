@@ -99,6 +99,7 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
                 [label]="'Sort By'"
                 [labelPlacement]="'stacked'"
                 [fill]="'outline'"
+                [interface]="'action-sheet'"
                 [value]="currentSort$.value.field"
                 (ionChangeEvent)="onSortFieldChanged($event)"
               >
@@ -113,6 +114,7 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
                 [label]="'Direction'"
                 [labelPlacement]="'stacked'"
                 [fill]="'outline'"
+                [interface]="'action-sheet'"
                 [value]="currentSort$.value.sortDirection"
                 (ionChangeEvent)="onSortDirectionChanged($event)"
               >

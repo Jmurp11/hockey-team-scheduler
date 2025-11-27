@@ -4,166 +4,127 @@ import {
   EventEmitter,
   forwardRef,
   Input,
+  OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
-import {
-  ControlValueAccessor,
-  FormsModule,
-  NG_VALUE_ACCESSOR,
-} from '@angular/forms';
-import {
-  IonButton,
-  IonContent,
-  IonItem,
-  IonList,
-  IonModal,
-  IonSearchbar,
-} from '@ionic/angular/standalone';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { IonModal } from '@ionic/angular/standalone';
+import { TypeaheadComponent } from '../typeahead/typeahead.component';
 import { InputComponent } from '../input/input.component';
-
-export interface AutocompleteOption {
-  label: string;
-  value: string | number;
-}
+import { AutocompleteOption } from '../types/autocomplete-option.type';
 
 @Component({
   selector: 'app-autocomplete',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonSearchbar,
-    IonList,
-    IonItem,
-    IonModal,
-    IonButton,
-    IonContent,
-    InputComponent,
-  ],
+  imports: [CommonModule, IonModal, TypeaheadComponent, InputComponent],
   template: `
     <app-input
-      [readonly]="true"
-      [value]="selectedLabel"
+      [id]="label"
+      class="form-field"
       [label]="label"
-      [labelPlacement]="'stacked'"
+      [labelPlacement]="labelPlacement"
       [fill]="fill"
-      (click)="openModal()"
-      style="width: 100%; border: none; background: transparent; padding: 8px 0;"
+      [value]="displayValue"
+      [readonly]="true"
+      [disabled]="disabled"
+      [formControl]="control"
     />
-    <ion-modal [isOpen]="modalOpen" (didDismiss)="closeModal()">
-      <ion-content>
-        <ion-searchbar
-          [(ngModel)]="searchTerm"
-          (ionInput)="onSearchChange()"
-          [debounce]="debounce"
-          [disabled]="disabled"
-          [color]="fill"
-          [searchIcon]="interface === 'action-sheet' ? 'search' : undefined"
-        ></ion-searchbar>
-        @if (filteredOptions.length > 0 && searchTerm) {
-          <ion-list>
-            @for (option of filteredOptions; track option.value) {
-              <ion-item lines="none" button (click)="selectOption(option)">
-                {{ option.label }}
-              </ion-item>
-            }
-          </ion-list>
-        }
-        <ion-button expand="block" fill="clear" (click)="closeModal()"
-          >Cancel</ion-button
-        >
-      </ion-content>
+
+    <ion-modal [trigger]="label" #modal>
+      <ng-template>
+        <app-typeahead
+          class="ion-page"
+          [items]="items"
+          (selectionChange)="onSelectionChange($event)"
+          (selectionCancel)="onSelectionCancel()"
+        ></app-typeahead>
+      </ng-template>
     </ion-modal>
   `,
-  styles: [
-    `
-      ion-list {
-        position: relative;
-        z-index: 10;
-        width: 100%;
-        background: var(--ion-background-color, #fff);
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        max-height: 240px;
-        overflow-y: auto;
-      }
-      input[readonly] {
-        cursor: pointer;
-      }
-    `,
-  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AutocompleteComponent),
-      multi: true,
-    },
-  ],
+      multi: true
+    }
+  ]
 })
 export class AutocompleteComponent implements ControlValueAccessor {
-  @Input() options: AutocompleteOption[] = [];
-  @Input() label = 'Search';
-  @Input() labelPlacement: 'start' | 'end' | 'fixed' | 'stacked' | 'floating' =
-    'stacked';
-  @Input() fill: 'outline' | 'solid' = 'outline';
-  @Input() interface: 'action-sheet' | 'alert' | 'popover' = 'alert';
-  @Input() debounce = 300;
+  @ViewChild('modal', { static: false }) modal!: IonModal;
+
+  @Input() items: AutocompleteOption[] = [];
+  @Input() type: 'text' | 'email' | 'number' | 'password' | 'tel' | 'url' =
+    'text';
+  @Input() placeholder?: string;
+  @Input() value?: string | number | null;
   @Input() disabled = false;
-  @Output() optionSelected = new EventEmitter<AutocompleteOption>();
+  @Input() readonly = false;
+  @Input() clearInput = false;
+  @Input() color?: string;
+  @Input() label?: string;
+  @Input() labelPlacement?: 'start' | 'end' | 'fixed' | 'stacked' | 'floating';
+  @Input() fill?: 'outline' | 'solid';
+  @Input() shape?: 'round';
+  @Input() required = false;
+  @Input() control?: FormControl;
+  @Output() selectionCancel = new EventEmitter<void>();
+  @Output() selectionChange = new EventEmitter<AutocompleteOption>();
 
-  searchTerm = '';
-  filteredOptions: AutocompleteOption[] = [];
-  modalOpen = false;
-  selectedLabel = '';
-  value: string | number | null | undefined = null;
-
-   
-  private onChange: (value: string | number | null | undefined) => void = (
-    _value: string | number | null | undefined,
-  ) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private onChange: (value: string | number | null) => void = (_value: string | number | null) => {
     // Placeholder for ControlValueAccessor
   };
   private onTouched: () => void = () => {
     // Placeholder for ControlValueAccessor
   };
 
-  openModal(): void {
-    this.modalOpen = true;
-    this.searchTerm = '';
-    this.filteredOptions = this.options;
-  }
+  get displayValue(): string {
+    // If using FormControl, return its value directly (should be the label)
+    if (this.control) {
+      return this.control.value || '';
+    }
+    
+    // Fallback to finding the label from the stored value
+    if (this.value === null || this.value === undefined || !this.items.length) {
+      return '';
+    }
 
-  closeModal(): void {
-    this.modalOpen = false;
-  }
-
-  onSearchChange(): void {
-    const term = this.searchTerm.toLowerCase();
-    this.filteredOptions = this.options.filter((opt) =>
-      opt.label.toLowerCase().includes(term),
+    const selectedItem = this.items.find(
+      (item) => item.value === this.value,
     );
+    return selectedItem ? selectedItem.label : '';
   }
 
-  selectOption(option: AutocompleteOption): void {
-    this.selectedLabel = option.label;
-    this.value = option.value;
-    this.onChange(this.value);
+  onSelectionChange(selectedItem: AutocompleteOption) {
+    // Store the full object as the internal value for ControlValueAccessor
+    this.value = selectedItem.value;
+    
+    // For FormControl, set the label as the display value without emitting changes
+    if (this.control) {
+      this.control.setValue(selectedItem.label, { emitEvent: false });
+      this.control.markAsTouched();
+    }
+    
+    // Notify the parent component about the actual value change (not the label)
+    this.onChange(selectedItem.value);
     this.onTouched();
-    this.optionSelected.emit(option);
-    this.closeModal();
+
+    this.selectionChange.emit(selectedItem);
+    this.modal.dismiss();
+  }
+
+  onSelectionCancel() {
+    this.selectionCancel.emit();
+    this.modal.dismiss();
   }
 
   // ControlValueAccessor implementation
-  writeValue(value: string | number | null | undefined): void {
+  writeValue(value: string | number | null): void {
     this.value = value;
-    // Find the option with this value to set the label
-    const option = this.options.find((opt) => opt.value === value);
-    this.selectedLabel = option ? option.label : '';
   }
 
-  registerOnChange(
-    fn: (value: string | number | null | undefined) => void,
-  ): void {
+  registerOnChange(fn: (value: string | number | null) => void): void {
     this.onChange = fn;
   }
 

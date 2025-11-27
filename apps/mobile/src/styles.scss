@@ -166,6 +166,18 @@
     color: var(--secondary-500);
     font-weight: bold;
   }
+
+  ion-input {
+    --highlight-color-focused: var(--secondary-500);
+  }
+
+  ion-select {
+    --highlight-color-focused: var(--secondary-500);
+  }
+
+  ion-segment-button {
+    --background-checked: var(--secondary-300);
+  }
 }
 
 // /* Dark Mode Theme */

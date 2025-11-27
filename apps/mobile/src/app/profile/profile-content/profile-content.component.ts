@@ -85,6 +85,7 @@ import { getFormFields } from './profile.constants';
                       "
                       [label]="field.labelName"
                       labelPlacement="stacked"
+                      [interface]="'action-sheet'"
                       fill="outline"
                       [placeholder]="'Select ' + field.labelName"
                       [disabled]="field.disabled || false"
