@@ -30,19 +30,19 @@ export const IS_HOME_OPTIONS = [
 export function initAddGameForm(gameData: Game | null = null): FormGroup {
   return new FormGroup({
     opponent: new FormControl(gameData?.opponent || null, {
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required, Validators.minLength(3)],
     }),
     rink: new FormControl(gameData?.rink || null, {
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required, Validators.minLength(3)],
     }),
     city: new FormControl(gameData?.city || null, {
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required, Validators.minLength(2)],
     }),
     country: new FormControl(gameData?.country || null, {
       validators: [Validators.required],
     }),
     state: new FormControl(gameData?.state || null, {
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required, Validators.minLength(2)],
     }),
     date: new FormControl(gameData?.date || null, {
       validators: [Validators.required],
@@ -50,7 +50,7 @@ export function initAddGameForm(gameData: Game | null = null): FormGroup {
     gameType: new FormControl(gameData?.gameType || null, {
       validators: [Validators.required],
     }),
-    isHome: new FormControl(gameData?.isHome || null, {
+    isHome: new FormControl(gameData?.isHome || 'home', {
       validators: [Validators.required],
     }),
   });

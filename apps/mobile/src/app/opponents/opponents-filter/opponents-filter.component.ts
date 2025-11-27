@@ -61,6 +61,7 @@ import { SelectComponent } from '../../shared/select/select.component';
               [label]="'Association'"
               [labelPlacement]="'stacked'"
               [fill]="'outline'"
+              [interface]="'action-sheet'"
               [value]="opponentsForm.get('association')?.value?.value"
               (ionChangeEvent)="onAssociationChange($event)"
             >

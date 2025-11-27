@@ -1,5 +1,5 @@
 import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonSelect } from '@ionic/angular/standalone';
 
 @Component({
@@ -8,7 +8,7 @@ import { IonSelect } from '@ionic/angular/standalone';
   imports: [IonSelect],
   template: `
     <ion-select
-      [value]="value"
+      [value]="formControl?.value || value"
       [placeholder]="placeholder"
       [disabled]="disabled"
       [multiple]="multiple"
@@ -47,6 +47,7 @@ export class SelectComponent implements ControlValueAccessor {
   @Input() labelPlacement?: 'start' | 'end' | 'fixed' | 'stacked' | 'floating';
   @Input() fill?: 'outline' | 'solid';
   @Input() shape?: 'round';
+  @Input() formControl?: FormControl;
   @Output() ionChangeEvent = new EventEmitter<CustomEvent>();
   @Output() ionCancel = new EventEmitter<CustomEvent>();
   @Output() ionDismiss = new EventEmitter<CustomEvent>();
@@ -60,11 +61,21 @@ export class SelectComponent implements ControlValueAccessor {
   };
 
   onIonChange(event: CustomEvent): void {
-    this.value = event.detail.value;
-    this.onChange(this.value);
+    const value = event.detail.value;
+    this.value = value;
+    
+    // Support both FormControl and ControlValueAccessor patterns
+    if (this.formControl) {
+      this.formControl.setValue(value);
+      this.formControl.markAsTouched();
+    }
+    this.onChange(value);
+    this.onTouched();
+    
     this.ionChangeEvent.emit(event);
   }
 
+  // ControlValueAccessor implementation
   writeValue(value: unknown): void {
     this.value = value;
   }

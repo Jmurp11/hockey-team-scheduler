@@ -9,7 +9,7 @@ import { IonDatetime, IonDatetimeButton, IonModal } from '@ionic/angular/standal
     <ion-datetime-button [datetime]="datetime" [disabled]="disabled" />
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="datetime"></ion-datetime>
+        <ion-datetime [id]="datetime"></ion-datetime>
       </ng-template>
     </ion-modal>
   `,
