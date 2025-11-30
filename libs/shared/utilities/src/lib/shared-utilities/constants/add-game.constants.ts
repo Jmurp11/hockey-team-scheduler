@@ -9,6 +9,8 @@ export function getAddGameFormFields(items: any[]) {
       errorMessage: 'Please select an Opponent',
       autocomplete: false,
       controlType: 'autocomplete',
+      optionLabel: 'label',
+      optionValue: 'value',
       items: items.map((i) => setSelect(i.name, i)),
       section: 1,
     },
@@ -54,7 +56,7 @@ export function getAddGameFormFields(items: any[]) {
           }))
           .filter(
             (item, index, self) =>
-              index === self.findIndex((t) => t.value === item.value)
+              index === self.findIndex((t) => t.value === item.value),
           )
           .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',
@@ -89,7 +91,7 @@ export function getAddGameFormFields(items: any[]) {
           }))
           .filter(
             (item, index, self) =>
-              index === self.findIndex((t) => t.value === item.value)
+              index === self.findIndex((t) => t.value === item.value),
           )
           .sort((a, b) => a.label.localeCompare(b.label)),
         placeholder: '',

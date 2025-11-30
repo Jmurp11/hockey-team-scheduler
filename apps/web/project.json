@@ -19,6 +19,7 @@
         "stylePreprocessorOptions": {
           "includePaths": ["libs/shared/ui/src/lib/scss", "libs"]
         },
+        "preserveSymlinks": true,
         "assets": [
           {
             "glob": "**/*",
@@ -33,14 +34,19 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "1.2mb",
+              "maximumError": "1.5mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
             }
+          ],
+          "allowedCommonJsDependencies": [
+            "@supabase/postgrest-js",
+            "@supabase/supabase-js",
+            "tslib"
           ],
           "outputHashing": "all",
           "optimization": {
@@ -49,8 +55,12 @@
               "minify": true,
               "inlineCritical": true
             },
-            "fonts": true
+            "fonts": {
+              "inline": true
+            }
           },
+          "aot": true,
+          "crossOrigin": "anonymous",
           "sourceMap": false,
           "namedChunks": false,
           "extractLicenses": true

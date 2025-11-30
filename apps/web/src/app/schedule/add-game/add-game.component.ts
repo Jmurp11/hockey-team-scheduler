@@ -10,13 +10,12 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import {
-  AddGameService, AuthService, ScheduleService,
-  TeamsService
+  AddGameService,
+  AuthService,
+  ScheduleService,
+  TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
@@ -25,7 +24,7 @@ import {
   getFormControl,
   initAddGameForm,
   IS_HOME_OPTIONS,
-  transformAddGameFormData
+  transformAddGameFormData,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -94,6 +93,8 @@ import { getFormFields } from './add-game.constants';
                       [control]="getFormControl(addGameForm, field.controlName)"
                       [label]="field.labelName"
                       [items]="field.items || []"
+                      [optionLabel]="field.optionLabel"
+                      [optionValue]="field.optionValue"
                     />
                   }
                   @case ('date-picker') {
@@ -173,15 +174,16 @@ export class AddGameComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameForm = initAddGameForm(this.gameData);
+
     this.editModeSignal.set(this.editMode);
 
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
     });
 
-    this.items$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((items) => (this.formFieldsData = getFormFields(items)));
+    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
+      this.formFieldsData = getFormFields(items);
+    });
   }
 
   initGameForm() {
@@ -191,7 +193,7 @@ export class AddGameComponent implements OnInit {
   submit() {
     const input = transformAddGameFormData(
       this.addGameForm.value,
-      this.currentUser.user_id
+      this.currentUser.user_id,
     );
 
     // Optimistic update - update cache immediately
@@ -204,9 +206,10 @@ export class AddGameComponent implements OnInit {
       this.scheduleService.optimisticAddGames(input);
     }
 
-    const operation$ = this.editMode && this.gameData
-      ? this.addGameService.updateGame({ id: this.gameData.id, ...input[0] })
-      : this.addGameService.addGame(input);
+    const operation$ =
+      this.editMode && this.gameData
+        ? this.addGameService.updateGame({ id: this.gameData.id, ...input[0] })
+        : this.addGameService.addGame(input);
 
     operation$
       .pipe(take(1))

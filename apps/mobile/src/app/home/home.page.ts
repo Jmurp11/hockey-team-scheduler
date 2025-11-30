@@ -58,7 +58,7 @@ export class HomePage {
       description: 'Locate nearby teams to play against.',
       icon: people,
       buttonLabel: 'Find Opponents',
-      action: () => this.router.navigate(['/app/find-opponents']),
+      action: () => this.router.navigate(['/app/opponents']),
     },
     {
       title: 'Tournaments',

@@ -4,11 +4,14 @@ import {
   EventEmitter,
   forwardRef,
   Input,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  FormControl
+} from '@angular/forms';
 import { IonModal } from '@ionic/angular/standalone';
 import { TypeaheadComponent } from '../typeahead/typeahead.component';
 import { InputComponent } from '../input/input.component';
@@ -28,7 +31,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       [value]="displayValue"
       [readonly]="true"
       [disabled]="disabled"
-      [formControl]="control"
+      (click)="modal.present()"
     />
 
     <ion-modal [trigger]="label" #modal>
@@ -36,6 +39,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
         <app-typeahead
           class="ion-page"
           [items]="items"
+          [title]="label"
           (selectionChange)="onSelectionChange($event)"
           (selectionCancel)="onSelectionCancel()"
         ></app-typeahead>
@@ -51,66 +55,52 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
   ]
 })
 export class AutocompleteComponent implements ControlValueAccessor {
-  @ViewChild('modal', { static: false }) modal!: IonModal;
+  @ViewChild('modal') modal!: IonModal;
 
   @Input() items: AutocompleteOption[] = [];
-  @Input() type: 'text' | 'email' | 'number' | 'password' | 'tel' | 'url' =
-    'text';
-  @Input() placeholder?: string;
-  @Input() value?: string | number | null;
-  @Input() disabled = false;
-  @Input() readonly = false;
-  @Input() clearInput = false;
-  @Input() color?: string;
+  @Input() control?: FormControl;
+
   @Input() label?: string;
   @Input() labelPlacement?: 'start' | 'end' | 'fixed' | 'stacked' | 'floating';
   @Input() fill?: 'outline' | 'solid';
-  @Input() shape?: 'round';
-  @Input() required = false;
-  @Input() control?: FormControl;
+  @Input() disabled = false;
+
   @Output() selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onChange: (value: string | number | null) => void = (_value: string | number | null) => {
-    // Placeholder for ControlValueAccessor
-  };
-  private onTouched: () => void = () => {
-    // Placeholder for ControlValueAccessor
-  };
+  private internalValue: any = null;
+  private onChange: (value: any) => void = () => {};
+  private onTouched: () => void = () => {};
 
+  /**
+   * COMPUTED DISPLAY VALUE
+   * Always returns the label based on the FormControl's value
+   */
   get displayValue(): string {
-    // If using FormControl, return its value directly (should be the label)
-    if (this.control) {
-      return this.control.value || '';
-    }
-    
-    // Fallback to finding the label from the stored value
-    if (this.value === null || this.value === undefined || !this.items.length) {
-      return '';
-    }
+    const realValue = this.control?.value ?? this.internalValue;
+    if (!realValue) return '';
 
-    const selectedItem = this.items.find(
-      (item) => item.value === this.value,
-    );
-    return selectedItem ? selectedItem.label : '';
+    const match = this.items.find(item => item.value === realValue);
+    return match ? match.label : '';
   }
 
-  onSelectionChange(selectedItem: AutocompleteOption) {
-    // Store the full object as the internal value for ControlValueAccessor
-    this.value = selectedItem.value;
-    
-    // For FormControl, set the label as the display value without emitting changes
+  /**
+   * USER SELECTS AN ITEM
+   */
+  onSelectionChange(option: AutocompleteOption) {
+    const actualValue = option.value;
+
+    // Store real value (object, id, etc.)
     if (this.control) {
-      this.control.setValue(selectedItem.label, { emitEvent: false });
+      this.control.setValue(actualValue);
       this.control.markAsTouched();
     }
-    
-    // Notify the parent component about the actual value change (not the label)
-    this.onChange(selectedItem.value);
+
+    this.internalValue = actualValue;
+    this.onChange(actualValue);
     this.onTouched();
 
-    this.selectionChange.emit(selectedItem);
+    this.selectionChange.emit(option);
     this.modal.dismiss();
   }
 
@@ -119,16 +109,23 @@ export class AutocompleteComponent implements ControlValueAccessor {
     this.modal.dismiss();
   }
 
-  // ControlValueAccessor implementation
-  writeValue(value: string | number | null): void {
-    this.value = value;
+  // ----------------------------------------------------
+  // CONTROL VALUE ACCESSOR IMPLEMENTATION
+  // ----------------------------------------------------
+
+  writeValue(value: any): void {
+    this.internalValue = value;
+
+    if (this.control && this.control.value !== value) {
+      this.control.setValue(value, { emitEvent: false });
+    }
   }
 
-  registerOnChange(fn: (value: string | number | null) => void): void {
+  registerOnChange(fn: any): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: () => void): void {
+  registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
 

@@ -1,6 +1,7 @@
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Game } from '../types/game.type';
 import { setSelect } from './select.utility';
+import { combineDateAndTime } from './time.utility';
 
 interface FormValueWithValue {
   value?: unknown;
@@ -25,9 +26,59 @@ export const IS_HOME_OPTIONS = [
 ];
 
 /**
+ * Extract and normalize game type value from game data
+ */
+function extractGameType(gameData: Game | null): string | null {
+  if (!gameData) {
+    return null;
+  }
+
+  // Handle game type mapping (API uses game_type, form uses gameType)
+  let gameTypeValue =
+    (gameData as any)?.game_type || gameData?.gameType || null;
+
+  // Debug logging to see what values we're getting
+  console.log('Game data for form initialization:', {
+    game_type: (gameData as any)?.game_type,
+    gameType: gameData?.gameType,
+    finalGameTypeValue: gameTypeValue,
+  });
+
+  // Convert API capitalized values to lowercase form values
+  if (gameTypeValue && typeof gameTypeValue === 'string') {
+    gameTypeValue = gameTypeValue.toLowerCase();
+  }
+
+  return gameTypeValue;
+}
+
+/**
+ * Convert isHome value to form-compatible string
+ */
+function convertIsHomeValue(gameData: Game | null): string {
+  if (
+    !gameData ||
+    gameData?.isHome === undefined ||
+    gameData?.isHome === null
+  ) {
+    return 'home';
+  }
+
+  // Handle both boolean and string values from API
+  const isHomeData = gameData.isHome;
+  if (typeof isHomeData === 'boolean') {
+    return isHomeData ? 'home' : 'away';
+  } else {
+    return isHomeData === 'true' ? 'home' : 'away';
+  }
+}
+
+/**
  * Initialize the add game form with optional game data for editing
  */
-export function initAddGameForm(gameData: Game | null = null): FormGroup {
+export function initAddGameForm(gameData: any | null = null): FormGroup {
+  const gameTypeValue = extractGameType(gameData);
+  const isHomeValue = convertIsHomeValue(gameData);
   return new FormGroup({
     opponent: new FormControl(gameData?.opponent || null, {
       validators: [Validators.required, Validators.minLength(3)],
@@ -47,10 +98,10 @@ export function initAddGameForm(gameData: Game | null = null): FormGroup {
     date: new FormControl(gameData?.date || null, {
       validators: [Validators.required],
     }),
-    gameType: new FormControl(gameData?.gameType || null, {
+    game_type: new FormControl(gameTypeValue, {
       validators: [Validators.required],
     }),
-    isHome: new FormControl(gameData?.isHome || 'home', {
+    isHome: new FormControl(isHomeValue, {
       validators: [Validators.required],
     }),
   });
@@ -61,23 +112,47 @@ export function initAddGameForm(gameData: Game | null = null): FormGroup {
  */
 export function transformAddGameFormData(
   formValue: Record<string, unknown>,
-  userId: string
+  userId: string,
 ): Record<string, unknown>[] {
   const dateValue = formValue['date'];
-  const date = dateValue instanceof Date ? dateValue : new Date(dateValue as string);
+  const date =
+    dateValue instanceof Date ? dateValue : new Date(dateValue as string);
 
   const state = formValue['state'] as FormValueWithValue | string;
   const opponent = formValue['opponent'] as FormValueWithValue | string;
 
-  return [
-    {
-      ...formValue,
-      state: typeof state === 'object' ? state.value : state,
-      opponent: [typeof opponent === 'object' ? opponent.value : opponent],
-      isHome: formValue['isHome'] === 'home',
-      user: userId,
-      date: date.toISOString().split('T')[0], // YYYY-MM-DD
-      time: date.toTimeString().split(' ')[0],
-    },
-  ];
+  let apiGameType = formValue['gameType'] as string;
+  if (apiGameType && typeof apiGameType === 'string') {
+    apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);
+  }
+
+  const submission = {
+    rink: formValue['rink'],
+    city: formValue['city'],
+    country:
+      typeof formValue['country'] === 'object'
+        ? (formValue['country'] as FormValueWithValue).value
+        : formValue['country'],
+    game_type: apiGameType,
+    state: typeof state === 'object' ? state.value : state,
+    opponent: [handleOpponent(opponent)],
+    isHome: formValue['isHome'] === 'home',
+    user: userId,
+    date: date.toISOString().split('T')[0], // YYYY-MM-DD
+    time: date.toTimeString().split(' ')[0],
+  };
+
+  return [submission];
+}
+
+export function handleOpponent(opponent: any) {
+  if (typeof opponent === 'object') {
+    if (opponent.value) {
+      return opponent.value;
+    } else {
+      return opponent;
+    }
+  } else {
+    return opponent;
+  }
 }

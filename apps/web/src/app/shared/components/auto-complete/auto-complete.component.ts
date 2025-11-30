@@ -42,6 +42,8 @@ interface AutoCompleteCompleteEvent {
           [showClear]="true"
           [disabled]="disabled"
           (onSelect)="onSelect($event)"
+          [optionLabel]="optionLabel"
+          [optionValue]="optionValue"
         >
           <ng-template let-item pTemplate="selectedItem">
             {{ item.label }}
@@ -50,9 +52,9 @@ interface AutoCompleteCompleteEvent {
         <label [for]="inputId(label)">{{ label | titlecase }}</label>
       </p-iftalabel>
       @if (control.invalid && (control.dirty || control.touched)) {
-      <p-message severity="error" size="small" variant="simple"
-        >{{ label | titlecase }} is required.</p-message
-      >
+        <p-message severity="error" size="small" variant="simple"
+          >{{ label | titlecase }} is required.</p-message
+        >
       }
     </div>
   `,
@@ -71,6 +73,10 @@ export class AutoCompleteComponent {
 
   @Input() disabled = false;
 
+  @Input() optionLabel: string;
+
+  @Input() optionValue: string;
+
   filterService = inject(FilterService);
 
   filteredItems: SelectItem[];
@@ -85,7 +91,7 @@ export class AutoCompleteComponent {
     const query = event.query;
 
     this.filteredItems = this.items.filter((item: SelectItem) =>
-      item.label?.toLowerCase().includes(query.toLowerCase())
+      item.label?.toLowerCase().includes(query.toLowerCase()),
     );
   }
 }

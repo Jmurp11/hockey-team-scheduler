@@ -12,15 +12,15 @@ export function formatTime(timeString: string): string {
 
 export function combineDateAndTime(
   dateString: string,
-  timeString?: string
+  timeString?: string,
 ): Date {
   // Parse date components directly to avoid timezone issues
   const [year, month, day] = dateString.split('-').map(Number);
-  
+
   if (!timeString) {
     return new Date(year, month - 1, day);
   }
-  
+
   const cleanTimeString = timeString.replace(/([+-]\d{2})$/, '');
   const [h, m, s = '00'] = cleanTimeString.split(':');
 
@@ -34,6 +34,6 @@ export function combineDateAndTime(
     day,
     hours,
     minutes,
-    seconds
+    seconds,
   );
 }
