@@ -56,20 +56,20 @@ export interface DatePickerParams {
         </p-iftalabel>
 
         @if (tooltip) {
-        <i
-          class="pi pi-question-circle tooltip-icon"
-          [pTooltip]="tooltip"
-          tooltipPosition="top"
-        ></i>
+          <i
+            class="pi pi-question-circle tooltip-icon"
+            [pTooltip]="tooltip"
+            tooltipPosition="top"
+          ></i>
         } @else {
-        <span class="filler"> </span>
+          <span class="filler"> </span>
         }
       </div>
 
       @if (control.invalid && (control.dirty || control.touched)) {
-      <p-message severity="error" size="small" variant="simple">{{
-        datePickerParams?.errorMessage
-      }}</p-message>
+        <p-message severity="error" size="small" variant="simple">{{
+          datePickerParams?.errorMessage
+        }}</p-message>
       }
     </div>
   `,

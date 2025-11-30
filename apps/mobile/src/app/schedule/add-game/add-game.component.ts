@@ -145,7 +145,10 @@ import { InputComponent } from '../../shared/input/input.component';
 
                         <ion-modal [keepContentsMounted]="true">
                           <ng-template>
-                            <ion-datetime id="datetime"></ion-datetime>
+                            <ion-datetime
+                              id="datetime"
+                              [formControlName]="field.controlName"
+                            ></ion-datetime>
                           </ng-template>
                         </ion-modal>
                       </ion-item>
@@ -293,6 +296,7 @@ export class AddGameComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameForm = initAddGameForm(this.gameData());
+    
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
     });
@@ -322,10 +326,9 @@ export class AddGameComponent implements OnInit {
     if (!this.addGameForm.valid) {
       return;
     }
-
     const input = transformAddGameFormData(
       this.addGameForm.value,
-      this.currentUser().user_id,
+      this.currentUser.user_id,
     );
 
     const data = this.gameData();

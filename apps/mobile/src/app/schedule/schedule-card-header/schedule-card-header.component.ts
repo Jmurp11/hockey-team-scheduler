@@ -23,8 +23,8 @@ import {
         <div class="title-row">
           <div class="opponent-name">{{ game.displayOpponent }}</div>
           <div class="game-type">
-            <ion-chip [color]="handleGameType(game.gameType)">{{
-              game.gameType
+            <ion-chip [color]="handleGameType(game.game_type)">{{
+              game.game_type
             }}</ion-chip>
           </div>
         </div>

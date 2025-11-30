@@ -8,7 +8,7 @@ export interface Game {
   state: string;
   country: string;
   rink: string;
-  opponent: number;
+  opponent: number | { label: string; value: any };
   user: number;
   isHome: boolean;
 }

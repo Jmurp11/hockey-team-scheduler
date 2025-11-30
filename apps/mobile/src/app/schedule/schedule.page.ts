@@ -20,7 +20,7 @@ import { filter, Observable, switchMap, take } from 'rxjs';
 import { FloatingActionButtonComponent } from '../shared/floating-action-button/floating-action-button.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { AddGameModalService } from './add-game/add-game-modal.service';
-import { AddGameComponent } from './add-game/add-game.component';
+import { AddGameLazyWrapperComponent } from './add-game/add-game-lazy-wrapper.component';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { ScheduleListComponent } from './schedule-list/schedule-list.component';
 
@@ -39,7 +39,7 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
     LoadingComponent,
     ScheduleListComponent,
     FloatingActionButtonComponent,
-    AddGameComponent,
+    AddGameLazyWrapperComponent,
   ],
   template: `
     <ion-header>
@@ -74,8 +74,7 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
       <app-schedule-actions />
     </app-floating-action-button>
 
-    <!-- Add Game Modal -->
-    <app-add-game />
+    <app-add-game-lazy-wrapper />
   `,
   styles: [
     `

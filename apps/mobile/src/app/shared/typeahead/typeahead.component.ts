@@ -4,8 +4,6 @@ import {
   IonItem,
   IonHeader,
   IonToolbar,
-  IonButtons,
-  IonButton,
   IonTitle,
   IonSearchbar,
   IonContent,
@@ -24,15 +22,18 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
     IonSearchbar,
     IonContent,
     IonList,
+    IonTitle
   ],
   template: `
     <ion-header>
       <ion-toolbar>
-        <ion-searchbar (ionInput)="searchbarInput($event)"></ion-searchbar>
+        <ion-title>{{ title }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
+      <ion-searchbar (ionInput)="searchbarInput($event)"></ion-searchbar>
+
       <ion-list id="modal-list" [inset]="true">
         @for (item of filteredItems; track item.value) {
           <ion-item (click)="confirmChanges(item)">
@@ -52,8 +53,9 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
 })
 export class TypeaheadComponent implements OnInit {
   @Input() items: AutocompleteOption[] = [];
-
-  @Output() selectionCancel = new EventEmitter<void>();
+  @Input() title?: string = 'Select an Option';
+  @Output()
+  selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();
 
   filteredItems: AutocompleteOption[] = [];

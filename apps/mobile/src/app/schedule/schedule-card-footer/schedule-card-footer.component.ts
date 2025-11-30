@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chatbubbleOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { ButtonComponent } from '../../shared/button/button.component';
+import { AddGameModalService } from '../add-game/add-game-modal.service';
 
 @Component({
   selector: 'app-schedule-card-footer',
@@ -16,7 +17,11 @@ import { ButtonComponent } from '../../shared/button/button.component';
         (click)="button.action(game)"
         [fill]="'clear'"
       >
-        <ion-icon slot="icon-only" [name]="button.icon" [color]="button.color" />
+        <ion-icon
+          slot="icon-only"
+          [name]="button.icon"
+          [color]="button.color"
+        />
       </app-button>
     }
   </div>`,
@@ -33,11 +38,13 @@ import { ButtonComponent } from '../../shared/button/button.component';
 export class ScheduleCardFooterComponent {
   @Input() game: any;
 
+  private addGameModalService = inject(AddGameModalService);
+
   constructor() {
     addIcons({ createOutline, trashOutline, chatbubbleOutline });
   }
   buttons = [
-        {
+    {
       label: 'Contact',
       action: this.contact.bind(this),
       color: 'secondary',
@@ -58,7 +65,7 @@ export class ScheduleCardFooterComponent {
   ];
 
   edit(game: any) {
-    console.log({ game });
+    this.addGameModalService.openModal(game, true);
   }
 
   delete(game: any) {
