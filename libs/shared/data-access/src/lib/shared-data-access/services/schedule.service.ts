@@ -4,8 +4,8 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 import {
   setSelect,
-  combineDateAndTime,
   formatTime,
+  createDateTimeLocalString,
 } from '@hockey-team-scheduler/shared-utilities';
 import { APP_CONFIG } from '../config/app-config';
 import { SupabaseService } from './supabase.service';
@@ -33,7 +33,7 @@ export class ScheduleService {
 
   optimisticAddGames(games: any[]) {
     const currentGames = this.gamesCache.value;
-    const transformedNewGames = games.map(game => this.transformGame(game));
+    const transformedNewGames = games.map((game) => this.transformGame(game));
     this.gamesCache.next([...(currentGames || []), ...transformedNewGames]);
   }
 
@@ -41,7 +41,9 @@ export class ScheduleService {
     const currentGames = this.gamesCache.value;
     if (!currentGames) return;
     const updated = currentGames.map((game) =>
-      game.id === updatedGame.id ? this.transformGame({ ...game, ...updatedGame }) : game,
+      game.id === updatedGame.id
+        ? this.transformGame({ ...game, ...updatedGame })
+        : game,
     );
     this.gamesCache.next(updated);
   }
@@ -87,7 +89,7 @@ export class ScheduleService {
         game.opponent[0]?.id ? game.opponent[0].name : game.tournamentName,
         game.opponent[0]?.id, // Use just the ID, not the whole object
       ),
-      date: combineDateAndTime(game.date.toString(), game.originalTime),
+      date: createDateTimeLocalString(game.date.toString(), game.originalTime),
       isHome: game.isHome ? 'home' : 'away',
       state: setSelect(game.state, game.state),
       country: setSelect(game.country, game.country),
@@ -98,12 +100,17 @@ export class ScheduleService {
     switch (payload.eventType) {
       case 'INSERT':
         const transformedNewGame = this.transformGame(payload.new);
-        this.gamesCache.next([...(this.gamesCache.value || []), transformedNewGame]);
+        this.gamesCache.next([
+          ...(this.gamesCache.value || []),
+          transformedNewGame,
+        ]);
         break;
       case 'UPDATE':
         if (!this.gamesCache.value) return;
         const updated = this.gamesCache.value.map((game) =>
-          game.id === payload.new['id'] ? this.transformGame(payload.new) : game,
+          game.id === payload.new['id']
+            ? this.transformGame(payload.new)
+            : game,
         );
         this.gamesCache.next(updated);
         break;
@@ -134,9 +141,8 @@ export class ScheduleService {
   }
 
   private transformGames(games: any[] | undefined) {
-    console.log({ games });
     if (!games) return [];
-    return games.map(game => this.transformGame(game));
+    return games.map((game) => this.transformGame(game));
   }
 
   private getOpponentName(opponent: any): string | null {

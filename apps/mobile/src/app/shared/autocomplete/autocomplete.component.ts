@@ -10,7 +10,7 @@ import {
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
-  FormControl
+  FormControl,
 } from '@angular/forms';
 import { IonModal } from '@ionic/angular/standalone';
 import { TypeaheadComponent } from '../typeahead/typeahead.component';
@@ -30,7 +30,6 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       [fill]="fill"
       [value]="displayValue"
       [readonly]="true"
-      [disabled]="disabled"
       (click)="modal.present()"
     />
 
@@ -50,9 +49,9 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AutocompleteComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class AutocompleteComponent implements ControlValueAccessor {
   @ViewChild('modal') modal!: IonModal;
@@ -77,11 +76,11 @@ export class AutocompleteComponent implements ControlValueAccessor {
    * Always returns the label based on the FormControl's value
    */
   get displayValue(): string {
-    const realValue = this.control?.value ?? this.internalValue;
+    const realValue = this.control?.value[0] ?? this.internalValue;
+
     if (!realValue) return '';
 
-    const match = this.items.find(item => item.value === realValue);
-    return match ? match.label : '';
+    return realValue?.name;
   }
 
   /**

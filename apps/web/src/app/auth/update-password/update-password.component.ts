@@ -101,7 +101,6 @@ export class UpdatePasswordComponent {
       this.updatePassword.get('confirmPassword')?.touched &&
       this.updatePassword.errors?.['mismatchPassword']
     ) {
-      console.log('Passwords do not match.');
       return 'Passwords do not match.';
     }
     return '';

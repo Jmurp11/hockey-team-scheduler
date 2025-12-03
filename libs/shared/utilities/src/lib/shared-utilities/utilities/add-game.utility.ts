@@ -1,7 +1,7 @@
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Game } from '../types/game.type';
 import { setSelect } from './select.utility';
-import { combineDateAndTime } from './time.utility';
+import { transformDateTime } from './time.utility';
 
 interface FormValueWithValue {
   value?: unknown;
@@ -36,13 +36,6 @@ function extractGameType(gameData: Game | null): string | null {
   // Handle game type mapping (API uses game_type, form uses gameType)
   let gameTypeValue =
     (gameData as any)?.game_type || gameData?.gameType || null;
-
-  // Debug logging to see what values we're getting
-  console.log('Game data for form initialization:', {
-    game_type: (gameData as any)?.game_type,
-    gameType: gameData?.gameType,
-    finalGameTypeValue: gameTypeValue,
-  });
 
   // Convert API capitalized values to lowercase form values
   if (gameTypeValue && typeof gameTypeValue === 'string') {
@@ -79,6 +72,10 @@ function convertIsHomeValue(gameData: Game | null): string {
 export function initAddGameForm(gameData: any | null = null): FormGroup {
   const gameTypeValue = extractGameType(gameData);
   const isHomeValue = convertIsHomeValue(gameData);
+
+  // If we have gameData with date and time, format it properly for datetime inputs
+  let dateValue = transformDateTime(gameData);
+
   return new FormGroup({
     opponent: new FormControl(gameData?.opponent || null, {
       validators: [Validators.required, Validators.minLength(3)],
@@ -95,7 +92,7 @@ export function initAddGameForm(gameData: any | null = null): FormGroup {
     state: new FormControl(gameData?.state || null, {
       validators: [Validators.required, Validators.minLength(2)],
     }),
-    date: new FormControl(gameData?.date || null, {
+    date: new FormControl(dateValue, {
       validators: [Validators.required],
     }),
     game_type: new FormControl(gameTypeValue, {

@@ -31,7 +31,7 @@ export function getAddGameFormFields(items: any[]) {
       controlType: 'date-picker',
       dpOptions: {
         showIcon: true,
-        minDate: new Date(),
+        minDate: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
         maxDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         placeholder: 'Select a date',
         errorMessage: 'Please select a valid date',

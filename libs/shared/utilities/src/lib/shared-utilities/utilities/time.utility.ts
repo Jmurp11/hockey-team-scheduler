@@ -10,6 +10,53 @@ export function formatTime(timeString: string): string {
   });
 }
 
+/**
+ * Convert 12-hour format time (e.g., "2:30 PM") to 24-hour format (e.g., "14:30")
+ */
+export function convertTo24HourFormat(time12h: string): string {
+  const [time, modifier] = time12h.split(' ');
+  let [hours, minutes] = time.split(':');
+
+  if (hours === '12') {
+    hours = '00';
+  }
+
+  if (modifier === 'PM') {
+    hours = (parseInt(hours, 10) + 12).toString();
+  }
+
+  return `${hours.padStart(2, '0')}:${minutes}`;
+}
+
+/**
+ * Convert 24-hour format time (e.g., "14:30") to 12-hour format (e.g., "2:30 PM")
+ */
+export function convertTo12HourFormat(time24h: string): string {
+  const [hours, minutes] = time24h.split(':');
+  const hour24 = parseInt(hours, 10);
+  
+  if (hour24 === 0) {
+    return `12:${minutes} AM`;
+  } else if (hour24 < 12) {
+    return `${hour24}:${minutes} AM`;
+  } else if (hour24 === 12) {
+    return `12:${minutes} PM`;
+  } else {
+    return `${hour24 - 12}:${minutes} PM`;
+  }
+}
+
+/**
+ * Create a datetime-local compatible string from date and time
+ */
+export function createDateTimeLocalString(
+  dateString: string,
+  timeString: string,
+): string {
+  const time24h = convertTo24HourFormat(timeString);
+  return `${dateString}T${time24h}`;
+}
+
 export function combineDateAndTime(
   dateString: string,
   timeString?: string,
@@ -36,4 +83,21 @@ export function combineDateAndTime(
     minutes,
     seconds,
   );
+}
+
+export function transformDateTime(gameData: any | null) {
+  if (gameData?.date.includes('T')) {
+    return gameData.date;
+  }
+
+  if (gameData?.date && gameData?.time) {
+    try {
+      return createDateTimeLocalString(gameData.date.toString(), gameData.time);
+    } catch (error) {
+      console.warn('Failed to format date/time:', error);
+      return gameData.date;
+    }
+  } else if (gameData?.date) {
+    return gameData.date;
+  }
 }
