@@ -1,0 +1,6 @@
+@use "mixins/mixins" as *;
+
+:host {
+  width: 100%;
+  overflow: auto;
+}

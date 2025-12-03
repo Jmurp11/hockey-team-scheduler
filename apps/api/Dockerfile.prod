@@ -1,0 +1,51 @@
+# Production Dockerfile for API
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Dependencies stage
+FROM base AS deps
+COPY package*.json ./
+# Use --prefer-offline and --no-audit for faster installs
+RUN npm ci --omit=dev --prefer-offline --no-audit && npm cache clean --force
+
+# Build stage
+FROM base AS builder
+COPY package*.json ./
+COPY nx.json tsconfig.base.json ./
+COPY jest.config.js jest.preset.js ./
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --prefer-offline --no-audit
+
+# Copy shared libraries that API depends on
+COPY libs/ ./libs/
+
+# Copy only API source
+COPY apps/api ./apps/api
+
+# Build the API project
+RUN npm run build:api
+
+# Production stage
+FROM node:20-alpine AS production
+RUN apk add --no-cache dumb-init curl && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+WORKDIR /app
+
+# Copy production dependencies
+COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=nestjs:nodejs /app/package*.json ./
+
+# Copy build output
+COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api ./dist
+
+USER nestjs
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+CMD ["dumb-init", "node", "dist/main"]

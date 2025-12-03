@@ -6,13 +6,13 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY nx.json tsconfig.base.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
 # Copy source code
-COPY src/ ./src/
-COPY tsconfig.json ./
+COPY tournament-etl/ ./tournament-etl/
 
 # Install tsx globally for TypeScript execution
 RUN npm install -g tsx
@@ -29,4 +29,4 @@ USER nodejs
 EXPOSE 3000
 
 # Default command - can be overridden when running the container
-CMD ["tsx", "src/tournaments.ts"]
+CMD ["tsx", "tournament-etl/src/tournaments.ts"]

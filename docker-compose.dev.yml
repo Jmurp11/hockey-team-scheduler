@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   # API Service (NestJS) - Development
   api-dev:
     build:
-      context: ./api
-      dockerfile: Dockerfile
-      target: development
+      context: .
+      dockerfile: ./apps/api/Dockerfile
     container_name: hockey-scheduler-api-dev
     restart: unless-stopped
     ports:
@@ -15,9 +12,10 @@ services:
       - NODE_ENV=development
       - PORT=3000
     env_file:
-      - ./api/.env
+      - ./apps/api/.env
     volumes:
-      - ./api:/app
+      - ./apps/api:/app/apps/api
+      - ./libs:/app/libs
       - /app/node_modules
     networks:
       - hockey-network-dev
@@ -26,20 +24,23 @@ services:
   # UI Service (Angular) - Development
   ui-dev:
     build:
-      context: ./ui
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: ./apps/web/Dockerfile.dev
     container_name: hockey-scheduler-ui-dev
     restart: unless-stopped
     ports:
       - "4200:4200"
+    environment:
+      - NODE_ENV=development
     depends_on:
       - api-dev
     volumes:
-      - ./ui:/app
+      - ./apps/web:/app/apps/web
+      - ./libs:/app/libs
       - /app/node_modules
     networks:
       - hockey-network-dev
-    command: ng serve --host 0.0.0.0 --port 4200
+    command: npm run start:web
 
 networks:
   hockey-network-dev:

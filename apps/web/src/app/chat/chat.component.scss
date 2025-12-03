@@ -1,0 +1,51 @@
+@use "mixins/mixins" as *;
+
+:host {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3fr 1fr; /* 75% main, 25% sidebar */
+  grid-template-rows: 1fr;
+}
+
+.chat__main {
+  display: grid;
+  grid-template-rows: auto 1fr 120px; /* header, messages take remaining space, input is fixed height */
+
+  app-messages {
+    grid-row: 2;
+    width: 100%;
+  }
+
+  app-chat-input {
+    grid-row: 3;
+    position: sticky;
+    bottom: 0;
+    height: 120px;
+    min-height: 120px;
+    max-height: 120px;
+    width: 100%;
+    border: 1px solid var(--gray-100);
+    background-color: white;
+    padding: 1rem;
+    box-sizing: border-box;
+    z-index: 10;
+  }
+}
+
+.chat__sidebar {
+  height: 100%;
+  background-color: var(--primary-500);
+  border: 1px solid var(--primary-300);
+}
+
+app-chat-header {
+  grid-row: 1;
+  position: sticky;
+  top: 0;
+  border: 1px solid var(--gray-100);
+  padding: 0.25rem 1rem;
+  box-sizing: border-box;
+  z-index: 20;
+  width: 100%;
+}
