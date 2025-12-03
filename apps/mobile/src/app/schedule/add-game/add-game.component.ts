@@ -157,7 +157,7 @@ import { InputComponent } from '../../shared/input/input.component';
                 }
               }
 
-              @if (getFormControl('gameType')) {
+              @if (getFormControl('game_type')) {
                 <ion-item lines="none">
                   <app-select
                     class="form-field"
@@ -165,7 +165,7 @@ import { InputComponent } from '../../shared/input/input.component';
                     [interface]="'action-sheet'"
                     [labelPlacement]="'stacked'"
                     [fill]="'outline'"
-                    [formControl]="getFormControl('gameType')!"
+                    [formControl]="getFormControl('game_type')!"
                   >
                     @for (option of gameTypeOptions; track option.value) {
                       <ion-select-option [value]="option.value">
@@ -296,7 +296,7 @@ export class AddGameComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameForm = initAddGameForm(this.gameData());
-    
+
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
     });

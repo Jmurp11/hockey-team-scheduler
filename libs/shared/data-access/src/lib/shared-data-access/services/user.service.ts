@@ -8,11 +8,7 @@ export class UserService {
   authService = inject(AuthService);
 
   async updateUserProfile(update: UpdateUser) {
-    console.log(
-      'Updating user profile with data:',
-      update,
-      this.authService.currentUser()
-    );
+
     const updateAuthUser = await this.supabaseClient!.auth.updateUser({
       email: update.email,
       password: update.password,

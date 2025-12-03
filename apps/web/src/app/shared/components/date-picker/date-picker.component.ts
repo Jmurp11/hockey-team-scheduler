@@ -11,7 +11,10 @@ import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { inputId } from '@hockey-team-scheduler/shared-utilities';
+import {
+  convertTo12HourFormat,
+  inputId,
+} from '@hockey-team-scheduler/shared-utilities';
 
 export interface DatePickerParams {
   showIcon: boolean;
@@ -107,5 +110,16 @@ export class DatePickerComponent implements OnInit {
     this.placeholder = this.datePickerParams?.placeholder || '';
     this.showTime = !!this.datePickerParams?.showTime;
     this.hourFormat = this.datePickerParams?.hourFormat || '12';
+
+    if (this.control.value) {
+      this.placeholder = this.formatPlaceholder(this.control.value);
+    }
+  }
+
+  formatPlaceholder(date: string): string {
+    let newDate = date.split('T')[0];
+    let time = date.split('T')[1];
+
+    return `${newDate} ${convertTo12HourFormat(time)}`;
   }
 }
