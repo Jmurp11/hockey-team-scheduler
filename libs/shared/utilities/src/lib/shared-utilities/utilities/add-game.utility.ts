@@ -78,7 +78,26 @@ export function initAddGameForm(gameData: any | null = null): FormGroup {
 
   return new FormGroup({
     opponent: new FormControl(gameData?.opponent || null, {
-      validators: [Validators.required, Validators.minLength(3)],
+      validators: [
+        Validators.required,
+        (control) => {
+          const value = control.value;
+          // If it's an array or object (from API), it's valid
+          if (Array.isArray(value) && value.length > 0) {
+            return null;
+          }
+          // If it's an object with properties, it's valid
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            return null;
+          }
+          // If it's a string, check minimum length
+          if (typeof value === 'string' && value.length >= 3) {
+            return null;
+          }
+          // Otherwise, it's invalid
+          return { invalidOpponent: true };
+        },
+      ],
     }),
     rink: new FormControl(gameData?.rink || null, {
       validators: [Validators.required, Validators.minLength(3)],
@@ -118,7 +137,7 @@ export function transformAddGameFormData(
   const state = formValue['state'] as FormValueWithValue | string;
   const opponent = formValue['opponent'] as FormValueWithValue | string;
 
-  let apiGameType = formValue['gameType'] as string;
+  let apiGameType = formValue['game_type'] as string;
   if (apiGameType && typeof apiGameType === 'string') {
     apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);
   }

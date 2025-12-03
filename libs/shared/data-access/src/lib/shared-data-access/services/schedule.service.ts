@@ -45,6 +45,7 @@ export class ScheduleService {
         ? this.transformGame({ ...game, ...updatedGame })
         : game,
     );
+
     this.gamesCache.next(updated);
   }
 
@@ -148,11 +149,17 @@ export class ScheduleService {
   private getOpponentName(opponent: any): string | null {
     if (Array.isArray(opponent) && opponent.length > 0) {
       const firstOpponent = opponent[0];
-      return typeof firstOpponent === 'object'
-        ? firstOpponent.name || null
-        : firstOpponent;
-    }
 
+      if (Array.isArray(firstOpponent)) {
+        return firstOpponent.length > 0
+          ? this.getOpponentName(firstOpponent)
+          : null;
+      }
+
+      if (typeof firstOpponent === 'object') {
+        return firstOpponent?.name || null;
+      }
+    }
     if (typeof opponent === 'object') {
       return opponent?.name || null;
     }

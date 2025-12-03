@@ -16,7 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { addOutline, peopleOutline, trophyOutline } from 'ionicons/icons';
-import { filter, Observable, switchMap, take } from 'rxjs';
+import { filter, map, Observable, switchMap, take } from 'rxjs';
 import { FloatingActionButtonComponent } from '../shared/floating-action-button/floating-action-button.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { AddGameModalService } from './add-game/add-game-modal.service';
@@ -113,7 +113,7 @@ export class SchedulePage implements OnInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user$: Observable<any> = toObservable(this.authService.currentUser);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  games$: Observable<any[] | null> | undefined;
+  games$: Observable<any[] | undefined> | undefined;
 
   constructor() {
     addIcons({ addOutline, peopleOutline, trophyOutline });
@@ -123,6 +123,7 @@ export class SchedulePage implements OnInit {
     this.games$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
       switchMap((user) => this.scheduleService.gamesFull(user.user_id)),
+      map((games) => games?.sort((a, b) => (a.date < b.date ? -1 : 1))),
     );
   }
 
