@@ -1,0 +1,62 @@
+{
+  "name": "tournament-etl",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tournament-etl/src",
+  "projectType": "application",
+  "tags": ["scope:etl", "type:application"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tournament-etl",
+        "main": "tournament-etl/src/run-etl.ts",
+        "tsConfig": "tournament-etl/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tournament-etl:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tournament-etl:build:development"
+        },
+        "production": {
+          "buildTarget": "tournament-etl:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["tournament-etl/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tournament-etl/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "coverage": true
+        }
+      }
+    }
+  }
+}

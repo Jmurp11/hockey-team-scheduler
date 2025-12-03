@@ -1,0 +1,62 @@
+// Side Menu Styles
+ion-menu {
+  ion-header {
+    ion-toolbar {
+      --background: var(--primary-500);
+      --color: white;
+      
+      ion-title {
+        color: white;
+      }
+    }
+  }
+  
+  ion-content {
+    --background: var(--primary-500);
+  }
+
+  ion-list {
+    padding: 8px 0;
+    background: transparent;
+  }
+
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --min-height: 48px;
+    --background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+    --color: white;
+    
+    ion-icon {
+      margin-inline-end: 16px;
+      font-size: 24px;
+      color: white;
+    }
+    
+    ion-label {
+      color: white;
+    }
+
+    &.active {
+      --background: var(--secondary-500);
+      
+      ion-icon,
+      ion-label {
+        color: white;
+        font-weight: 600;
+      }
+    }
+
+    &:hover {
+      --background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// Split Pane styles for larger screens
+ion-split-pane {
+  --side-min-width: 240px;
+  --side-max-width: 280px;
+}

@@ -1,0 +1,12 @@
+@use 'mixins/flex' as *;
+
+.card-content {
+  @include flex(space-between, center, row);
+  width: 100%;
+  gap: 5rem;
+}
+
+p-chip {
+  --p-chip-background: var(--tertiary-200);
+  --p-chip-color: var(--tertiary-500);
+}

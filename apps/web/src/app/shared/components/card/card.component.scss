@@ -1,0 +1,41 @@
+@use "mixins/flex" as *;
+
+:host {
+  & ::ng-deep p-card {
+    @include flex(center, center, column);
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 5px 5px 5px lightgray;
+    gap: 0.75em;
+  }
+
+  & ::ng-deep .p-card {
+    width: 100%;
+    box-shadow: none;
+  }
+
+  & ::ng-deep .p-component {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-body {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-header {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-content {
+    width: 100%;
+  }
+
+  & ::ng-deep .p-card-footer {
+    width: 100%;
+  }
+  & ::ng-deep .p-card-content {
+    @include flex(center, center, column);
+  }
+}

@@ -1,0 +1,27 @@
+@use "mixins/flex" as *;
+
+.stat-item {
+  @include flex(center, center, column);
+  gap: 0.25rem;
+  min-width: 60px;
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--p-text-muted-color, #666);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-500);
+  }
+
+  .stat-value-leagues {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-500);
+  }
+}

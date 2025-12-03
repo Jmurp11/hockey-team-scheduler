@@ -1,0 +1,59 @@
+# Node modules
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Build outputs
+dist/
+.nx/
+coverage/
+*.tsbuildinfo
+.cache/
+.angular/
+
+# Development files
+.env
+.env.*
+!.env.example
+
+# Testing
+test/
+**/*.spec.ts
+**/*.test.ts
+.nyc_output
+
+# Development tools
+.eslintrc*
+.prettierrc*
+*.log
+.vscode/
+.idea/
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Documentation
+README.md
+CHANGELOG.md
+DOCKER.md
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Other apps (exclude when building specific app)
+apps/web/
+apps/mobile/
+apps/mobile-e2e/
+apps/tournament-etl/
+tournament-etl/
+
+# Libs that aren't needed for initial build
+tmp/

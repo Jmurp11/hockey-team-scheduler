@@ -1,0 +1,56 @@
+@use "mixins/mixins" as *;
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5vh;
+  z-index: 100;
+  background-color: var(--primary-500);
+
+  &__content {
+    @include flex(space-between, center, row);
+    width: 100%;
+    height: 100%;
+    padding: 0 1rem;
+    color: #ffff;
+    font-size: 0.875rem;
+  }
+
+  &__socials {
+    @include flex(space-between, center, row);
+    gap: 1rem;
+
+    div {
+      cursor: pointer;
+      color: #ffff;
+
+      &:hover {
+        color: var(--primary-400);
+      }
+    }
+
+    &__version {
+      color: #ffff;
+      font-size: 0.875rem;
+      &:hover {
+        color: #ffff;
+        cursor: default;
+      }
+    }
+  }
+  &__policies {
+    @include flex(space-between, center, row);
+    gap: 1rem;
+
+    div {
+      cursor: pointer;
+      color: #ffff;
+
+      &:hover {
+        color: var(--primary-400);
+      }
+    }
+  }
+}

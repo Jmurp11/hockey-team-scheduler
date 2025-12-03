@@ -1,0 +1,42 @@
+@use "mixins/mixins" as *;
+
+.container {
+  aspect-ratio: 900/600;
+  width: 100%;
+  background-repeat: no;
+  background-position: center;
+  background-size: cover;
+  background-image: url("../assets/wave.svg");
+}
+
+.header {
+  &__name {
+    margin-right: 3px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    &:hover {
+      color: black;
+      background-color: lightgray;
+    }
+  }
+}
+
+.main-content {
+  @include flex(flex-start, center, column);
+  height: 100%;
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  font-family: "Space Grotesk", "Noto Sans", sans-serif;
+  padding-bottom: 5vh;
+  
+  @media (max-width: 1024px) {
+    padding-bottom: 0vh;
+  }
+}
+
+.right-header {
+  @include flex(center, center, row);
+}
