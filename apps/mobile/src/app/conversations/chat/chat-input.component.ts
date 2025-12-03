@@ -17,7 +17,7 @@ import { InputComponent } from '../../shared/input/input.component';
         fill="outline"
         class="message-input"
       ></app-input>
-      <app-button (onClick)="onSend()" shape="round" class="send-button">
+      <app-button (onClick)="onSend()" shape="round" class="send-button" color="secondary">
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </app-button>
     </div>
