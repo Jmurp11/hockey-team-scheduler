@@ -75,7 +75,10 @@ export class AutocompleteComponent implements ControlValueAccessor {
    * COMPUTED DISPLAY VALUE
    * Always returns the label based on the FormControl's value
    */
-  get displayValue(): string {
+  get displayValue(): string | null {
+    if (!this.control?.value) {
+      return null;
+    }
     const realValue = this.control?.value[0] ?? this.internalValue;
 
     if (!realValue) return '';

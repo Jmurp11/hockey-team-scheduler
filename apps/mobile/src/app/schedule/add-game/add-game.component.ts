@@ -38,6 +38,7 @@ import { SelectComponent } from '../../shared/select/select.component';
 import { AddGameModalService } from './add-game-modal.service';
 import { getFormFields } from './add-game.constants';
 import { InputComponent } from '../../shared/input/input.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-add-game',
@@ -276,6 +277,7 @@ export class AddGameComponent implements OnInit {
   private scheduleService = inject(ScheduleService);
   private teamsService = inject(TeamsService);
   private addGameService = inject(AddGameService);
+  private toastService = inject(ToastService);
   addGameModalService = inject(AddGameModalService);
 
   currentUser = this.authService.currentUser();
@@ -348,9 +350,21 @@ export class AddGameComponent implements OnInit {
         ? this.addGameService.updateGame({ id: data.id, ...input[0] })
         : this.addGameService.addGame(input);
 
-    operation$
-      .pipe(take(1))
-      .subscribe(() => this.addGameModalService.closeModal());
+    operation$.pipe(take(1)).subscribe((response) => {
+      this.addGameModalService.closeModal();
+      console.log({ response });
+      response &&
+      (response.hasOwnProperty('opponent') ||
+        (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
+        ? this.toastService.presentSuccessToast(
+            `Game ${this.editMode() ? 'updated' : 'added'} successfully!`,
+          )
+        : this.toastService.presentErrorToast(
+            `Failed to ${
+              this.editMode() ? 'update' : 'add'
+            } game. Please try again.`,
+          );
+    });
   }
 
   cancel(): void {
