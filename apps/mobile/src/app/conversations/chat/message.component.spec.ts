@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgStyle } from '@angular/common';
-import { ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MessageComponent } from './message.component';
-import { MessageAvatarComponent } from './message-avatar.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('MessageComponent', () => {
   let component: MessageComponent;
@@ -29,8 +28,7 @@ describe('MessageComponent', () => {
           id: '1',
           content: 'Test message content',
           sender: 'contact',
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          conversationId: 'conv-1'
+          createdAt: '2024-01-01T10:00:00Z',
         };
         fixture.detectChanges();
       });
@@ -105,8 +103,7 @@ describe('MessageComponent', () => {
           id: '1',
           content: 'Test message',
           sender: 'user',
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          conversationId: 'conv-1'
+          createdAt: '2024-01-01T10:00:00Z',
         };
       });
 
