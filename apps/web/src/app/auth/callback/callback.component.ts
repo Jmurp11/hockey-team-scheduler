@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access'
-;
+import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
 
 @Component({
   selector: 'app-callback',
