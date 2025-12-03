@@ -72,8 +72,8 @@ describe('ScheduleCardContentComponent', () => {
     });
 
     it('should return false when item is null or undefined', () => {
-      expect(component.hasIsHome(null)).toBe(false);
-      expect(component.hasIsHome(undefined)).toBe(false);
+      expect(component.hasIsHome(null)).toBeFalsy();
+      expect(component.hasIsHome(undefined)).toBeFalsy();
     });
   });
 
