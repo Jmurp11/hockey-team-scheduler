@@ -34,8 +34,7 @@ function extractGameType(gameData: Game | null): string | null {
   }
 
   // Handle game type mapping (API uses game_type, form uses gameType)
-  let gameTypeValue =
-    (gameData as any)?.game_type || gameData?.gameType || null;
+  let gameTypeValue = (gameData as any)?.game_type || null;
 
   // Convert API capitalized values to lowercase form values
   if (gameTypeValue && typeof gameTypeValue === 'string') {
@@ -74,7 +73,11 @@ export function initAddGameForm(gameData: any | null = null): FormGroup {
   const isHomeValue = convertIsHomeValue(gameData);
 
   // If we have gameData with date and time, format it properly for datetime inputs
-  let dateValue = transformDateTime(gameData);
+
+  let dateValue =
+    gameData && gameData.date
+      ? transformDateTime({ date: gameData.date, time: gameData.time })
+      : null;
 
   return new FormGroup({
     opponent: new FormControl(gameData?.opponent || null, {

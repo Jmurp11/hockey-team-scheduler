@@ -79,6 +79,16 @@ export class AutocompleteComponent implements ControlValueAccessor {
     if (!this.control?.value) {
       return null;
     }
+
+    if (
+      !Array.isArray(this.control.value) &&
+      typeof this.control.value === 'object'
+    ) {
+      return (
+        this.control.value.name || this.control.value.value.team_name || null
+      );
+    }
+
     const realValue = this.control?.value[0] ?? this.internalValue;
 
     if (!realValue) return '';

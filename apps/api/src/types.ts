@@ -149,7 +149,7 @@ export class Game {
     description: 'Type of game',
     example: 'Regular Season',
   })
-  gameType: string;
+  game_type: string;
 
   @ApiProperty({
     description: 'City where the game is played',

@@ -8,7 +8,6 @@ import {
 import {
   IonBackButton,
   IonButtons,
-  IonHeader,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
@@ -19,7 +18,6 @@ import { ButtonComponent } from '../../shared/button/button.component';
   standalone: true,
   imports: [
     NgClass,
-    IonHeader,
     IonToolbar,
     IonButtons,
     IonBackButton,

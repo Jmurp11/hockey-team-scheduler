@@ -19,7 +19,7 @@ describe('GamesController', () => {
     created_at: '2024-01-15T18:00:00Z',
     date: new Date('2024-01-15'),
     time: '18:00:00-05:00',
-    gameType: 'Regular Season',
+    game_type: 'Regular Season',
     city: 'Minneapolis',
     state: 'MN',
     rink: 'Ice Arena',
@@ -31,7 +31,7 @@ describe('GamesController', () => {
   const mockCreateGameDto: CreateGameDto = {
     date: new Date('2024-01-15'),
     time: '18:00:00-05:00',
-    gameType: 'Regular Season',
+    game_type: 'Regular Season',
     city: 'Minneapolis',
     state: 'MN',
     rink: 'Ice Arena',
@@ -154,8 +154,8 @@ describe('GamesController', () => {
 
   describe('update', () => {
     it('should update a game', async () => {
-      const updateDto: Partial<CreateGameDto> = { gameType: 'Playoff' };
-      const updatedGame = { ...mockGame, gameType: 'Playoff' };
+      const updateDto: Partial<CreateGameDto> = { game_type: 'Playoff' };
+      const updatedGame = { ...mockGame, game_type: 'Playoff' };
       mockGamesService.update.mockResolvedValue(updatedGame);
 
       const result = await controller.update('1', updateDto);
@@ -165,7 +165,7 @@ describe('GamesController', () => {
     });
 
     it('should handle service errors during update', async () => {
-      const updateDto: Partial<CreateGameDto> = { gameType: 'Playoff' };
+      const updateDto: Partial<CreateGameDto> = { game_type: 'Playoff' };
       mockGamesService.update.mockRejectedValue(
         new Error('Could not update game'),
       );
@@ -177,7 +177,7 @@ describe('GamesController', () => {
     });
 
     it('should return null when game to update not found', async () => {
-      const updateDto: Partial<CreateGameDto> = { gameType: 'Playoff' };
+      const updateDto: Partial<CreateGameDto> = { game_type: 'Playoff' };
       mockGamesService.update.mockResolvedValue(null);
 
       const result = await controller.update('999', updateDto);

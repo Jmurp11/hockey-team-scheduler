@@ -29,7 +29,7 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
-import { take } from 'rxjs';
+import { take, tap } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { SelectComponent } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
@@ -206,10 +206,19 @@ export class AddGameComponent implements OnInit {
       this.scheduleService.optimisticAddGames(input);
     }
 
+
+    // TODO: update gamesCache with the response, add toast
     const operation$ =
       this.editMode && this.gameData
         ? this.addGameService.updateGame({ id: this.gameData.id, ...input[0] })
-        : this.addGameService.addGame(input);
+        : (
+            this.addGameService.addGame(input) as Observable<Partial<Game>[]>
+          ).pipe(
+            take(1),
+            tap((response: Partial<Game>[]) => 
+              this.scheduleService.syncGameIds(response)
+            ),
+          );
 
     operation$
       .pipe(take(1))
