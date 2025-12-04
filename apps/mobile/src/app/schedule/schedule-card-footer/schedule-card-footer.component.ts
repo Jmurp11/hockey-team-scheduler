@@ -18,13 +18,10 @@ import { ToastService } from '../../shared/toast/toast.service';
       <app-button
         [color]="button.color"
         (click)="button.action(game)"
-        [fill]="'clear'"
+        [fill]="'outline'"
+        [size]="'default'"
       >
-        <ion-icon
-          slot="icon-only"
-          [name]="button.icon"
-          [color]="button.color"
-        />
+        <ion-icon slot="icon-only" [name]="button.icon" [color]="button.color" />
       </app-button>
     }
   </div>`,
@@ -52,13 +49,13 @@ export class ScheduleCardFooterComponent {
     {
       label: 'Contact',
       action: this.contact.bind(this),
-      color: 'secondary',
+      color: 'primary',
       icon: 'chatbubble-outline',
     },
     {
       label: 'Edit',
       action: this.edit.bind(this),
-      color: 'warning',
+      color: 'secondary',
       icon: 'create-outline',
     },
     {

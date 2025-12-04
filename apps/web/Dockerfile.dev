@@ -8,21 +8,21 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 # Copy root package files first for better caching
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
+COPY ../../package*.json ./
+COPY ../../nx.json ./
+COPY ../../tsconfig.base.json ./
 
 # Copy only necessary NX config files
-COPY jest.config.js jest.preset.js ./
+COPY ../../jest.config.js ../../jest.preset.js ./
 
 # Install dependencies with optimization flags
 RUN npm ci --prefer-offline --no-audit
 
 # Copy shared libraries that web app depends on
-COPY libs/ ./libs/
+COPY ../../libs/ ./libs/
 
 # Copy web app source
-COPY apps/web ./apps/web
+COPY . ./apps/web
 
 # Expose port 4200
 EXPOSE 4200

@@ -34,7 +34,7 @@ export function convertTo24HourFormat(time12h: string): string {
 export function convertTo12HourFormat(time24h: string): string {
   const [hours, minutes] = time24h.split(':');
   const hour24 = parseInt(hours, 10);
-  
+
   if (hour24 === 0) {
     return `12:${minutes} AM`;
   } else if (hour24 < 12) {
@@ -85,19 +85,34 @@ export function combineDateAndTime(
   );
 }
 
-export function transformDateTime(gameData: any | null) {
-  if (gameData?.date.includes('T')) {
+/**
+ * Transform game data into a datetime string format
+ * @param gameData - Object containing date and optional time properties
+ * @returns Formatted datetime string or null if no valid date
+ */
+export function transformDateTime(
+  gameData: { date?: string; time?: string } | null,
+): string | null {
+  // Return null if no game data or no date property
+  if (!gameData?.date) {
+    return null;
+  }
+
+  // If date already contains time (ISO format), return as-is
+  if (gameData.date.includes('T')) {
     return gameData.date;
   }
 
-  if (gameData?.date && gameData?.time) {
+  // If both date and time are provided, combine them
+  if (gameData.date && gameData.time) {
     try {
       return createDateTimeLocalString(gameData.date.toString(), gameData.time);
     } catch (error) {
       console.warn('Failed to format date/time:', error);
       return gameData.date;
     }
-  } else if (gameData?.date) {
-    return gameData.date;
   }
+
+  // Return date only if no time is provided
+  return gameData.date;
 }

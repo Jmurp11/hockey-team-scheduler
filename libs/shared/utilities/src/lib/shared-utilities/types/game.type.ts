@@ -3,7 +3,7 @@ export interface Game {
   created_at: string;
   date: Date;
   time: string;
-  gameType: string;
+  game_type: string;
   city: string;
   state: string;
   country: string;
@@ -11,6 +11,7 @@ export interface Game {
   opponent: number | { label: string; value: any };
   user: number;
   isHome: boolean;
+  tournamentName?: string;
 }
 
 export type CreateGame = Omit<Game, 'id' | 'created_at'>;

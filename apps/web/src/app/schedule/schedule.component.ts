@@ -112,7 +112,7 @@ export class ScheduleComponent implements OnInit {
     sortField: 'date',
     sortOrder: 1,
     loading: false,
-    globalFilterFields: ['date', 'location', 'opponent', 'rink', 'gameType'],
+    globalFilterFields: ['date', 'location', 'opponent', 'rink', 'game_type'],
     scrollable: true,
     scrollHeight: 'calc(100vh - 200px)',
     frozenValue: undefined,
@@ -134,7 +134,7 @@ export class ScheduleComponent implements OnInit {
         sortable: false,
       },
       {
-        field: 'gameType',
+        field: 'game_type',
         header: 'Game Type',
         sortable: false,
       },

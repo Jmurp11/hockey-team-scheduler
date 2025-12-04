@@ -8,9 +8,11 @@ import {
 import {
   AddGameService,
   AuthService,
+  ScheduleService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
   createTournamentGameInfo,
+  Game,
   getDatesBetween,
   registerForTournament,
 } from '@hockey-team-scheduler/shared-utilities';
@@ -19,6 +21,7 @@ import { ButtonComponent } from '../../shared/button/button.component';
 import { CardComponent } from '../../shared/card/card.component';
 import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
 import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-tournament-list',
@@ -86,6 +89,8 @@ export class TournamentListComponent {
 
   private addGameService = inject(AddGameService);
   private authService = inject(AuthService);
+  private scheduleService = inject(ScheduleService);
+  private toastService = inject(ToastService);
 
   registerForTournament(tournament: any) {
     registerForTournament(tournament);
@@ -97,14 +102,43 @@ export class TournamentListComponent {
       this.authService.currentUser().user_id,
     );
 
-    const dates = getDatesBetween(
-      tournament.startDate,
-      tournament.endDate,
-    );
+    const dates = getDatesBetween(tournament.startDate, tournament.endDate);
     const games = dates.map((date) => ({
       ...gameInfo,
       date,
     }));
-    this.addGameService.addGame(games).pipe(take(1)).subscribe();
+
+    // Optimistic update - add games to cache immediately
+    this.scheduleService.optimisticAddGames(games);
+
+    this.addGameService
+      .addGame(games)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.scheduleService.syncGameIds(response as Partial<Game>[]);
+          this.toastService.presentSuccessToast(
+            `Successfully added ${games.length} tournament games to your schedule!`,
+          );
+        },
+        error: (error) => {
+          console.error('Failed to add tournament games:', error);
+          const currentGames = this.scheduleService.gamesCache.value;
+          if (currentGames) {
+            const rollbackGames = currentGames.filter(
+              (game) =>
+                !games.some(
+                  (addedGame) =>
+                    game.date === addedGame.date &&
+                    game.tournamentName === addedGame.tournamentName,
+                ),
+            );
+            this.scheduleService.gamesCache.next(rollbackGames);
+          }
+          this.toastService.presentErrorToast(
+            'Failed to add tournament games. Please try again.',
+          );
+        },
+      });
   }
 }

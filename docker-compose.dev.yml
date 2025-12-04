@@ -2,8 +2,8 @@ services:
   # API Service (NestJS) - Development
   api-dev:
     build:
-      context: .
-      dockerfile: ./apps/api/Dockerfile
+      context: ./apps/api
+      dockerfile: Dockerfile
     container_name: hockey-scheduler-api-dev
     restart: unless-stopped
     ports:
@@ -24,8 +24,8 @@ services:
   # UI Service (Angular) - Development
   ui-dev:
     build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile.dev
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
     container_name: hockey-scheduler-ui-dev
     restart: unless-stopped
     ports:

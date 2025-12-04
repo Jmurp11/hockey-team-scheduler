@@ -5,6 +5,7 @@ import {
   inject,
   OnInit,
   signal,
+  ViewContainerRef,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -48,6 +49,8 @@ import { LoadingComponent } from '../shared/loading/loading.component';
 import { SelectComponent } from '../shared/select/select.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
 import { OpponentsListComponent } from './opponents-list/opponents-list.component';
+import { AddGameModalService } from '../schedule/add-game/add-game-modal.service';
+import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-wrapper.component';
 
 @Component({
   selector: 'app-opponents',
@@ -67,6 +70,7 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
     AccordionComponent,
     SelectComponent,
     IonSelectOption,
+    AddGameLazyWrapperComponent,
   ],
   template: `
     <ion-header>
@@ -145,6 +149,8 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
         }
       </div>
     </ion-content>
+
+    <app-add-game-lazy-wrapper />
   `,
   styles: [
     `
@@ -194,9 +200,8 @@ import { OpponentsListComponent } from './opponents-list/opponents-list.componen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpponentsPage implements OnInit {
-  // TODO: Implement AddGameDialogService for mobile
-  // private addGameDialogService = inject(AddGameDialogService);
-  // private viewContainerRef = inject(ViewContainerRef);
+  private addGameModalService = inject(AddGameModalService);
+  private viewContainerRef = inject(ViewContainerRef);
 
   nearbyTeams$!: Observable<any>;
   associationService = inject(AssociationService);
@@ -237,9 +242,6 @@ export class OpponentsPage implements OnInit {
     this.associationService.getAssociations();
 
   ngOnInit(): void {
-    // TODO: Implement AddGameDialogService for mobile
-    // this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
-
     // Check if we came from the schedule page
     this.route.queryParams
       .pipe(
@@ -296,8 +298,6 @@ export class OpponentsPage implements OnInit {
   }
 
   onOpponentSelected(opponent: any) {
-    // TODO: Implement AddGameDialogService for mobile
-    // this.addGameDialogService.openDialog(opponent, false);
-    console.log('Opponent selected:', opponent);
+    this.addGameModalService.openModal(opponent, false);
   }
 }

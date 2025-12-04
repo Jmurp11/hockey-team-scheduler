@@ -1,15 +1,17 @@
-# Node modules
+# API-specific dockerignore (for root context builds if needed)
 node_modules/
 npm-debug.log*
-package-lock.json
-
-# Build outputs
-dist/
 .nx/
 coverage/
 *.tsbuildinfo
 .cache/
 .angular/
+
+# Exclude other apps
+apps/web/
+apps/mobile/
+apps/mobile-e2e/
+tournament-etl/
 
 # Development files
 .env
@@ -37,7 +39,6 @@ test/
 # Documentation
 README.md
 CHANGELOG.md
-DOCKER.md
 
 # OS generated files
 .DS_Store
@@ -48,9 +49,6 @@ DOCKER.md
 ehthumbs.db
 Thumbs.db
 
-# Mobile and test apps (not needed for API/Web containers)
-apps/mobile/
-apps/mobile-e2e/
-
-# Libs that aren't needed for initial build
+# Build outputs not needed during build
+dist/
 tmp/

@@ -9,6 +9,7 @@ import {
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  Game,
   GAME_TYPE_OPTIONS,
   initAddGameForm,
   IS_HOME_OPTIONS,
@@ -29,7 +30,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { Observable, take } from 'rxjs';
+import { Observable, of, switchMap, take, tap } from 'rxjs';
 import { AutocompleteComponent } from '../../shared/autocomplete/autocomplete.component';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
@@ -80,7 +81,7 @@ import { ToastService } from '../../shared/toast/toast.service';
         </ion-header>
 
         <ion-content class="ion-padding">
-          @if (formFieldsData.length > 0) {
+          @if (formFieldsData$ | async; as formFieldsData) {
             <form [formGroup]="addGameForm">
               @for (field of formFieldsData; track field.controlName) {
                 @if (field && field.controlType) {
@@ -286,7 +287,7 @@ export class AddGameComponent implements OnInit {
   gameData = this.addGameModalService.gameData;
 
   items$!: Observable<any>;
-  formFieldsData: any[] = [];
+  formFieldsData$!: Observable<any[]>;
 
   title = computed(() => (this.editMode() ? 'Update Game' : 'Add Game'));
 
@@ -303,9 +304,10 @@ export class AddGameComponent implements OnInit {
       age: this.currentUser.age,
     });
 
-    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
-      this.formFieldsData = getFormFields(items);
-    });
+    this.formFieldsData$ = this.items$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap((items) => of(getFormFields(items))),
+    );
   }
 
   getFormControl(controlName: string): FormControl | null {
@@ -348,11 +350,17 @@ export class AddGameComponent implements OnInit {
     const operation$ =
       this.editMode() && data
         ? this.addGameService.updateGame({ id: data.id, ...input[0] })
-        : this.addGameService.addGame(input);
-
+        : (
+            this.addGameService.addGame(input) as Observable<Partial<Game>[]>
+          ).pipe(
+            take(1),
+            tap((response: Partial<Game>[]) =>
+              this.scheduleService.syncGameIds(response),
+            ),
+          );
+    // TODO: update gamesCache with the response
     operation$.pipe(take(1)).subscribe((response) => {
       this.addGameModalService.closeModal();
-      console.log({ response });
       response &&
       (response.hasOwnProperty('opponent') ||
         (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
