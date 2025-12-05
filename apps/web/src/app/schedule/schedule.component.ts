@@ -15,10 +15,17 @@ import { filter, Observable, switchMap, take } from 'rxjs';
 import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { CardComponent } from '../shared/components/card/card.component';
 import { TableComponent } from '../shared/components/table/table.component';
-import { AddGameService, ScheduleService } from '@hockey-team-scheduler/shared-data-access';
-import { ExportColumn, TableOptions } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AddGameService,
+  ScheduleService,
+} from '@hockey-team-scheduler/shared-data-access';
+import {
+  ExportColumn,
+  TableOptions,
+} from '@hockey-team-scheduler/shared-utilities';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { AddGameDialogService } from './add-game/add-game-dialog.service';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-schedule',
@@ -36,63 +43,65 @@ import { AddGameDialogService } from './add-game/add-game-dialog.service';
   ],
   template: ` <div class="container">
     <app-schedule-actions class="actions-container" />
-    @if (tableData$ | async; as tableData) { @if (tableData === null) {
-    <div class="loading-spinner">
-      <p-progressSpinner></p-progressSpinner>
-    </div>
-    } @else if (tableData.length > 0) {
-    <app-table
-      [tableOpts]="tableOpts"
-      [tableData]="tableData"
-      [exportColumns]="exportColumns"
-      [hasActions]="true"
-    >
-      <ng-template #header></ng-template>
-      <ng-template #body let-rowData>
-        <tr>
-          @for (col of tableOpts.columns; track col.field) {
-          <td [ngStyle]="{ width: col.width }">
-            {{ rowData[col.field] }}
-          </td>
-          }
-          <td>
-            <p-button
-              (click)="actionsMenu.toggle($event)"
-              icon="pi pi-chevron-down"
-              label="Actions"
-              iconPos="right"
-              text="true"
-              rounded="true"
-              severity="primary"
-            />
-            <p-menu
-              #actionsMenu
-              [popup]="true"
-              [model]="actions"
-              (onShow)="getActions(rowData)"
-              appendTo="body"
-            />
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="5">No data found.</td>
-        </tr>
-      </ng-template>
-    </app-table>
-    } @else {
-    <div class="no-games">
-      <app-card class="card">
-        <ng-template #content>
-          <p>
-            You have no games scheduled. Click "Add Game" to get started! Click
-            Upload CSV to upload a batch of games
-          </p>
-        </ng-template>
-      </app-card>
-    </div>
-    } }
+    @if (tableData$ | async; as tableData) {
+      @if (tableData === null) {
+        <div class="loading-spinner">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+      } @else if (tableData.length > 0) {
+        <app-table
+          [tableOpts]="tableOpts"
+          [tableData]="tableData"
+          [exportColumns]="exportColumns"
+          [hasActions]="true"
+        >
+          <ng-template #header></ng-template>
+          <ng-template #body let-rowData>
+            <tr>
+              @for (col of tableOpts.columns; track col.field) {
+                <td [ngStyle]="{ width: col.width }">
+                  {{ rowData[col.field] }}
+                </td>
+              }
+              <td>
+                <p-button
+                  (click)="actionsMenu.toggle($event)"
+                  icon="pi pi-chevron-down"
+                  label="Actions"
+                  iconPos="right"
+                  text="true"
+                  rounded="true"
+                  severity="primary"
+                />
+                <p-menu
+                  #actionsMenu
+                  [popup]="true"
+                  [model]="actions"
+                  (onShow)="getActions(rowData)"
+                  appendTo="body"
+                />
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="5">No data found.</td>
+            </tr>
+          </ng-template>
+        </app-table>
+      } @else {
+        <div class="no-games">
+          <app-card class="card">
+            <ng-template #content>
+              <p>
+                You have no games scheduled. Click "Add Game" to get started!
+                Click Upload CSV to upload a batch of games
+              </p>
+            </ng-template>
+          </app-card>
+        </div>
+      }
+    }
   </div>`,
   styleUrls: ['./schedule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -102,6 +111,7 @@ export class ScheduleComponent implements OnInit {
   private scheduleService = inject(ScheduleService);
   private addGameDialogService = inject(AddGameDialogService);
   private viewContainerRef = inject(ViewContainerRef);
+  private toastService = inject(ToastService);
 
   exportColumns: ExportColumn[];
 
@@ -158,7 +168,7 @@ export class ScheduleComponent implements OnInit {
 
     this.tableData$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
-      switchMap((user) => this.scheduleService.gamesFull(user.user_id))
+      switchMap((user) => this.scheduleService.gamesFull(user.user_id)),
     );
   }
 
@@ -179,7 +189,7 @@ export class ScheduleComponent implements OnInit {
         command: () => {
           this.addGameDialogService.openDialog(
             this.scheduleService.formatUpdateData(rowData),
-            true
+            true,
           );
         },
       },
@@ -189,7 +199,25 @@ export class ScheduleComponent implements OnInit {
         iconPos: 'right',
         command: () => {
           this.scheduleService.optimisticDeleteGame(rowData.id);
-          this.scheduleService.deleteGame(rowData.id).pipe(take(1)).subscribe();
+          this.scheduleService
+            .deleteGame(rowData.id)
+            .pipe(take(1))
+            .subscribe((response) => {
+              if (!response) {
+                this.toastService.presentToast({
+                  severity: 'success',
+                  summary: 'Game Deleted',
+                  detail: 'The game has been successfully deleted.',
+                });
+              } else {
+                this.toastService.presentToast({
+                  severity: 'error',
+                  summary: 'Delete Failed',
+                  detail:
+                    'There was an error deleting the game. Please try again.',
+                });
+              }
+            });
         },
       },
     ];
