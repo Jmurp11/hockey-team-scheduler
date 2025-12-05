@@ -21,6 +21,7 @@ import { take } from 'rxjs/internal/operators/take';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { TournamentCardContentComponent } from './tournament-card-content/tournament-card-content.component';
 import { TournamentCardHeaderComponent } from './tournament-card-header/tournament-card-header.component';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-tournaments-list',
@@ -72,6 +73,7 @@ export class TournamentsListComponent {
   private addGameService = inject(AddGameService);
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
+  private toastService = inject(ToastService);
 
   registerForTournament(tournament: any) {
     registerForTournament(tournament);
@@ -93,8 +95,26 @@ export class TournamentsListComponent {
     this.addGameService
       .addGame(games)
       .pipe(take(1))
-      .subscribe((response) =>
-        this.scheduleService.syncGameIds(response as Partial<Game>[]),
-      );
+      .subscribe((response) => {
+        this.scheduleService.syncGameIds(response as Partial<Game>[]);
+        if (
+          response &&
+          (response.hasOwnProperty('opponent') ||
+            (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
+        ) {
+          this.toastService.presentToast({
+            severity: 'success',
+            summary: 'Tournament Games Added',
+            detail: 'The tournament games have been successfully added.',
+          });
+        } else {
+          this.toastService.presentToast({
+            severity: 'error',
+            summary: 'Add Failed',
+            detail:
+              'There was an error adding the tournament games. Please try again.',
+          });
+        }
+      });
   }
 }

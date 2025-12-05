@@ -1,6 +1,6 @@
-@use "mixins/mixins" as *;
-@import "primeicons/primeicons.css";
-@import "bootstrap-icons/font/bootstrap-icons.css";
+@use 'mixins/mixins' as *;
+@import 'primeicons/primeicons.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 html,
 body {
@@ -156,6 +156,26 @@ body {
   --p-datatable-header-cell-selected-color: var(--secondary-600) !important;
 
   --p-datepicker-date-selected-background: var(--secondary-500) !important;
+  --p-toast-font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
+}
+
+/* PrimeNG Toast Font Styling - Direct CSS approach */
+.p-toast,
+.p-toast .p-toast-message,
+.p-toast .p-toast-message .p-toast-message-content,
+.p-toast .p-toast-message .p-toast-message-content .p-toast-summary,
+.p-toast .p-toast-message .p-toast-message-content .p-toast-detail {
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
+}
+
+.p-toast .p-toast-message .p-toast-message-content .p-toast-summary {
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+}
+
+.p-toast .p-toast-message .p-toast-message-content .p-toast-detail {
+  font-weight: 400 !important;
+  font-size: 0.875rem !important;
 }
 
 .container {
@@ -163,7 +183,7 @@ body {
   height: 97.5vh;
   flex: 1;
   width: 100%;
-  font-family: "Space Grotesk", "Noto Sans", sans-serif;
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif;
 }
 
 .title {
@@ -205,7 +225,7 @@ a {
   z-index: 9999 !important;
   max-height: 400px !important;
   overflow-y: auto !important;
-  font-family: "Space Grotesk", "Noto Sans", sans-serif !important;
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
 }
 
 // Ensure dialog has proper z-index

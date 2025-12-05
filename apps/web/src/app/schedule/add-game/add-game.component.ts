@@ -28,7 +28,6 @@ import {
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { ToastModule } from 'primeng/toast';
 import { take, tap } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { SelectComponent } from '../../shared';
@@ -39,6 +38,7 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectButtonComponent } from '../../shared/components/select-button/select-button.component';
 import { AddGameDialogService } from './add-game-dialog.service';
 import { getFormFields } from './add-game.constants';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-add-game',
@@ -54,7 +54,6 @@ import { getFormFields } from './add-game.constants';
     ButtonModule,
     SelectButtonComponent,
     ProgressSpinnerModule,
-    ToastModule,
   ],
   providers: [],
   template: `
@@ -146,15 +145,16 @@ export class AddGameComponent implements OnInit {
 
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);
-
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  addGameDialogService = inject(AddGameDialogService);
+  private toastService = inject(ToastService);
   private addGameService = inject(AddGameService);
 
+  addGameDialogService = inject(AddGameDialogService);
   teamsService = inject(TeamsService);
 
   private editModeSignal = signal(false);
+
   title = computed(() => (this.editModeSignal() ? 'Update Game' : 'Add Game'));
 
   gameTypeOptions = GAME_TYPE_OPTIONS;
@@ -206,7 +206,6 @@ export class AddGameComponent implements OnInit {
       this.scheduleService.optimisticAddGames(input);
     }
 
-
     // TODO: update gamesCache with the response, add toast
     const operation$ =
       this.editMode && this.gameData
@@ -215,14 +214,36 @@ export class AddGameComponent implements OnInit {
             this.addGameService.addGame(input) as Observable<Partial<Game>[]>
           ).pipe(
             take(1),
-            tap((response: Partial<Game>[]) => 
-              this.scheduleService.syncGameIds(response)
+            tap((response: Partial<Game>[]) =>
+              this.scheduleService.syncGameIds(response),
             ),
           );
 
-    operation$
-      .pipe(take(1))
-      .subscribe(() => this.addGameDialogService.closeDialog());
+    operation$.pipe(take(1)).subscribe((response) => {
+      this.addGameDialogService.closeDialog();
+
+      if (
+        response &&
+        (response.hasOwnProperty('opponent') ||
+          (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
+      ) {
+        this.toastService.presentToast({
+          severity: 'success',
+          summary: this.editMode ? 'Game Updated' : 'Game Added',
+          detail: this.editMode
+            ? 'The game has been successfully updated.'
+            : 'The game has been successfully added.',
+        });
+      } else {
+        this.toastService.presentToast({
+          severity: 'error',
+          summary: this.editMode ? 'Update Failed' : 'Add Failed',
+          detail: this.editMode
+            ? 'There was an error updating the game. Please try again.'
+            : 'There was an error adding the game. Please try again.',
+        });
+      }
+    });
   }
 
   cancel() {
