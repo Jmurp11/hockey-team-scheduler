@@ -21,6 +21,7 @@ export * from './lib/shared-utilities/types/user.type';
 export * from './lib/shared-utilities/utilities/add-game.utility';
 export * from './lib/shared-utilities/utilities/auth.utility';
 export * from './lib/shared-utilities/utilities/form.utility';
+export * from './lib/shared-utilities/utilities/game-time-conflict.validator';
 export * from './lib/shared-utilities/utilities/last-message.utility';
 export * from './lib/shared-utilities/utilities/location.utility';
 export * from './lib/shared-utilities/utilities/opponent.utility';

@@ -30,7 +30,11 @@ import {
   styles: [
     `
       @use 'mixins/flex' as *;
-
+    
+      .form-field {
+        width: 100%;
+      }
+  
       .error-message {
         margin: 0.25rem 1rem 0 1rem;
         font-size: 0.875rem;

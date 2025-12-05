@@ -8,7 +8,7 @@ export interface Game {
   state: string;
   country: string;
   rink: string;
-  opponent: number | { label: string; value: any };
+  opponent: number | { label: string; value: any } | { team_name: string; id: number };
   user: number;
   isHome: boolean;
   tournamentName?: string;

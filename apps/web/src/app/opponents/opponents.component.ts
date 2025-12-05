@@ -9,8 +9,16 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { AssociationService, AuthService, TeamsService } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect, sort, SortDirection } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AssociationService,
+  AuthService,
+  TeamsService,
+} from '@hockey-team-scheduler/shared-data-access';
+import {
+  setSelect,
+  sort,
+  SortDirection,
+} from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -50,26 +58,28 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
     />
 
     @if (isLoading()) {
-    <div class="loading-spinner">
-      <p-progressSpinner></p-progressSpinner>
-    </div>
-    } @else { @if (nearbyTeams$ | async; as nearbyTeams) {
-    <div class="list-container">
-      <app-sort-header
-        class="sort-header"
-        (sortChanged)="onSortChanged($event)"
-        [resultsCount]="nearbyTeams?.length ?? 0"
-        [sortFields]="sortFields"
-      ></app-sort-header>
-
-      <div class="opponent-list">
-        <app-opponent-list
-          [opponents]="nearbyTeams"
-          (opponentSelected)="onOpponentSelected($event)"
-        />
+      <div class="loading-spinner">
+        <p-progressSpinner></p-progressSpinner>
       </div>
-    </div>
-    } }
+    } @else {
+      @if (nearbyTeams$ | async; as nearbyTeams) {
+        <div class="list-container">
+          <app-sort-header
+            class="sort-header"
+            (sortChanged)="onSortChanged($event)"
+            [resultsCount]="nearbyTeams?.length ?? 0"
+            [sortFields]="sortFields"
+          ></app-sort-header>
+
+          <div class="opponent-list">
+            <app-opponent-list
+              [opponents]="nearbyTeams"
+              (opponentSelected)="onOpponentSelected($event)"
+            />
+          </div>
+        </div>
+      }
+    }
   </div>`,
   styleUrls: ['./opponents.component.scss'],
   providers: [],
@@ -102,14 +112,14 @@ export class OpponentsComponent implements OnInit {
 
   user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
     startWith(null),
-    filter((user) => user != null)
+    filter((user) => user != null),
   );
 
   userAssociation$: Observable<SelectItem> = this.user$.pipe(
     map((user) => ({
       label: user?.association_name,
       value: user?.association_id,
-    }))
+    })),
   );
 
   associations$: Observable<SelectItem[]> =
@@ -122,14 +132,14 @@ export class OpponentsComponent implements OnInit {
       filter((params) => params !== null),
       switchMap((params) => this.getNearbyTeams(params)),
       tap(() => this.isLoading.set(false)),
-      shareReplay(1)
+      shareReplay(1),
     );
 
     this.nearbyTeams$ = combineLatest({
       teams: teams$,
       sort: this.currentSort$,
     }).pipe(
-      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir))
+      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir)),
     );
   }
 
@@ -154,6 +164,14 @@ export class OpponentsComponent implements OnInit {
   }
 
   onOpponentSelected(opponent: any) {
-    this.addGameDialogService.openDialog(opponent, false);
+    this.addGameDialogService.openDialog(
+      {
+        opponent: {
+          label: opponent.opponent.value.team_name,
+          value: opponent.opponent.value,
+        },
+      },
+      false,
+    );
   }
 }

@@ -183,6 +183,18 @@
   ion-segment-button {
     --background-checked: var(--secondary-300);
   }
+
+  .error-message {
+    margin: 0.25rem 1rem 0 1rem;
+    font-size: 0.875rem;
+    color: var(--ion-color-danger);
+  }
+
+  .error-highlight {
+    --border-color: #ff4444;
+    --color: #ff4444;
+    --placeholder-color: #ff4444;
+  }
 }
 
 // /* Dark Mode Theme */
