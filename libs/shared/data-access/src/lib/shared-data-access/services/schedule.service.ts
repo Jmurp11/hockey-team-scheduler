@@ -64,19 +64,25 @@ export class ScheduleService {
    *
    * @param gamesWithIds Array of game objects containing the correct IDs
    */
-  syncGameIds(gamesWithIds: Partial<Game>[]): void {
+  syncGameIds(gamesWithIds: Partial<Game>[], isUpdate?: boolean): void {
+    console.log({ gamesWithIds });
     const currentGames = this.gamesCache.value;
     if (!currentGames || currentGames.length === 0) return;
 
     const updatedGames = currentGames.map((cachedGame) =>
-      this.updateGameIdIfMatched(cachedGame, gamesWithIds),
+      this.updateGameIdIfMatched(cachedGame, gamesWithIds, isUpdate),
     );
+
+    console.log({ updatedGames });
 
     // Update the cache if any IDs were changed
     const hasChanges = updatedGames.some(
-      (game, index) => game.id !== currentGames[index].id,
+      (game, index) =>
+        game.id !== currentGames[index].id ||
+        game.displayOpponent !== currentGames[index].displayOpponent,
     );
 
+    console.log({ hasChanges });
     if (hasChanges) {
       this.gamesCache.next(updatedGames);
     }
@@ -91,6 +97,7 @@ export class ScheduleService {
   private updateGameIdIfMatched(
     cachedGame: any,
     gamesWithIds: Partial<Game>[],
+    isUpdate?: boolean,
   ): any {
     // Find matching game in the provided array by comparing key properties
     const matchingGame = gamesWithIds.find((gameWithId) =>
@@ -102,6 +109,14 @@ export class ScheduleService {
       return { ...cachedGame, id: matchingGame.id };
     }
 
+    if (matchingGame && isUpdate) {
+      return {
+        ...cachedGame,
+        displayOpponent: (matchingGame.opponent as { team_name: string })
+          ?.team_name,
+        opponent: matchingGame.opponent,
+      };
+    }
     return cachedGame;
   }
 
@@ -164,6 +179,7 @@ export class ScheduleService {
    * @returns Normalized opponent string
    */
   private normalizeOpponent(opponent: any): string {
+    console.log({ opponent });
     if (!opponent) return '';
 
     return typeof opponent === 'object' && opponent.id
@@ -212,10 +228,12 @@ export class ScheduleService {
    * @returns true if games match based on key properties
    */
   private gamesDataMatch(game1: any, game2: any): boolean {
+    const opponent1 = game1.opponent[0]?.id || game1.opponent;
+
     return (
       this.normalizeDate(game1.date) === this.normalizeDate(game2.date) &&
       this.normalizeTime(game1.time) === this.normalizeTime(game2.time) &&
-      this.normalizeOpponent(game1.opponent[0]?.id) ===
+      this.normalizeOpponent(opponent1) ===
         this.normalizeOpponent(game2.opponent) &&
       this.normalizeStringField(game1.rink) ===
         this.normalizeStringField(game2.rink) &&
@@ -273,6 +291,7 @@ export class ScheduleService {
   }
 
   private handlePayload(payload: any) {
+    console.log({ payload });
     switch (payload.eventType) {
       case 'INSERT':
         const transformedNewGame = this.transformGame(payload.new);
@@ -283,6 +302,7 @@ export class ScheduleService {
         break;
       case 'UPDATE':
         if (!this.gamesCache.value) return;
+        console.log({ payloadUpdate: payload.new.opponent });
         const updated = this.gamesCache.value.map((game) =>
           game.id === payload.new['id']
             ? this.transformGame(payload.new)
@@ -303,6 +323,7 @@ export class ScheduleService {
   }
 
   private transformGame(game: any): any {
+    console.log({ game });
     return {
       ...game,
       displayOpponent:
@@ -322,6 +343,7 @@ export class ScheduleService {
   }
 
   private getOpponentName(opponent: any): string | null {
+    console.log({ opponent });
     if (Array.isArray(opponent) && opponent.length > 0) {
       const firstOpponent = opponent[0];
 

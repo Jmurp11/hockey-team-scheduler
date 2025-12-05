@@ -1,7 +1,6 @@
 # Node modules
 node_modules/
 npm-debug.log*
-package-lock.json
 
 # Build outputs
 dist/
@@ -52,5 +51,19 @@ Thumbs.db
 apps/mobile/
 apps/mobile-e2e/
 
-# Libs that aren't needed for initial build
+# Tournament ETL (separate service)
+tournament-etl/
+
+# Temporary and cache directories
 tmp/
+.cache/
+.nx/cache/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Bundle analysis and other tooling
+bundle-analysis-scripts.json
+jest.preset.js

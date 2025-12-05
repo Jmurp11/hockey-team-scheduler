@@ -137,7 +137,12 @@ body {
 
   --p-autocomplete-focus-border-color: var(--secondary-300) !important;
   --p-autocomplete-shadow: var(--secondary-300) !important;
-
+  --p-autocomplete-option-focus-background: var(--secondary-200) !important;
+  --p-autocomplete-option-focus-color: var(--secondary-700) !important;
+  --p-autocomplete-option-selected-focus-background: var(
+    --secondary-200
+  ) !important;
+  --p-autocomplete-option-selected-focus-color: var(--secondary-700) !important;
   --p-inputtext-hover-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-border-color: var(--secondary-300) !important;
   --p-inputtext-focus-ring-shadow: var(--secondary-200) !important;

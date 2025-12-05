@@ -1,31 +1,21 @@
-# Development Dockerfile for Angular UI
-FROM node:20-alpine
+# Development Dockerfile for Angular UI (Dockerfile inside apps/web/)
+FROM node:20-alpine AS dev
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies for Alpine
 RUN apk add --no-cache libc6-compat
 
-# Copy root package files first for better caching
-COPY ../../package*.json ./
-COPY ../../nx.json ./
-COPY ../../tsconfig.base.json ./
+# Copy root-level configs for caching
+COPY package*.json nx.json tsconfig.base.json ./
+COPY jest.config.js jest.preset.js ./
 
-# Copy only necessary NX config files
-COPY ../../jest.config.js ../../jest.preset.js ./
-
-# Install dependencies with optimization flags
+# Install dependencies
 RUN npm ci --prefer-offline --no-audit
 
-# Copy shared libraries that web app depends on
-COPY ../../libs/ ./libs/
+# Copy source (libs + app only)
+COPY libs ./libs
+COPY apps/web ./apps/web
 
-# Copy web app source
-COPY . ./apps/web
-
-# Expose port 4200
 EXPOSE 4200
 
-# Start development server using NX
-CMD ["npm", "run", "start:web"]
+CMD ["npx", "nx", "serve", "web"]

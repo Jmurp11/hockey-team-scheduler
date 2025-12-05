@@ -45,6 +45,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       </ng-template>
     </ion-modal>
   `,
+  styles: [``],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

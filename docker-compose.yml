@@ -2,8 +2,9 @@ services:
   # API Service (NestJS)
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: apps/api/Dockerfile.prod
+      # Keep context as root for Nx monorepo, but optimize Dockerfile
     container_name: hockey-scheduler-api
     restart: unless-stopped
     ports:
@@ -25,8 +26,8 @@ services:
   # UI Service (Angular)
   ui:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
       target: production
     container_name: hockey-scheduler-ui
     restart: unless-stopped
