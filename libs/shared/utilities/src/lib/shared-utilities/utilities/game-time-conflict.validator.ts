@@ -143,7 +143,14 @@ function handleStringType(timeStr: any): string | null {
   if (timeStr.includes('AM') || timeStr.includes('PM')) {
     return convertTo24HourFormat(timeStr);
   } else if (timeStr.includes(':')) {
-    return removeTimeZoneInfo(timeStr);
+    // Remove timezone info and seconds if present
+    const cleaned = removeTimeZoneInfo(timeStr);
+    // If it has seconds (HH:MM:SS), strip them to get HH:MM
+    const parts = cleaned.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
+    }
+    return cleaned;
   } else {
     return null;
   }
