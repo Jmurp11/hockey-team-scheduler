@@ -17,6 +17,7 @@ async function bootstrap() {
         'http://localhost:64566',
         'http://localhost',
         'http://localhost:80',
+        'http://localhost:8080',
         'http://127.0.0.1',
         'http://127.0.0.1:80',
         'http://10.0.2.2:3000',

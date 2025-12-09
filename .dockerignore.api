@@ -52,3 +52,12 @@ Thumbs.db
 # Build outputs not needed during build
 dist/
 tmp/
+
+# Nx specific (add these lines)
+.nx/
+.angular/
+*.tsbuildinfo
+
+# Additional exclusions
+cypress/
+cypress.config.*

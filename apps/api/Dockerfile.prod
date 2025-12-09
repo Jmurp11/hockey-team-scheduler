@@ -3,21 +3,28 @@ FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Stage 2: deps (install once)
-FROM base AS deps
+# Stage 2: builder - build and generate package.json
+FROM base AS builder
+# Copy dependency files first for better layer caching
 COPY package*.json ./
 COPY tsconfig.base.json ./
 COPY nx.json ./
-RUN npm ci --prefer-offline --no-audit --legacy-peer-deps
+# Use npm cache mount for faster installs (legacy-peer-deps needed for root monorepo dependencies)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --legacy-peer-deps
 
-# Stage 3: builder
-FROM deps AS builder
 # Copy only necessary files for Nx build
-COPY libs/ ./libs/
 COPY apps/api/ ./apps/api/
 COPY eslint.config.js ./
-# nx.json and tsconfig.base.json already copied in deps stage
 RUN npx nx build api
+RUN npx nx create-package-json api
+
+# Stage 3: production dependencies
+FROM base AS prod-deps
+COPY --from=builder /app/dist/apps/api/package*.json ./
+# Use npm cache mount for production dependencies too
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev --prefer-offline --no-audit
 
 # Stage 4: production
 FROM node:20-alpine AS production
@@ -26,11 +33,10 @@ RUN apk add --no-cache dumb-init curl && \
   adduser -S nestjs -u 1001
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist/apps/api ./dist
-COPY package*.json ./
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist/apps/api ./
 
 USER nestjs
 EXPOSE 3000
 
-CMD ["dumb-init", "node", "dist/main"]
+CMD ["dumb-init", "node", "main.js"]

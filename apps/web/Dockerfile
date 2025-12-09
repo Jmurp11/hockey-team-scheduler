@@ -4,25 +4,22 @@
 FROM node:20-alpine AS build
 
 WORKDIR /app
-
 RUN apk add --no-cache libc6-compat
 
-# Copy root-level manifests for caching
+# Copy root-level manifests
 COPY package*.json nx.json tsconfig.base.json ./
 COPY jest.config.js jest.preset.js ./
 
-# Install dependencies once (cached unless package.json changes)
 RUN npm ci --prefer-offline --no-audit
 
-# Copy only necessary files for Nx build
+# Copy Nx project sources
 COPY libs/ ./libs/
 COPY apps/web/ ./apps/web/
 COPY eslint.config.js ./
-# nx.json and tsconfig.base.json already copied above
 
-# Build Angular app using Nx
+# Build Angular (Nx will optimize for production)
 RUN npx nx build web --configuration=production
-# If you prefer: RUN npm run build:web
+RUN npx nx create-package-json web
 
 
 # -----------------------------------
@@ -30,29 +27,25 @@ RUN npx nx build web --configuration=production
 # -----------------------------------
 FROM nginx:alpine AS production
 
-# Create non-root nginx user
+# Create non-root user
 RUN addgroup -g 1001 -S angular && \
   adduser -S angular -u 1001
 
-# Copy Angular build output
-COPY --from=build --chown=angular:angular \
-  /app/dist/apps/web/browser \
-  /usr/share/nginx/html
+# Copy Angular dist output
+COPY --from=build /app/dist/apps/web/browser /usr/share/nginx/html
 
-# Copy app-specific nginx.conf located in apps/web/
-COPY --chown=angular:angular \
-  apps/web/nginx.conf \
-  /etc/nginx/nginx.conf
+# Copy your custom nginx.conf
+COPY --from=build /app/apps/web/nginx.conf /etc/nginx/nginx.conf
 
-# Permissions needed for non-root nginx
+# Fix permissions so nginx can run non-root
 RUN mkdir -p /var/cache/nginx /var/run && \
   chown -R angular:angular /var/cache/nginx /var/run /var/log/nginx
 
 USER angular
 
-EXPOSE 80
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

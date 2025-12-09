@@ -110,6 +110,13 @@
           "coverage": true
         }
       }
+    },
+    "create-package-json": {
+      "executor": "@nx/js:create-package-json",
+      "options": {
+        "outputPath": "dist/apps/web",
+        "generateLockfile": true
+      }
     }
   }
 }
