@@ -63,6 +63,32 @@
           "coverage": true
         }
       }
+    },
+    "create-package-json": {
+      "executor": "@nx/js:create-package-json",
+      "options": {
+        "outputPath": "dist/apps/api",
+        "main": "main.js",
+        "generateLockfile": true,
+        "excludePackagesFromPackageJson": [
+          "@angular/*",
+          "@ionic/*",
+          "@capacitor/*",
+          "@primeng/*", 
+          "@nx/*",
+          "zone.js",
+          "primeng",
+          "primeicons",
+          "ionicons",
+          "angular-eslint",
+          "jest-preset-angular",
+          "@angular-devkit/*",
+          "@schematics/*",
+          "karma*",
+          "jasmine*",
+          "cypress"
+        ]
+      }
     }
   }
 }

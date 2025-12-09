@@ -60,13 +60,6 @@ function compareWithExistingGame(
 ) {
   const timeDifferenceMinutes = Math.abs(newGameTime - existingGameTime);
 
-  console.log('Validator debug:', {
-    newGameTime: newGameTime,
-    existingGameTime: existingGameTime,
-    timeDifferenceMinutes: timeDifferenceMinutes,
-    isConflict: timeDifferenceMinutes < 240,
-  });
-
   return validateTimeDifference(
     timeDifferenceMinutes,
     existingGameTime,
@@ -106,6 +99,12 @@ function validateTimeDifference(
 function extractGameDate(game: Game & { originalTime?: string }): string {
   if (!game.date) return '';
 
+  // If game.date is already a string in YYYY-MM-DD format, return it directly
+  if (typeof game.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(game.date)) {
+    return game.date;
+  }
+
+  // Otherwise, handle Date objects or other date formats
   const date = game.date instanceof Date ? game.date : new Date(game.date);
   return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 }
