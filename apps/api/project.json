@@ -12,13 +12,17 @@
         "outputPath": "dist/apps/api",
         "main": "apps/api/src/main.ts",
         "tsConfig": "apps/api/tsconfig.app.json",
-        "assets": []
+        "assets": [],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       },
       "configurations": {
         "production": {
           "optimization": true,
           "extractLicenses": true,
           "inspect": false,
+          "generatePackageJson": true,
+          "generateLockfile": true,
           "fileReplacements": [
             {
               "replace": "apps/api/src/environments/environment.ts",
@@ -64,17 +68,21 @@
         }
       }
     },
-    "create-package-json": {
-      "executor": "@nx/js:create-package-json",
+    "package": {
+      "executor": "@nx/node:package",
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/api",
-        "main": "main.js",
+        "entryFile": "apps/api/src/main.ts",
+        "tsConfig": "apps/api/tsconfig.app.json",
         "generateLockfile": true,
-        "excludePackagesFromPackageJson": [
+        "updateBuildableProjectDepsInPackageJson": true,
+        "assets": [],
+        "exclude": [
           "@angular/*",
           "@ionic/*",
           "@capacitor/*",
-          "@primeng/*", 
+          "@primeng/*",
           "@nx/*",
           "zone.js",
           "primeng",
@@ -88,6 +96,13 @@
           "jasmine*",
           "cypress"
         ]
+      }
+    },
+    "docker:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "docker build -f apps/api/Dockerfile.prod -t apps-api ."
       }
     }
   }

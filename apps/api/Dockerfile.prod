@@ -11,20 +11,21 @@ COPY tsconfig.base.json ./
 COPY nx.json ./
 # Use npm cache mount for faster installs (legacy-peer-deps needed for root monorepo dependencies)
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --legacy-peer-deps
+    npm install --prefer-offline --no-audit
 
 # Copy only necessary files for Nx build
 COPY apps/api/ ./apps/api/
 COPY eslint.config.js ./
-RUN npx nx build api
-RUN npx nx create-package-json api
+RUN npx nx build api --configuration=production
 
 # Stage 3: production dependencies
 FROM base AS prod-deps
 COPY --from=builder /app/dist/apps/api/package*.json ./
+# Remove overrides section that conflicts with npm install
+RUN sed -i '/"overrides":/,/},/d' package.json
 # Use npm cache mount for production dependencies too
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev --prefer-offline --no-audit
+    npm install --omit=dev --prefer-offline --no-audit
 
 # Stage 4: production
 FROM node:20-alpine AS production
@@ -39,4 +40,4 @@ COPY --from=builder /app/dist/apps/api ./
 USER nestjs
 EXPOSE 3000
 
-CMD ["dumb-init", "node", "main.js"]
+CMD ["dumb-init", "node", "src/main.js"]
