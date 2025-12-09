@@ -11,11 +11,10 @@ COPY jest.config.js jest.preset.js ./
 
 # Build and generate optimized package.json first
 COPY package*.json ./
-COPY libs ./libs
 COPY apps/api ./apps/api
 RUN npm ci --prefer-offline --no-audit --legacy-peer-deps
 RUN npx nx build api
-RUN npx nx create-package-json api
+RUN npx nx package api
 
 # Install only production dependencies for the API
 WORKDIR /app/dist/apps/api

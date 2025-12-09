@@ -8,7 +8,6 @@ RUN apk add --no-cache libc6-compat
 
 # Copy root-level manifests
 COPY package*.json nx.json tsconfig.base.json ./
-COPY jest.config.js jest.preset.js ./
 
 RUN npm ci --prefer-offline --no-audit
 
@@ -19,7 +18,6 @@ COPY eslint.config.js ./
 
 # Build Angular (Nx will optimize for production)
 RUN npx nx build web --configuration=production
-RUN npx nx create-package-json web
 
 
 # -----------------------------------
