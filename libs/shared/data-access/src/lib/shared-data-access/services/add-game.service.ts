@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { APP_CONFIG } from '../config/app-config';
+import { handleNullOpponent } from '@hockey-team-scheduler/shared-utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,7 @@ export class AddGameService {
   addGame(games: any[]) {
     const input = games.map((game) => ({
       ...game,
-      opponent: game.opponent[0] ? game.opponent[0].id : game.opponent,
+      opponent: handleNullOpponent(game),
     }));
     return this.http.post(`${this.config.apiUrl}/games/add-games`, input);
   }

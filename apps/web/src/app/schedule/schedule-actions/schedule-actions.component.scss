@@ -2,18 +2,18 @@
 
 .sub-row {
   @include flex(space-evenly, center, row);
-  width: 35%;
+  width: 50%;
 
   @media (max-width: 1400px) {
-    width: 40%;
+    width: 50%;
   }
 
-  @media (max-width: 1283px) {
-    width: 45%;
+  @media (max-width: 1310px) {
+    width: 60%;
   }
 
   @media (max-width: 1150px) {
-    width: 50%;
+    width: 70%;
   }
 
   @media (max-width: 1024px) {

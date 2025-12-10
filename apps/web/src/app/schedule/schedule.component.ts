@@ -57,7 +57,7 @@ import { ToastService } from '../shared/services/toast.service';
         >
           <ng-template #header></ng-template>
           <ng-template #body let-rowData>
-            <tr>
+            <tr [ngClass]="getRowClass(rowData)">
               @for (col of tableOpts.columns; track col.field) {
                 <td [ngStyle]="{ width: col.width }">
                   {{ rowData[col.field] }}
@@ -170,6 +170,10 @@ export class ScheduleComponent implements OnInit {
       filter((user) => !!user && !!user.user_id),
       switchMap((user) => this.scheduleService.gamesFull(user.user_id)),
     );
+  }
+
+  getRowClass(rowData: any) {
+    return !rowData.displayOpponent ? 'is-open' : null;
   }
 
   getActions(rowData: any) {
