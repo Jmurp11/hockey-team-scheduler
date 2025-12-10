@@ -20,6 +20,7 @@ export * from './lib/shared-utilities/types/user.type';
 // Export all utilities
 export * from './lib/shared-utilities/utilities/add-game.utility';
 export * from './lib/shared-utilities/utilities/auth.utility';
+export * from './lib/shared-utilities/utilities/csv-parser.utility';
 export * from './lib/shared-utilities/utilities/form.utility';
 export * from './lib/shared-utilities/utilities/game-time-conflict.validator';
 export * from './lib/shared-utilities/utilities/last-message.utility';

@@ -8,6 +8,7 @@ import {
   createDateTimeLocalString,
   convertTo24HourFormat,
   Game,
+  handleNullOpponent,
 } from '@hockey-team-scheduler/shared-utilities';
 import { APP_CONFIG } from '../config/app-config';
 import { SupabaseService } from './supabase.service';
@@ -223,13 +224,14 @@ export class ScheduleService {
    * @returns true if games match based on key properties
    */
   private gamesDataMatch(game1: any, game2: any): boolean {
-    const opponent1 = game1.opponent[0]?.id || game1.opponent;
+    const opponent1 = handleNullOpponent(game1);
+    const opponent2 = handleNullOpponent(game2);
 
     return (
       this.normalizeDate(game1.date) === this.normalizeDate(game2.date) &&
       this.normalizeTime(game1.time) === this.normalizeTime(game2.time) &&
       this.normalizeOpponent(opponent1) ===
-        this.normalizeOpponent(game2.opponent) &&
+        this.normalizeOpponent(opponent2) &&
       this.normalizeStringField(game1.rink) ===
         this.normalizeStringField(game2.rink) &&
       this.normalizeStringField(game1.city) ===

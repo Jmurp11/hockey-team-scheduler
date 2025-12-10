@@ -26,7 +26,6 @@ import { ExportColumn, TableOptions } from '@hockey-team-scheduler/shared-utilit
   ],
   template: `<p-table
     #dt
-    stripedRows
     [value]="tableData"
     [paginator]="tableOpts.paginator ?? false"
     [loading]="tableOpts.loading ?? false"
