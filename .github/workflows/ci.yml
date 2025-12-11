@@ -95,7 +95,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd apps/api
-          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
+          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       # --------- Web Release ----------
@@ -116,8 +116,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd apps/web
-          npx semantic-release --no-ci
-          echo "web_version=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       # --------- Mobile Release ----------
       - name: Check for Mobile changes
@@ -137,7 +137,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd apps/mobile
-          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
+          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   # ----------------------------
@@ -164,7 +164,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: apps/ui/Dockerfile
+          file: apps/web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
