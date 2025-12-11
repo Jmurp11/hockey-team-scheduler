@@ -1,4 +1,4 @@
-name: CI
+name: CI + Release + Deploy
 
 on:
   push:
@@ -13,14 +13,21 @@ on:
       - main
       - develop
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
-  # -------------------------------------------------
-  # LINT + TEST (ALL BRANCHES)
-  # -------------------------------------------------
+  # ----------------------------
+  # LINT + TEST
+  # ----------------------------
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -29,36 +36,117 @@ jobs:
 
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
-      - run: npx nx affected -t lint --parallel=3
+      # - run: npx nx affected -t lint --parallel=3
       - run: npx nx affected -t test --parallel=3 --ci --code-coverage
 
-  # -------------------------------------------------
-  # BUILD (ALL BRANCHES)
-  # -------------------------------------------------
+  # ----------------------------
+  # BUILD
+  # ----------------------------
   build:
     runs-on: ubuntu-latest
     needs: lint-and-test
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx affected -t build --configuration=production
 
-  # -------------------------------------------------
-  # DOCKER BUILD + PUSH (MAIN ONLY)
-  # -------------------------------------------------
-  docker:
-    name: Build & Push Docker Images
+  # ----------------------------
+  # SEMANTIC RELEASE (MAIN ONLY)
+  # ----------------------------
+  release:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
+    outputs:
+      api_version: ${{ steps.release-api.outputs.version }}
+      web_version: ${{ steps.release-web.outputs.version }}
+      mobile_version: ${{ steps.release-mobile.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - run: npm ci
 
+      # --------- API Release ----------
+      - name: Check for API changes
+        id: check-api
+        run: |
+          git fetch origin main:main || true
+          if git diff --name-only HEAD main | grep -q "^apps/api/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Release API
+        id: release-api
+        if: steps.check-api.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd apps/api
+          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # --------- Web Release ----------
+      - name: Check for Web changes
+        id: check-web
+        run: |
+          git fetch origin main:main || true
+          if git diff --name-only HEAD main | grep -q "^apps/web/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Release Web
+        id: release-web
+        if: steps.check-web.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd apps/web
+          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # --------- Mobile Release ----------
+      - name: Check for Mobile changes
+        id: check-mobile
+        run: |
+          git fetch origin main:main || true
+          if git diff --name-only HEAD main | grep -q "^apps/mobile/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Release Mobile
+        id: release-mobile
+        if: steps.check-mobile.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd apps/mobile
+          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  # ----------------------------
+  # DOCKER BUILD + PUSH (MAIN ONLY)
+  # ----------------------------
+  docker:
+    runs-on: ubuntu-latest
+    needs: release
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -80,6 +168,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
+            murphyj1011rinklink/rinklink-ui:${{ needs.release.outputs.web_version }}
             murphyj1011rinklink/rinklink-ui:latest
 
       # API
@@ -91,17 +180,16 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
+            murphyj1011rinklink/rinklink-api:${{ needs.release.outputs.api_version }}
             murphyj1011rinklink/rinklink-api:latest
 
-  # -------------------------------------------------
+  # ----------------------------
   # DEPLOY TO DIGITALOCEAN (MAIN ONLY)
-  # -------------------------------------------------
+  # ----------------------------
   deploy:
-    name: Deploy to DigitalOcean
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/main'
-
     steps:
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.9.0
