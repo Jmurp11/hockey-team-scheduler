@@ -213,8 +213,24 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DO_SSH_KEY }}
 
+      - name: Create environment file
+        run: |
+          cat > api.env << EOF
+          NODE_ENV=production
+          PORT=3000
+          PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_API_KEY=${{ secrets.PUBLIC_SUPABASE_API_KEY }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_ENDPOINT_SECRET=${{ secrets.STRIPE_ENDPOINT_SECRET }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE=${{ secrets.TWILIO_PHONE }}
+          EOF
+
       - name: Deploy
         run: |
+          scp -o StrictHostKeyChecking=no api.env ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }}:/opt/hockey-team-scheduler/
           ssh -o StrictHostKeyChecking=no \
             ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} \
             "mkdir -p /opt/hockey-team-scheduler && \
