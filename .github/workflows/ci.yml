@@ -90,13 +90,16 @@ jobs:
 
       - name: Release API
         id: release-api
-        if: steps.check-api.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd apps/api
-          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [ "${{ steps.check-api.outputs.changed }}" = "true" ]; then
+            cd apps/api
+            VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "version=1.0.0" >> $GITHUB_OUTPUT
+          fi
 
       # --------- Web Release ----------
       - name: Check for Web changes
@@ -111,13 +114,16 @@ jobs:
 
       - name: Release Web
         id: release-web
-        if: steps.check-web.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd apps/web
-          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [ "${{ steps.check-web.outputs.changed }}" = "true" ]; then
+            cd apps/web
+            VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "version=1.0.0" >> $GITHUB_OUTPUT
+          fi
 
       # --------- Mobile Release ----------
       - name: Check for Mobile changes
@@ -132,13 +138,16 @@ jobs:
 
       - name: Release Mobile
         id: release-mobile
-        if: steps.check-mobile.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd apps/mobile
-          VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [ "${{ steps.check-mobile.outputs.changed }}" = "true" ]; then
+            cd apps/mobile
+            VERSION=$(npx semantic-release --no-ci --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "1.0.0")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "version=1.0.0" >> $GITHUB_OUTPUT
+          fi
 
   # ----------------------------
   # DOCKER BUILD + PUSH (MAIN ONLY)
