@@ -174,7 +174,7 @@ jobs:
         with:
           context: .
           file: apps/web/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: |
             murphyj1011rinklink/rinklink-ui:${{ needs.release.outputs.web_version }}
@@ -186,7 +186,7 @@ jobs:
         with:
           context: .
           file: apps/api/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: |
             murphyj1011rinklink/rinklink-api:${{ needs.release.outputs.api_version }}
