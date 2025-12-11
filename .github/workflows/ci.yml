@@ -235,8 +235,6 @@ jobs:
             ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} \
             "mkdir -p /opt/hockey-team-scheduler && \
              cd /opt/hockey-team-scheduler && \
-             if [ ! -f docker-compose.yml ]; then \
-               curl -o docker-compose.yml https://raw.githubusercontent.com/Jmurp11/hockey-team-scheduler/main/docker-compose.prod.yml; \
-             fi && \
+             curl -o docker-compose.yml https://raw.githubusercontent.com/Jmurp11/hockey-team-scheduler/main/docker-compose.prod.yml && \
              docker compose pull && \
              docker compose up -d"
