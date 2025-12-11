@@ -18,7 +18,7 @@ services:
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
-      - --certificatesresolvers.le.acme.email=you@myapp.com
+      - --certificatesresolvers.le.acme.email=jim@rinklink.ai
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
@@ -28,7 +28,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`myapp.com`,`www.myapp.com`)"
+      - "traefik.http.routers.web.rule=Host(`rinklink.ai`,`www.rinklink.ai`)"
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.routers.web.tls.certresolver=le"
       - "traefik.docker.network=web"
@@ -43,7 +43,7 @@ services:
       - PORT=3000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.myapp.com`)"
+      - "traefik.http.routers.api.rule=Host(`api.rinklink.ai`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=le"
       - "traefik.http.services.api.loadbalancer.server.port=3000"
