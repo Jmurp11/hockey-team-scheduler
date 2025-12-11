@@ -29,10 +29,12 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # Stage 4: production
 FROM node:20-alpine AS production
-RUN apk add --no-cache dumb-init curl && \
-  addgroup -g 1001 -S nodejs && \
-  adduser -S nestjs -u 1001
 WORKDIR /app
+
+# Install packages separately to avoid QEMU issues
+RUN apk update && apk add --no-cache dumb-init
+RUN apk add --no-cache curl
+RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
 
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist/apps/api ./
