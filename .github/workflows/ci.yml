@@ -116,8 +116,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd apps/web
-          VERSION=$(npx semantic-release --no-ci --dry-run | grep "The next release version is" | awk '{print $6}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          npx semantic-release --no-ci
+          echo "web_version=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
       # --------- Mobile Release ----------
       - name: Check for Mobile changes
