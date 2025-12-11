@@ -222,5 +222,5 @@ jobs:
              if [ ! -f docker-compose.yml ]; then \
                curl -o docker-compose.yml https://raw.githubusercontent.com/Jmurp11/hockey-team-scheduler/main/docker-compose.prod.yml; \
              fi && \
-             docker-compose pull && \
-             docker-compose up -d"
+             docker compose pull && \
+             docker compose up -d"
