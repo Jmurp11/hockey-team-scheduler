@@ -20,8 +20,9 @@ services:
       - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
       - --certificatesresolvers.le.acme.email=jim@rinklink.ai
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # Temporarily disabled to allow Let's Encrypt HTTP challenge
+      # - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      # - --entrypoints.web.http.redirections.entrypoint.scheme=https
 
   web:
     image: murphyj1011rinklink/rinklink-ui:latest
