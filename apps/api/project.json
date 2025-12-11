@@ -12,13 +12,17 @@
         "outputPath": "dist/apps/api",
         "main": "apps/api/src/main.ts",
         "tsConfig": "apps/api/tsconfig.app.json",
-        "assets": []
+        "assets": [],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       },
       "configurations": {
         "production": {
           "optimization": true,
           "extractLicenses": true,
           "inspect": false,
+          "generatePackageJson": true,
+          "generateLockfile": true,
           "fileReplacements": [
             {
               "replace": "apps/api/src/environments/environment.ts",
@@ -62,6 +66,43 @@
           "ci": true,
           "coverage": true
         }
+      }
+    },
+    "package": {
+      "executor": "@nx/node:package",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/api",
+        "entryFile": "apps/api/src/main.ts",
+        "tsConfig": "apps/api/tsconfig.app.json",
+        "generateLockfile": true,
+        "updateBuildableProjectDepsInPackageJson": true,
+        "assets": [],
+        "exclude": [
+          "@angular/*",
+          "@ionic/*",
+          "@capacitor/*",
+          "@primeng/*",
+          "@nx/*",
+          "zone.js",
+          "primeng",
+          "primeicons",
+          "ionicons",
+          "angular-eslint",
+          "jest-preset-angular",
+          "@angular-devkit/*",
+          "@schematics/*",
+          "karma*",
+          "jasmine*",
+          "cypress"
+        ]
+      }
+    },
+    "docker:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "docker build -f apps/api/Dockerfile.prod -t apps-api ."
       }
     }
   }

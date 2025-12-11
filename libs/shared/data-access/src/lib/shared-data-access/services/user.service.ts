@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
+import { SupabaseService } from './supabase.service';
 import { UpdateUser } from '@hockey-team-scheduler/shared-utilities';
 import { AuthService } from './auth.service';
 @Injectable({providedIn: 'root'})

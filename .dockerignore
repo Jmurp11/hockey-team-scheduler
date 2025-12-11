@@ -1,7 +1,6 @@
 # Node modules
 node_modules/
 npm-debug.log*
-package-lock.json
 
 # Build outputs
 dist/
@@ -48,12 +47,32 @@ DOCKER.md
 ehthumbs.db
 Thumbs.db
 
-# Other apps (exclude when building specific app)
-apps/web/
+# Mobile and test apps (not needed for API/Web containers)
 apps/mobile/
 apps/mobile-e2e/
-apps/tournament-etl/
+
+# Tournament ETL (separate service)
 tournament-etl/
 
-# Libs that aren't needed for initial build
+# Temporary and cache directories
 tmp/
+.cache/
+.nx/cache/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Bundle analysis and other tooling
+bundle-analysis-scripts.json
+jest.preset.js
+
+# Nx specific (add these lines)
+.nx/
+.angular/
+*.tsbuildinfo
+
+# Additional exclusions
+cypress/
+cypress.config.*

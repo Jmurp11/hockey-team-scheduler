@@ -26,6 +26,7 @@ import { ButtonModule } from 'primeng/button';
       <div class="chat-header__right">
         <p-button
           [label]="handleAiEnabled()"
+          class="button"
           [ngClass]="{ 'ai-enabled': aiEnabled }"
           icon="bi bi-robot"
           size="small"

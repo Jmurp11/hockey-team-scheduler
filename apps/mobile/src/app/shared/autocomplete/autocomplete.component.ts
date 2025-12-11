@@ -45,6 +45,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       </ng-template>
     </ion-modal>
   `,
+  styles: [``],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -75,7 +76,20 @@ export class AutocompleteComponent implements ControlValueAccessor {
    * COMPUTED DISPLAY VALUE
    * Always returns the label based on the FormControl's value
    */
-  get displayValue(): string {
+  get displayValue(): string | null {
+    if (!this.control?.value) {
+      return null;
+    }
+
+    if (
+      !Array.isArray(this.control.value) &&
+      typeof this.control.value === 'object'
+    ) {
+      return (
+        this.control.value.name || this.control.value.value.team_name || null
+      );
+    }
+
     const realValue = this.control?.value[0] ?? this.internalValue;
 
     if (!realValue) return '';

@@ -3,7 +3,8 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./apps/api/Dockerfile.prod
+      dockerfile: apps/api/Dockerfile.prod
+      # Keep context as root for Nx monorepo, but optimize Dockerfile
     container_name: hockey-scheduler-api
     restart: unless-stopped
     ports:
@@ -26,19 +27,19 @@ services:
   ui:
     build:
       context: .
-      dockerfile: ./apps/web/Dockerfile
+      dockerfile: apps/web/Dockerfile
       target: production
     container_name: hockey-scheduler-ui
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "80:8080"
     depends_on:
       api:
         condition: service_healthy
     networks:
       - hockey-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
       interval: 30s
       timeout: 10s
       retries: 3

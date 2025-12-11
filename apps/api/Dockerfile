@@ -1,32 +1,28 @@
-# Development Dockerfile for API
-FROM node:20-alpine
+# Development Dockerfile for API (Dockerfile inside apps/api/)
+FROM node:20-alpine AS dev
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies for hot reloading
 RUN apk add --no-cache libc6-compat
 
-# Copy package files first for better caching
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
-
-# Copy only necessary NX config files
+# Copy root files needed for Nx
+COPY nx.json tsconfig.base.json ./
 COPY jest.config.js jest.preset.js ./
 
-# Install dependencies (use npm ci for consistent builds)
-# Use --prefer-offline and --no-audit for faster installs
-RUN npm ci --prefer-offline --no-audit
-
-# Copy shared libraries that API depends on
-COPY libs/ ./libs/
-
-# Copy API source code
+# Build and generate optimized package.json first
+COPY package*.json ./
 COPY apps/api ./apps/api
+RUN npm ci --prefer-offline --no-audit --legacy-peer-deps
+RUN npx nx build api
+RUN npx nx package api
 
-# Expose port
+# Install only production dependencies for the API
+WORKDIR /app/dist/apps/api
+RUN npm ci --omit=dev --prefer-offline --no-audit
+
+# Copy the built application
+COPY --from=0 /app/dist/apps/api .
+
 EXPOSE 3000
 
-# Start the API using the root package.json script
-CMD ["npm", "run", "start:api"]
+CMD ["node", "main.js"]

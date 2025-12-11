@@ -19,7 +19,7 @@ export function isStatKey(key: string): boolean {
  */
 export function assignOpponentLabels(
   key: string,
-  value: unknown
+  value: unknown,
 ): { label: string; value: unknown } {
   switch (key) {
     case 'agd':
@@ -63,4 +63,12 @@ export function handleLeagues(opponent: any): string[] {
       }
     })
     .filter((abbr: string) => abbr !== '');
+}
+
+export function handleNullOpponent(game: any) {
+  if (!game.opponent) {
+    return null;
+  }
+
+  return game.opponent[0] ? game.opponent[0].id : game.opponent;
 }

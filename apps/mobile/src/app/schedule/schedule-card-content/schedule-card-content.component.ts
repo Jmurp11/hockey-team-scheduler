@@ -1,19 +1,28 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { IonIcon, IonItem, IonLabel, IonList } from '@ionic/angular/standalone';
+import {
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonNote,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { locationOutline, timeOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-schedule-card-content',
   standalone: true,
-  imports: [CommonModule, IonItem, IonList, IonLabel, IonIcon],
+  imports: [CommonModule, IonItem, IonList, IonLabel, IonIcon, IonNote],
   template: `
     <ion-list>
       @for (item of items; track item.label) {
         <ion-item lines="none">
           <ion-icon slot="start" [name]="item.icon" />
           <ion-label class="detail-label">{{ item.label }}</ion-label>
+          @if (hasIsHome(item)) {
+            <ion-note slot="end">{{ isHome(item.isHome) }}</ion-note>
+          }
         </ion-item>
       }
     </ion-list>
@@ -25,5 +34,13 @@ export class ScheduleCardContentComponent {
 
   constructor() {
     addIcons({ locationOutline, timeOutline });
+  }
+
+  isHome(isHome: boolean) {
+    return isHome ? 'Home' : 'Away';
+  }
+
+  hasIsHome(item: any): boolean {
+    return item && 'isHome' in item;
   }
 }
