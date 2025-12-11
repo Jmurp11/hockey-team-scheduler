@@ -114,7 +114,11 @@ export class ScheduleListComponent {
 
   handleGameDetails(game: any) {
     return [
-      { label: game.location, icon: 'location-outline' },
+      {
+        label: game.location,
+        icon: 'location-outline',
+        isHome: game.isHome,
+      },
       { label: game.rink, icon: 'time-outline' },
     ];
   }

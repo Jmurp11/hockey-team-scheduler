@@ -1,51 +1,43 @@
-# Production Dockerfile for API
+# Stage 1: base
 FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Dependencies stage
-FROM base AS deps
-COPY package*.json ./
-# Use --prefer-offline and --no-audit for faster installs
-RUN npm ci --omit=dev --prefer-offline --no-audit && npm cache clean --force
-
-# Build stage
+# Stage 2: builder - build and generate package.json
 FROM base AS builder
+# Copy dependency files first for better layer caching
 COPY package*.json ./
-COPY nx.json tsconfig.base.json ./
-COPY jest.config.js jest.preset.js ./
+COPY tsconfig.base.json ./
+COPY nx.json ./
+# Use npm cache mount for faster installs (legacy-peer-deps needed for root monorepo dependencies)
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --prefer-offline --no-audit
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm ci --prefer-offline --no-audit
+# Copy only necessary files for Nx build
+COPY apps/api/ ./apps/api/
+COPY eslint.config.js ./
+RUN npx nx build api --configuration=production
 
-# Copy shared libraries that API depends on
-COPY libs/ ./libs/
+# Stage 3: production dependencies
+FROM base AS prod-deps
+COPY --from=builder /app/dist/apps/api/package*.json ./
+# Remove overrides section that conflicts with npm install
+RUN sed -i '/"overrides":/,/},/d' package.json
+# Use npm cache mount for production dependencies too
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --omit=dev --prefer-offline --no-audit
 
-# Copy only API source
-COPY apps/api ./apps/api
-
-# Build the API project
-RUN npm run build:api
-
-# Production stage
+# Stage 4: production
 FROM node:20-alpine AS production
 RUN apk add --no-cache dumb-init curl && \
-    addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
-
+  addgroup -g 1001 -S nodejs && \
+  adduser -S nestjs -u 1001
 WORKDIR /app
 
-# Copy production dependencies
-COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=deps --chown=nestjs:nodejs /app/package*.json ./
-
-# Copy build output
-COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api ./dist
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist/apps/api ./
 
 USER nestjs
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-CMD ["dumb-init", "node", "dist/main"]
+CMD ["dumb-init", "node", "src/main.js"]

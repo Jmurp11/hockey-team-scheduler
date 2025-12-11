@@ -37,7 +37,7 @@ export function parseTournamentLocation(location: string): {
  */
 export function createTournamentGameInfo(
   tournament: any,
-  userId: number
+  userId: number,
 ): Omit<CreateGame, 'date'> {
   const location = parseTournamentLocation(tournament.location);
 
@@ -48,9 +48,10 @@ export function createTournamentGameInfo(
     country: location.country || 'USA',
     time: '12:00:00',
     opponent: -1,
-    gameType: 'tournament',
+    game_type: 'tournament',
     isHome: false,
     user: userId,
+    tournamentName: tournament.name,
   };
 }
 

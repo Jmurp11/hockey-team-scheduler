@@ -34,7 +34,7 @@ export function convertTo24HourFormat(time12h: string): string {
 export function convertTo12HourFormat(time24h: string): string {
   const [hours, minutes] = time24h.split(':');
   const hour24 = parseInt(hours, 10);
-  
+
   if (hour24 === 0) {
     return `12:${minutes} AM`;
   } else if (hour24 < 12) {
@@ -85,19 +85,75 @@ export function combineDateAndTime(
   );
 }
 
-export function transformDateTime(gameData: any | null) {
-  if (gameData?.date.includes('T')) {
+/**
+ * Transform game data into a datetime string format
+ * @param gameData - Object containing date and optional time properties
+ * @returns Formatted datetime string or null if no valid date
+ */
+export function transformDateTime(
+  gameData: { date?: string; time?: string } | null,
+): string | null {
+  console.log('Transforming game data:', gameData);
+  // Return null if no game data or no date property
+  if (!gameData?.date) {
+    return null;
+  }
+
+  // If date already contains time (ISO format), return as-is
+  if (gameData.date.includes('T')) {
     return gameData.date;
   }
 
-  if (gameData?.date && gameData?.time) {
+  // If both date and time are provided, combine them
+  if (gameData.date && gameData.time) {
     try {
       return createDateTimeLocalString(gameData.date.toString(), gameData.time);
     } catch (error) {
       console.warn('Failed to format date/time:', error);
       return gameData.date;
     }
-  } else if (gameData?.date) {
-    return gameData.date;
   }
+
+  // Return date only if no time is provided
+  return gameData.date;
+}
+
+export function removeTimeZoneInfo(dateTimeString: string): string {
+  const timePart = dateTimeString.split('+')[0].split('-')[0].split('Z')[0];
+  const timeParts = timePart.split(':');
+
+  if (timeParts.length >= 2) {
+    const hours = timeParts[0].padStart(2, '0');
+    const minutes = timeParts[1].padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+  return timePart;
+}
+
+export function convert24HourToMinutes(
+  time24h: string,
+): { hours: number; minutes: number } | null {
+  const [hoursStr, minutesStr] = time24h.split(':');
+  const hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+
+  return { hours, minutes };
+}
+
+export function formatTimeFromMinutes(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  // Convert to 12-hour format for display
+  const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const period = hours >= 12 ? 'PM' : 'AM';
+
+  return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+}
+
+export function getCurrentLocalDateTime() {
+  const now = new Date();
+  const localDate = now.toLocaleDateString('en-CA'); // Returns YYYY-MM-DD format
+  const localTime = now.toLocaleTimeString('en-US', { hour12: false });
+  return { date: localDate, time: localTime };
 }

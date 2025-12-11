@@ -57,6 +57,14 @@
           "coverage": true
         }
       }
+    },
+    "create-package-json": {
+      "executor": "@nx/js:create-package-json",
+      "options": {
+        "outputPath": "dist/tournament-etl",
+        "main": "run-etl.js",
+        "generateLockfile": true
+      }
     }
   }
 }

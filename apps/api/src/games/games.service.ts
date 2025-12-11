@@ -23,7 +23,6 @@ export class GamesService {
       .select('*')
       .match(query);
 
-    console.log('Fetched games with query', query, data);
     if (error) {
       console.error('Error fetching games:', error);
       throw new Error('Could not fetch games');
@@ -50,19 +49,41 @@ export class GamesService {
     id: string,
     updateGameDto: Partial<CreateGameDto>,
   ): Promise<Game | null> {
-    console.log('Updating game:', id, updateGameDto);
-    const { data, error } = await supabase
+    // First update the game
+    const { data: updatedGame, error: updateError } = await supabase
       .from('games')
       .update(updateGameDto)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) {
-      console.error('Error updating game:', error);
+    if (updateError) {
+      console.error('Error updating game:', updateError);
       throw new Error('Could not update game');
     }
-    return data;
+
+    // Then fetch the opponent rankings data if opponent exists
+    if (updatedGame.opponent) {
+      const { data: opponentRankings, error: rankingsError } = await supabase
+        .from('rankingswithassoc')
+        .select('*')
+        .eq('id', updatedGame.opponent)
+        .single();
+
+      if (rankingsError) {
+        console.error('Error fetching opponent rankings:', rankingsError);
+        // Don't throw here, just return the game without rankings
+        return updatedGame;
+      }
+
+      // Combine the data
+      return {
+        ...updatedGame,
+        opponent: opponentRankings,
+      };
+    }
+
+    return updatedGame;
   }
 
   async remove(id: string): Promise<void> {

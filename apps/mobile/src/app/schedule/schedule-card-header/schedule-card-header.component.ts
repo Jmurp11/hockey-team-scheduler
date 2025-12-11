@@ -82,7 +82,7 @@ export class ScheduleCardHeaderComponent {
       case 'Tournament':
         return 'success';
       case 'Playoff':
-        return 'teriary';
+        return 'tertiary';
       default:
         return 'medium';
     }

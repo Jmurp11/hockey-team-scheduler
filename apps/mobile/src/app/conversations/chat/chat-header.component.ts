@@ -1,11 +1,15 @@
 import { Location, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import {
-    IonBackButton,
-    IonButtons,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
+import {
+  IonBackButton,
+  IonButtons,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { ButtonComponent } from '../../shared/button/button.component';
 
@@ -14,7 +18,6 @@ import { ButtonComponent } from '../../shared/button/button.component';
   standalone: true,
   imports: [
     NgClass,
-    IonHeader,
     IonToolbar,
     IonButtons,
     IonBackButton,
@@ -22,39 +25,41 @@ import { ButtonComponent } from '../../shared/button/button.component';
     ButtonComponent,
   ],
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button 
-            defaultHref="/app/conversations"
-            (click)="onBackClick()"
-          ></ion-back-button>
-        </ion-buttons>
-        <ion-title>{{ managerName }}</ion-title>
-        <ion-buttons slot="end">
-          <app-button
-            [ngClass]="{ 'ai-enabled': aiEnabled }"
-            (onClick)="onToggleAI()"
-            size="small"
-          >
-            <i class="bi bi-robot"></i>
-            {{ handleAiEnabled() }}
-          </app-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button
+          color="secondary"
+          defaultHref="/app/conversations"
+          (click)="onBackClick()"
+        ></ion-back-button>
+      </ion-buttons>
+      <ion-title>{{ managerName }}</ion-title>
+      <ion-buttons slot="end">
+        <app-button
+          [ngClass]="{ 'ai-enabled': aiEnabled }"
+          (onClick)="onToggleAI()"
+          size="small"
+          color="secondary"
+        >
+          <i class="bi bi-robot"></i>
+          {{ handleAiEnabled() }}
+        </app-button>
+      </ion-buttons>
+    </ion-toolbar>
   `,
-  styles: [`
-    app-button.ai-enabled {
-      --background: var(--ion-color-success);
-      --color: white;
-    }
+  styles: [
+    `
+      app-button.ai-enabled {
+        --background: var(--ion-color-success);
+        --color: white;
+      }
 
-    .bi-robot {
-      margin-right: 0.5rem;
-      font-size: 1.1rem;
-    }
-  `],
+      .bi-robot {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatHeaderComponent {

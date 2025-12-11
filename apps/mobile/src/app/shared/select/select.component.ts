@@ -1,39 +1,63 @@
-import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  EventEmitter,
+  forwardRef,
+  Input,
+  Output,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 import { IonSelect } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-select',
   standalone: true,
-  imports: [IonSelect],
+  imports: [IonSelect, CommonModule],
   template: `
-    <ion-select
-      [value]="formControl?.value || value"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
-      [multiple]="multiple"
-      [interface]="interface"
-      [interfaceOptions]="interfaceOptions || {}"
-      [color]="color"
-      [label]="label"
-      [labelPlacement]="labelPlacement"
-      [fill]="fill"
-      [shape]="shape"
-      (ionChange)="onIonChange($event)"
-      (ionCancel)="ionCancel.emit($event)"
-      (ionDismiss)="ionDismiss.emit($event)"
-    >
-      <ng-content></ng-content>
-    </ion-select>
+    <div class="form-field">
+      <ion-select
+        [class.error-highlight]="formControl?.invalid && formControl?.touched"
+        [value]="formControl?.value || value"
+        [placeholder]="placeholder"
+        [disabled]="disabled"
+        [multiple]="multiple"
+        [interface]="interface"
+        [interfaceOptions]="interfaceOptions || {}"
+        [color]="color"
+        [label]="label"
+        [labelPlacement]="labelPlacement"
+        [fill]="fill"
+        [shape]="shape"
+        (ionChange)="onIonChange($event)"
+        (ionCancel)="ionCancel.emit($event)"
+        (ionDismiss)="ionDismiss.emit($event)"
+      >
+        <ng-content></ng-content>
+      </ion-select>
+
+      @if (formControl?.invalid && formControl?.touched) {
+        <p class="error-message">>{{ label | titlecase }} is required.</p>
+      }
+    </div>
   `,
-  styles: [],
+  styles: [
+    `
+      .form-field {
+        width: 100%;
+      }
+    `,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => SelectComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class SelectComponent implements ControlValueAccessor {
   @Input() value?: unknown;
@@ -63,7 +87,7 @@ export class SelectComponent implements ControlValueAccessor {
   onIonChange(event: CustomEvent): void {
     const value = event.detail.value;
     this.value = value;
-    
+
     // Support both FormControl and ControlValueAccessor patterns
     if (this.formControl) {
       this.formControl.setValue(value);
@@ -71,7 +95,7 @@ export class SelectComponent implements ControlValueAccessor {
     }
     this.onChange(value);
     this.onTouched();
-    
+
     this.ionChangeEvent.emit(event);
   }
 

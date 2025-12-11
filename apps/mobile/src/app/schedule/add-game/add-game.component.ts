@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -9,10 +16,12 @@ import {
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  Game,
   GAME_TYPE_OPTIONS,
   initAddGameForm,
   IS_HOME_OPTIONS,
   transformAddGameFormData,
+  updateGameTimeConflictValidator,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButton,
@@ -29,7 +38,8 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { Observable, take } from 'rxjs';
+import { Observable, of, take } from 'rxjs';
+import { tap, switchMap} from 'rxjs/operators';
 import { AutocompleteComponent } from '../../shared/autocomplete/autocomplete.component';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
@@ -38,6 +48,7 @@ import { SelectComponent } from '../../shared/select/select.component';
 import { AddGameModalService } from './add-game-modal.service';
 import { getFormFields } from './add-game.constants';
 import { InputComponent } from '../../shared/input/input.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-add-game',
@@ -79,7 +90,7 @@ import { InputComponent } from '../../shared/input/input.component';
         </ion-header>
 
         <ion-content class="ion-padding">
-          @if (formFieldsData.length > 0) {
+          @if (formFieldsData$ | async; as formFieldsData) {
             <form [formGroup]="addGameForm">
               @for (field of formFieldsData; track field.controlName) {
                 @if (field && field.controlType) {
@@ -178,16 +189,18 @@ import { InputComponent } from '../../shared/input/input.component';
 
               @if (getFormControl('isHome')) {
                 <ion-item lines="none">
-                  <app-segment [formControl]="getFormControl('isHome')!">
-                    @for (option of isHomeOptions; track option.value) {
-                      <ion-segment-button
-                        [value]="option.value"
-                        color="secondary"
-                      >
-                        <ion-label>{{ option.label }}</ion-label>
-                      </ion-segment-button>
-                    }
-                  </app-segment>
+                  <div class="segment-item">
+                    <app-segment [formControl]="getFormControl('isHome')!">
+                      @for (option of isHomeOptions; track option.value) {
+                        <ion-segment-button
+                          [value]="option.value"
+                          color="secondary"
+                        >
+                          <ion-label>{{ option.label }}</ion-label>
+                        </ion-segment-button>
+                      }
+                    </app-segment>
+                  </div>
                 </ion-item>
               }
             </form>
@@ -218,14 +231,19 @@ import { InputComponent } from '../../shared/input/input.component';
 
       .form-field {
         width: 100%;
-        height: 45px;
+        max-height: 45px;
         margin: 0.75rem 0rem;
         padding: 0rem 0.5rem;
       }
 
+      .segment-item {
+        @include flex(center, center, row);
+      }
+
       .date-time {
         @include flex(center, center, row);
-        padding: 0rem 1rem;
+        padding: 0rem 0.5rem;
+        margin: 0.75rem 0rem;
 
         ion-datetime-button {
           padding: 0.5rem;
@@ -276,6 +294,7 @@ export class AddGameComponent implements OnInit {
   private scheduleService = inject(ScheduleService);
   private teamsService = inject(TeamsService);
   private addGameService = inject(AddGameService);
+  private toastService = inject(ToastService);
   addGameModalService = inject(AddGameModalService);
 
   currentUser = this.authService.currentUser();
@@ -284,7 +303,7 @@ export class AddGameComponent implements OnInit {
   gameData = this.addGameModalService.gameData;
 
   items$!: Observable<any>;
-  formFieldsData: any[] = [];
+  formFieldsData$!: Observable<any[]>;
 
   title = computed(() => (this.editMode() ? 'Update Game' : 'Add Game'));
 
@@ -294,24 +313,61 @@ export class AddGameComponent implements OnInit {
 
   isHomeOptions = IS_HOME_OPTIONS;
 
+  constructor() {
+    // Effect to watch for changes in gameData or editMode and update validator
+    effect(() => {
+      const currentGameData = this.gameData();
+      const currentEditMode = this.editMode();
+
+      // Skip if form isn't initialized yet
+      if (!this.addGameForm) {
+        return;
+      }
+
+      // Reinitialize form when gameData changes
+      this.addGameForm = initAddGameForm(currentGameData);
+
+      // Update validator with current game ID when games cache is available
+      const games = this.scheduleService.gamesCache.value;
+      if (games) {
+        updateGameTimeConflictValidator(
+          this.addGameForm,
+          games,
+          currentGameData?.id,
+        );
+      }
+    });
+  }
+
   ngOnInit(): void {
+    // Initialize form
     this.addGameForm = initAddGameForm(this.gameData());
 
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
     });
 
-    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
-      this.formFieldsData = getFormFields(items);
-    });
+    this.formFieldsData$ = this.items$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap((items) => of(getFormFields(items))),
+    );
+
+    // Subscribe to games data and update time conflict validator when games are loaded
+    this.scheduleService.gamesCache
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((games) => {
+        if (games && this.addGameForm) {
+          updateGameTimeConflictValidator(
+            this.addGameForm,
+            games,
+            this.gameData()?.id,
+          );
+        }
+      });
   }
 
   getFormControl(controlName: string): FormControl | null {
     if (!controlName || !this.addGameForm) {
-      console.warn(
-        'Invalid control name or form not initialized:',
-        controlName,
-      );
       return null;
     }
     const control = this.addGameForm.get(controlName);
@@ -322,10 +378,22 @@ export class AddGameComponent implements OnInit {
     return control as FormControl;
   }
 
-  submit(): void {
-    if (!this.addGameForm.valid) {
+  handleGameTimeConflictError() {
+    const dateControl = this.addGameForm.get('date');
+    if (dateControl?.errors?.['gameTimeConflict']) {
+      const conflictError = dateControl.errors['gameTimeConflict'];
+      this.toastService.presentErrorToast(conflictError.message);
       return;
     }
+  }
+
+  submit(): void {
+    // Check for validation errors including time conflicts
+    if (!this.addGameForm.valid) {
+      this.handleGameTimeConflictError();
+      return;
+    }
+
     const input = transformAddGameFormData(
       this.addGameForm.value,
       this.currentUser.user_id,
@@ -343,18 +411,51 @@ export class AddGameComponent implements OnInit {
       this.scheduleService.optimisticAddGames(input);
     }
 
-    const operation$ =
-      this.editMode() && data
-        ? this.addGameService.updateGame({ id: data.id, ...input[0] })
-        : this.addGameService.addGame(input);
+    const operation$ = this.chooseOperation(data, input);
 
     operation$
       .pipe(take(1))
-      .subscribe(() => this.addGameModalService.closeModal());
+      .subscribe((response) => this.handleSubscription(response));
   }
 
   cancel(): void {
     this.addGameForm.reset();
     this.addGameModalService.closeModal();
+  }
+
+  chooseOperation(data: any, input: any): Observable<Partial<Game>[]> {
+    return this.editMode() && data
+      ? this.addGameService
+          .updateGame({ id: data.id, ...input[0] } as Partial<Game>)
+          .pipe(
+            take(1),
+            tap((response: Partial<Game>) =>
+              this.scheduleService.syncGameIds([response], true),
+            ),
+            switchMap((response: Partial<Game>) => of([response]))
+          )
+      : (
+          this.addGameService.addGame(input) as Observable<Partial<Game>[]>
+        ).pipe(
+          take(1),
+          tap((response: Partial<Game>[]) =>
+            this.scheduleService.syncGameIds(response),
+          ),
+        );
+  }
+
+  handleSubscription(response: any) {
+    this.addGameModalService.closeModal();
+    response &&
+    (response.hasOwnProperty('opponent') ||
+      (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
+      ? this.toastService.presentSuccessToast(
+          `Game ${this.editMode() ? 'updated' : 'added'} successfully!`,
+        )
+      : this.toastService.presentErrorToast(
+          `Failed to ${
+            this.editMode() ? 'update' : 'add'
+          } game. Please try again.`,
+        );
   }
 }

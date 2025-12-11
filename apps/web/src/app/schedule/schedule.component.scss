@@ -1,4 +1,4 @@
-@use "mixins/flex" as *;
+@use 'mixins/flex' as *;
 
 .container {
   @include flex(flex-start, stretch, column);
@@ -26,5 +26,9 @@
 }
 
 ::ng-deep .p-menu-item-link {
-  font-family: "Space Grotesk", "Noto Sans", sans-serif !important;
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
+}
+
+.is-open {
+  --p-datatable-row-background: var(--secondary-100);
 }

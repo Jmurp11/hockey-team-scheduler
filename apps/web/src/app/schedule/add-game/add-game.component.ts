@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   Input,
   OnInit,
@@ -25,12 +26,12 @@ import {
   initAddGameForm,
   IS_HOME_OPTIONS,
   transformAddGameFormData,
+  updateGameTimeConflictValidator,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { ToastModule } from 'primeng/toast';
-import { take } from 'rxjs';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable, take } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { SelectComponent } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
@@ -39,6 +40,7 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectButtonComponent } from '../../shared/components/select-button/select-button.component';
 import { AddGameDialogService } from './add-game-dialog.service';
 import { getFormFields } from './add-game.constants';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-add-game',
@@ -54,7 +56,6 @@ import { getFormFields } from './add-game.constants';
     ButtonModule,
     SelectButtonComponent,
     ProgressSpinnerModule,
-    ToastModule,
   ],
   providers: [],
   template: `
@@ -141,20 +142,37 @@ import { getFormFields } from './add-game.constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddGameComponent implements OnInit {
-  @Input() gameData: Game | null = null;
-  @Input() editMode = false;
+  @Input() set gameData(value: Game | null) {
+    this._gameData = value;
+    this.gameDataSignal.set(value);
+  }
+  get gameData(): Game | null {
+    return this._gameData;
+  }
+  private _gameData: Game | null = null;
+
+  @Input() set editMode(value: boolean) {
+    this._editMode = value;
+    this.editModeSignal.set(value);
+  }
+  get editMode(): boolean {
+    return this._editMode;
+  }
+  private _editMode = false;
 
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);
-
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  addGameDialogService = inject(AddGameDialogService);
+  private toastService = inject(ToastService);
   private addGameService = inject(AddGameService);
 
+  addGameDialogService = inject(AddGameDialogService);
   teamsService = inject(TeamsService);
 
   private editModeSignal = signal(false);
+  private gameDataSignal = signal<Game | null>(null);
+
   title = computed(() => (this.editModeSignal() ? 'Update Game' : 'Add Game'));
 
   gameTypeOptions = GAME_TYPE_OPTIONS;
@@ -172,10 +190,39 @@ export class AddGameComponent implements OnInit {
 
   addGameForm: FormGroup;
 
-  ngOnInit(): void {
-    this.addGameForm = initAddGameForm(this.gameData);
+  constructor() {
+    // Effect to watch for changes in gameData or editMode and update validator
+    effect(() => {
+      const currentGameData = this.gameDataSignal();
+      const currentEditMode = this.editModeSignal();
 
+      // Skip if form isn't initialized yet
+      if (!this.addGameForm) {
+        return;
+      }
+
+      // Reinitialize form when gameData changes
+      this.addGameForm = initAddGameForm(currentGameData);
+
+      // Update validator with current game ID when games cache is available
+      const games = this.scheduleService.gamesCache.value;
+      if (games) {
+        updateGameTimeConflictValidator(
+          this.addGameForm,
+          games,
+          currentGameData?.id,
+        );
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    // Initialize signals with current values
     this.editModeSignal.set(this.editMode);
+    this.gameDataSignal.set(this.gameData);
+
+    // Initialize form
+    this.addGameForm = initAddGameForm(this.gameData);
 
     this.items$ = this.teamsService.teams({
       age: this.currentUser.age,
@@ -184,40 +231,118 @@ export class AddGameComponent implements OnInit {
     this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
       this.formFieldsData = getFormFields(items);
     });
+
+    this.gamesCache$();
+  }
+
+  gamesCache$() {
+    return this.scheduleService.gamesCache
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((games) => {
+        if (games && this.addGameForm) {
+          updateGameTimeConflictValidator(
+            this.addGameForm,
+            games,
+            this.gameDataSignal()?.id,
+          );
+        }
+      });
   }
 
   initGameForm() {
     return initAddGameForm(this.gameData);
   }
 
+  handleGameTimeConflictError() {
+    const dateControl = this.addGameForm.get('date');
+    if (dateControl?.errors?.['gameTimeConflict']) {
+      const conflictError = dateControl.errors['gameTimeConflict'];
+      this.toastService.presentToast({
+        severity: 'error',
+        summary: 'Schedule Conflict',
+        detail: conflictError.message,
+      });
+    }
+  }
+
   submit() {
+    // Check for validation errors including time conflicts
+    if (!this.addGameForm.valid) {
+      this.handleGameTimeConflictError();
+      return;
+    }
+
     const input = transformAddGameFormData(
       this.addGameForm.value,
       this.currentUser.user_id,
     );
 
     // Optimistic update - update cache immediately
-    if (this.editMode && this.gameData) {
-      this.scheduleService.optimisticUpdateGame({
-        id: this.gameData.id,
-        ...input[0],
-      });
-    } else {
-      this.scheduleService.optimisticAddGames(input);
-    }
+    this.editMode && this.gameData
+      ? this.scheduleService.optimisticUpdateGame({
+          id: this.gameData.id,
+          ...input[0],
+        })
+      : this.scheduleService.optimisticAddGames(input);
 
-    const operation$ =
-      this.editMode && this.gameData
-        ? this.addGameService.updateGame({ id: this.gameData.id, ...input[0] })
-        : this.addGameService.addGame(input);
+    const operation$ = this.chooseOperation(input);
 
     operation$
       .pipe(take(1))
-      .subscribe(() => this.addGameDialogService.closeDialog());
+      .subscribe((response: any) => this.handleSubscription(response));
   }
 
   cancel() {
     this.addGameForm.reset();
     this.addGameDialogService.closeDialog();
+  }
+
+  chooseOperation(input: any): Observable<any> {
+    return this.editMode && this.gameData
+      ? (
+          this.addGameService.updateGame({
+            id: this.gameData.id,
+            ...input[0],
+          }) as Observable<Partial<Game>>
+        ).pipe(
+          take(1),
+          tap((response: Partial<Game>) =>
+            this.scheduleService.syncGameIds([response], true),
+          ),
+        )
+      : (
+          this.addGameService.addGame(input) as Observable<Partial<Game>[]>
+        ).pipe(
+          take(1),
+          tap((response: Partial<Game>[]) =>
+            this.scheduleService.syncGameIds(response),
+          ),
+        );
+  }
+
+  handleSubscription(response: any) {
+    this.addGameDialogService.closeDialog();
+
+    if (
+      response &&
+      (response.hasOwnProperty('opponent') ||
+        (Array.isArray(response) && response[0].hasOwnProperty('opponent')))
+    ) {
+      this.toastService.presentToast({
+        severity: 'success',
+        summary: this.editMode ? 'Game Updated' : 'Game Added',
+        detail: this.editMode
+          ? 'The game has been successfully updated.'
+          : 'The game has been successfully added.',
+      });
+    } else {
+      this.toastService.presentToast({
+        severity: 'error',
+        summary: this.editMode ? 'Update Failed' : 'Add Failed',
+        detail: this.editMode
+          ? 'There was an error updating the game. Please try again.'
+          : 'There was an error adding the game. Please try again.',
+      });
+    }
   }
 }
