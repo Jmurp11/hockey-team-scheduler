@@ -38,8 +38,9 @@ services:
   api:
     image: murphyj1011rinklink/rinklink-api:latest
     restart: unless-stopped
-    env_file:
-      - ./api.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.myapp.com`)"
