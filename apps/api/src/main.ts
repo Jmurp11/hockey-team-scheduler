@@ -22,7 +22,7 @@ async function bootstrap() {
         'http://127.0.0.1:80',
         'http://10.0.2.2:3000',
         'capacitor://localhost',
-        'ionic://localhost',
+        'https://rinklink.ai',
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization'],
