@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiExcludeController,
@@ -16,8 +17,12 @@ import {
 import { MessageService } from './message.service';
 import { CreateConversationDto, MessageDto } from '../types';
 
+import { ApiKeyGuard } from '../auth/api-key.guard';
+
 // @ApiExcludeController()
+
 @ApiTags('Messages')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/messages')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
@@ -53,5 +58,15 @@ export class MessageController {
   @Get('conversations/:id/messages')
   async getMessages(@Param('id') conversationId: string, @Req() req: any) {
     return this.messageService.getMessages(conversationId, req.user.id);
+  }
+
+  @Get('conversations')
+  @ApiOperation({ summary: 'Get all conversations for the current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Conversations retrieved successfully',
+  })
+  async getConversations(@Req() req: any) {
+    return this.messageService.getConversations(req.user.id);
   }
 }

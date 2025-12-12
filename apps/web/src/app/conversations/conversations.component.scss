@@ -1,4 +1,4 @@
-@use "mixins/mixins" as *;
+@use 'mixins/mixins' as *;
 
 :host {
   height: 100%;
@@ -13,4 +13,14 @@ form {
 app-input {
   width: 100% !important;
   padding: 0rem 3rem;
+}
+
+.no-conversations {
+  @include flex(center, center, column);
+  height: 100%;
+  gap: 1rem;
+  color: var(--text-secondary-color);
+}
+.no-conversations p-button {
+  margin-top: 1rem;
 }

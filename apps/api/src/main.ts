@@ -25,7 +25,7 @@ async function bootstrap() {
         'https://rinklink.ai',
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
       credentials: true,
     },
   });
@@ -51,4 +51,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
-// Test deploy

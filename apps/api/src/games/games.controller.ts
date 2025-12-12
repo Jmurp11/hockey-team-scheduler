@@ -8,11 +8,15 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
+
 import { CreateGameDto, Game, GamesQueryDto } from '../types';
 import { GamesService } from './games.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
+@UseGuards(ApiKeyGuard)
 @Controller('v1/games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}

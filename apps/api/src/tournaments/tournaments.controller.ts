@@ -1,9 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { TournamentsService } from './tournaments.service';
 import { Tournament, TournamentProps } from '../types';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('tournaments')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/tournaments')
 export class TournamentsController {
   constructor(private readonly tournamentsService: TournamentsService) {}

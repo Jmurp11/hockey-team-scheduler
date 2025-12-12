@@ -1,9 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssociationFull } from '../types';
+
 import { AssociationsService } from './associations.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('associations')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/associations')
 export class AssociationsController {
   constructor(private readonly associationsService: AssociationsService) {}
