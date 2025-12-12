@@ -12,7 +12,7 @@ services:
     networks:
       - web
     command:
-      - --log.level=INFO
+      - --log.level=DEBUG
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
