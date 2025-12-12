@@ -6,17 +6,13 @@ FROM node:20-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
-# Copy root-level manifests
 COPY package*.json nx.json tsconfig.base.json ./
-
 RUN npm ci --prefer-offline --no-audit
 
-# Copy Nx project sources
 COPY libs/ ./libs/
 COPY apps/web/ ./apps/web/
 COPY eslint.config.js ./
 
-# Build Angular (Nx will optimize for production)
 RUN npx nx build web --configuration=production
 
 
@@ -25,25 +21,31 @@ RUN npx nx build web --configuration=production
 # -----------------------------------
 FROM nginx:alpine AS production
 
+# Optional: Brotli module for better compression
+# RUN apk add --no-cache nginx-mod-http-brotli
+
+# Remove default server config
+RUN rm -f /etc/nginx/conf.d/default.conf
+
 # Create non-root user
 RUN addgroup -g 1001 -S angular && \
   adduser -S angular -u 1001
 
-# Copy Angular dist output
+# Fix permissions
+RUN mkdir -p /var/cache/nginx /var/run /tmp && \
+  chown -R angular:angular /var/cache/nginx /var/run /var/log/nginx /tmp
+
+# Copy Angular build
 COPY --from=build /app/dist/apps/web/browser /usr/share/nginx/html
 
-# Copy your custom nginx.conf
+# Copy custom nginx.conf
 COPY --from=build /app/apps/web/nginx.conf /etc/nginx/nginx.conf
-
-# Fix permissions so nginx can run non-root
-RUN mkdir -p /var/cache/nginx /var/run && \
-  chown -R angular:angular /var/cache/nginx /var/run /var/log/nginx
 
 USER angular
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8080 || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
