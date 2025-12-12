@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssociationFull } from '../types';
 
 import { AssociationsService } from './associations.service';
@@ -25,6 +25,10 @@ export class AssociationsController {
     required: true,
     description: 'The ID of the association',
   })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async getAssociation(
     @Param('id') id: string,
   ): Promise<AssociationFull | null> {
@@ -32,6 +36,10 @@ export class AssociationsController {
   }
 
   @Get()
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @ApiResponse({
     status: 200,
     description: 'The associations have been successfully returned.',

@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { TournamentsService } from './tournaments.service';
 import { Tournament, TournamentProps } from '../types';
@@ -16,6 +16,10 @@ export class TournamentsController {
     status: 200,
     description: 'Get all tournaments.',
   })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async getTournaments() {
     return this.tournamentsService.getTournaments();
   }
@@ -29,6 +33,10 @@ export class TournamentsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async getNearbyTeams(
     @Query() queryParams: TournamentProps,
   ): Promise<Partial<Tournament>[] | null> {
