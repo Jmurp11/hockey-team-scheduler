@@ -42,6 +42,12 @@ import { ButtonModule } from 'primeng/button';
         width: 100%;
         height: 65%;
         @include flex(space-evenly, center, column);
+
+        @media (max-width: 768px) {
+          height: 75%;
+          width: 100%;
+          overflow-y: auto;
+        }
       }
 
       .api-title {
@@ -58,15 +64,30 @@ import { ButtonModule } from 'primeng/button';
       }
 
       app-card {
+        background-color: #ffffff;
         font-size: 16px;
         width: 80vw;
         height: 40vh;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         border-radius: 8px;
         padding: 1rem;
+        margin-bottom: 2rem;
 
         ::ng-deep .p-card-body {
-          max-height: 40vh;
+          height: 100%;
+        }
+
+        @media (max-width: 768px) {
+          margin-bottom: 7rem;
+          font-size: 12px;
+          max-height: 60vh;
+          padding-bottom: 2rem;
+          width: 80vw;
+        }
+
+        ::ng-deep .p-card-body {
+          max-height: 60vh;
+          width: 100% !important;
         }
       }
     `,
@@ -82,7 +103,7 @@ export class DeveloperComponent {
     {
       icon: 'pi pi-fw pi-bolt',
       title: 'Quick Start Guide',
-      description: `RinkLink.ai API is accessible through our Pay-Per-Request plan, meaning you only pay for exactly what you consume. Our pricing is competitive and affordable, making it easy for developers of all sizes to access our powerful youth hockey data.To get started with RinkLink.ai, you'll need an API key.  Once you have your key, you can authenticate your requests by including it in the x-api-key header of your HTTP requests.`,
+      description: `RinkLink.ai API is accessible through our Pay-Per-Request plan, meaning you only pay for exactly what you consume. Our pricing is competitive and affordable, making it easy for developers of all sizes to access our powerful youth hockey data.  To get started with RinkLink.ai, you'll need an API key.  Once you have your key, you can authenticate your requests by including it in the x-api-key header of your HTTP requests.`,
       button: {
         text: 'Get API Keys',
         action: () => {
