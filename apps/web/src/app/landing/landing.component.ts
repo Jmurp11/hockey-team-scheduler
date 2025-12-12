@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
@@ -75,6 +75,10 @@ export class LandingComponent implements OnInit {
     {
       label: 'Contact',
       routerLink: '/contact',
+    },
+    {
+      label: 'Developer',
+      routerLink: '/developer',
     },
   ];
 

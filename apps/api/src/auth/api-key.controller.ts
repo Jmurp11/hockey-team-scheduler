@@ -1,6 +1,8 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { ApiKeyService } from './api-key.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('v1/api-keys')
 export class ApiKeyController {
   constructor(private readonly apiKeyService: ApiKeyService) {}

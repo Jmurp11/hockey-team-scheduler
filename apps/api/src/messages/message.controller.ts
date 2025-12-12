@@ -5,11 +5,13 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiExcludeController,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -19,8 +21,7 @@ import { CreateConversationDto, MessageDto } from '../types';
 
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
-// @ApiExcludeController()
-
+@ApiExcludeController()
 @ApiTags('Messages')
 @UseGuards(ApiKeyGuard)
 @Controller('v1/messages')
@@ -37,6 +38,10 @@ export class MessageController {
     status: 400,
     description: 'Invalid input data',
   })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async startConversation(@Body() conversationInfo: CreateConversationDto) {
     return this.messageService.sendInitialMessage(conversationInfo);
   }
@@ -51,13 +56,20 @@ export class MessageController {
     status: 400,
     description: 'Invalid input data',
   })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async incoming(@Body() incomingMessage: MessageDto) {
     return this.messageService.incoming(incomingMessage);
   }
 
   @Get('conversations/:id/messages')
-  async getMessages(@Param('id') conversationId: string, @Req() req: any) {
-    return this.messageService.getMessages(conversationId, req.user.id);
+  async getMessages(
+    @Param('id') conversationId: string,
+    @Query('userId') userId: string,
+  ) {
+    return this.messageService.getMessages(conversationId, userId);
   }
 
   @Get('conversations')
@@ -66,7 +78,11 @@ export class MessageController {
     status: 200,
     description: 'Conversations retrieved successfully',
   })
-  async getConversations(@Req() req: any) {
-    return this.messageService.getConversations(req.user.id);
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
+  async getConversations(@Query('userId') userId: string) {
+    return this.messageService.getConversations(userId);
   }
 }

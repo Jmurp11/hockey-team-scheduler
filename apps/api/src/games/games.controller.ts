@@ -10,12 +10,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiExcludeController, ApiHeader, ApiResponse } from '@nestjs/swagger';
 
 import { CreateGameDto, Game, GamesQueryDto } from '../types';
 import { GamesService } from './games.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @Controller('v1/games')
 export class GamesController {
@@ -29,6 +30,10 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @Post('/add-games')
   create(@Body() createGameDto: CreateGameDto[]) {
     return this.gamesService.create(createGameDto);
@@ -42,6 +47,10 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @Get()
   findAll(@Query() query: GamesQueryDto) {
     return this.gamesService.findAll(query);
@@ -55,6 +64,10 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.gamesService.findOne(id);
@@ -68,6 +81,10 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -84,6 +101,10 @@ export class GamesController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.gamesService.remove(id);
