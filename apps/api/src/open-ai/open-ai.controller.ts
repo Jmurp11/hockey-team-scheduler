@@ -1,15 +1,18 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
     ApiExcludeController,
     ApiOperation,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+
 import { OpenAiService } from './open-ai.service';
 import { ContactSchedulerDto, FindTournamentsDto } from './open-ai.types';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiExcludeController()
 @ApiTags('Messages')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/open-ai')
 export class OpenAiController {
   constructor(private readonly openAiService: OpenAiService) {}

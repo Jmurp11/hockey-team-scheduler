@@ -1,9 +1,12 @@
-import { Controller, Headers, Post, Req, Res } from '@nestjs/common';
+import { Controller, Headers, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import Stripe from 'stripe';
+
 import { UserService } from './user.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiExcludeController()
+@UseGuards(ApiKeyGuard)
 @Controller('v1/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

@@ -10,10 +10,7 @@ export class MessageService {
   private twilio: Twilio;
 
   constructor(private openAiService: OpenAiService) {
-    this.twilio = new Twilio(
-      env.TWILIO_ACCOUNT_SID,
-      env.TWILIO_AUTH_TOKEN,
-    );
+    this.twilio = new Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
   }
 
   async sendText(to: string, body: string) {
@@ -21,7 +18,7 @@ export class MessageService {
       to,
       from: env.TWILIO_PHONE,
       body,
-    })
+    });
     return this.twilio.messages.create({
       to,
       from: env.TWILIO_PHONE,
@@ -40,7 +37,7 @@ export class MessageService {
       .single();
 
     const twilioMessage = await this.sendText(
-     '+19142174246', // contact.data.phone,
+      '+19142174246', // contact.data.phone,
       conversationDto.message,
     );
 
@@ -128,5 +125,64 @@ export class MessageService {
       .order('created_at', { ascending: true });
 
     return messages || [];
+  }
+
+  async getConversations(userId: string): Promise<any[]> {
+    const { data: conversations, error } = await supabase
+      .from('conversations')
+      .select(
+        `
+        id,
+        user_id,
+        manager_id,
+        ai_enabled,
+        created_at,
+        managers (
+          name,
+          team
+        )
+      `,
+      )
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching conversations:', error);
+      return [];
+    }
+
+    // Get last message for each conversation
+    const conversationsWithMessages = await Promise.all(
+      (conversations || []).map(async (convo) => {
+        const { data: lastMessage } = await supabase
+          .from('messages')
+          .select('content, created_at')
+          .eq('conversation_id', convo.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        const { data: unreadCount } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('conversation_id', convo.id)
+          .eq('sender', 'contact')
+          .eq('read', false);
+
+        console.log({ convo });
+        return;
+        // return {
+        //   id: convo.id,
+        //   user_id: convo.user_id,
+        //   managerName: convo.managers?.name || 'Unknown',
+        //   managerTeam: convo.managers?.team || '',
+        //   lastMessage: lastMessage?.content || '',
+        //   lastMessageTimestamp: lastMessage?.created_at || convo.created_at,
+        //   unreadCount: (unreadCount as any)?.count || 0,
+        // };
+      }),
+    );
+
+    return conversationsWithMessages;
   }
 }

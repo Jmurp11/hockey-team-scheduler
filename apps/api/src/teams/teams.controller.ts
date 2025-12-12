@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   NearbyTeamsParams,
@@ -6,9 +6,12 @@ import {
   Team,
   TeamsQueryDto,
 } from '../types';
+
 import { TeamsService } from './teams.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('teams')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/teams')
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}

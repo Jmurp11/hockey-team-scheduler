@@ -9,6 +9,7 @@ import { TeamsModule } from './teams/teams.module';
 import { UserModule } from './user/user.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
 import { MessageModule } from './messages/message.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     AssociationsModule,
@@ -19,6 +20,7 @@ import { MessageModule } from './messages/message.module';
     TeamsModule,
     TournamentsModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

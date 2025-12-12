@@ -1,4 +1,5 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ApiKeyInterceptor } from './shared/api-key.interceptor';
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
@@ -14,9 +15,14 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
 import { environment } from './environments/environment';
 
+const apiKeyInterceptor = new ApiKeyInterceptor();
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([
+        (req, next) => apiKeyInterceptor.intercept(req, { handle: next })
+      ])
+    ),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
