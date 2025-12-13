@@ -22,8 +22,8 @@ services:
       - --certificatesresolvers.le.acme.email=jim@rinklink.ai
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
       # Do not redirect HTTP to HTTPS during initial certificate request
-      # --entrypoints.web.http.redirections.entrypoint.to=websecure
-      # --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
 
   web:
     image: murphyj1011rinklink/rinklink-ui:latest
