@@ -17,15 +17,17 @@ export function convertTo24HourFormat(time12h: string): string {
   const [time, modifier] = time12h.split(' ');
   let [hours, minutes] = time.split(':');
 
-  if (hours === '12') {
-    hours = '00';
-  }
+  hours = handleHours(hours);
 
   if (modifier === 'PM') {
     hours = (parseInt(hours, 10) + 12).toString();
   }
 
   return `${hours.padStart(2, '0')}:${minutes}`;
+}
+
+function handleHours(hours: string): string {
+  return hours === '12' ? '00' : hours;
 }
 
 /**
@@ -93,7 +95,6 @@ export function combineDateAndTime(
 export function transformDateTime(
   gameData: { date?: string; time?: string } | null,
 ): string | null {
-  console.log('Transforming game data:', gameData);
   // Return null if no game data or no date property
   if (!gameData?.date) {
     return null;

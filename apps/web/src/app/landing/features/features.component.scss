@@ -1,4 +1,4 @@
-@use "mixins/mixins" as *;
+@use 'mixins/mixins' as *;
 
 h2 {
   color: var(--primary-500);
@@ -10,31 +10,37 @@ p {
 
 .features-container {
   @include flex(center, center, column);
+  width: 100%;
 
   &__cards {
-    @include flex(center, space-between, row);
+    @include flex(center, center, column);
     flex-wrap: wrap;
-    gap: 5rem;
-    padding: 1rem;
-
-    @media (max-width: 1550px) {
-      gap: 3rem;
-    }
+    gap: 3rem;
   }
 
   &__card {
-    font-size: 12px;
-    width: 350px;
-    min-height: 200px;
+    font-size: 14px;
+    width: 65%;
+    height: 500px;
+    max-height: 500px;
+    margin-bottom: 2rem;
 
     @media (max-width: 1550px) {
-      width: 300px;
-      min-height: 250px;
-      font-size: 12px;
+      width: 65%;
+      height: 500px;
+      max-height: 500px;
+    }
+
+    ::ng-deep .p-card-body {
+      max-height: 500px;
     }
   }
-}
 
-::ng-deep .p-card-body {
-  min-height: 190px;
+  &__card-image {
+    width: 100%;
+    background-repeat: no;
+    background-position: center;
+    background-size: cover;
+    padding-bottom: .5rem;
+  }
 }

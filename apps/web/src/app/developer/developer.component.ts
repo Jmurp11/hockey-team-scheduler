@@ -7,7 +7,7 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-developer',
-  template: ` <div class="api-title">Developer</div>
+  template: ` <div class="api-title">Developer Portal</div>
 
     <div class="container">
       @for (card of cards; track card.title) {
