@@ -72,7 +72,6 @@ export class ScheduleService {
     const updatedGames = currentGames.map((cachedGame) =>
       this.updateGameIdIfMatched(cachedGame, gamesWithIds, isUpdate),
     );
-
     // Update the cache if any IDs were changed
     const hasChanges = updatedGames.some(
       (game, index) =>
@@ -190,6 +189,7 @@ export class ScheduleService {
    */
   private normalizeGameType(gameType: any): string {
     if (!gameType) return '';
+    if (gameType === 'Unknown') return '';
     return String(gameType).toLowerCase();
   }
 
@@ -230,8 +230,7 @@ export class ScheduleService {
     return (
       this.normalizeDate(game1.date) === this.normalizeDate(game2.date) &&
       this.normalizeTime(game1.time) === this.normalizeTime(game2.time) &&
-      this.normalizeOpponent(opponent1) ===
-        this.normalizeOpponent(opponent2) &&
+      this.normalizeOpponent(opponent1) === this.normalizeOpponent(opponent2) &&
       this.normalizeStringField(game1.rink) ===
         this.normalizeStringField(game2.rink) &&
       this.normalizeStringField(game1.city) ===
@@ -274,12 +273,20 @@ export class ScheduleService {
   }
 
   formatUpdateData(game: any & { originalTime?: string | undefined }) {
-    return {
-      ...game,
-      opponent: setSelect(
+    let opponent;
+    if (!game.opponent) {
+      opponent = setSelect('', null);
+      console.log('No opponent provided, setting to empty.');
+    } else {
+      opponent = setSelect(
         game.opponent[0]?.id ? game.opponent[0].name : game.tournamentName,
         game.opponent[0]?.id, // Use just the ID, not the whole object
-      ),
+      );
+    }
+
+    return {
+      ...game,
+      opponent: opponent,
       date: createDateTimeLocalString(game.date.toString(), game.originalTime),
       isHome: game.isHome ? 'home' : 'away',
       state: setSelect(game.state, game.state),
