@@ -15,24 +15,33 @@ p {
   &__cards {
     @include flex(center, center, column);
     flex-wrap: wrap;
-    gap: 3rem;
+    gap: 2rem;
+
+    @media (max-width: 1024px) {
+      gap: 0.5rem;
+    }
   }
 
   &__card {
     font-size: 14px;
-    width: 65%;
-    height: 500px;
-    max-height: 500px;
+    width: 100%;
+    height: 680px;
+    max-height: 680px;
     margin-bottom: 2rem;
-
-    @media (max-width: 1550px) {
-      width: 65%;
-      height: 500px;
-      max-height: 500px;
-    }
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
 
     ::ng-deep .p-card-body {
-      max-height: 500px;
+      max-height: 680px !important;
+    }
+    @media (max-width: 1024px) {
+      width: 100%;
+      height: 355px;
+      max-height: 680px;
+      margin-bottom: 0.5rem;
+      ::ng-deep .p-card-body {
+        max-height: 355px;
+      }
     }
   }
 
@@ -41,6 +50,15 @@ p {
     background-repeat: no;
     background-position: center;
     background-size: cover;
-    padding-bottom: .5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.title_row {
+  @include flex(space-between, center, row);
+  font-size: 1rem;
+
+  @media (max-width: 1024px) {
+    font-size: 0.975rem;
   }
 }

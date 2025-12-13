@@ -17,7 +17,7 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
         your skill level with matching availability. Manage your schedule
         effortlessly throughout the season.
       </div>
-      <div>
+      <div class="get-started">
         <app-get-started size="small" />
       </div>
     </div>
@@ -25,6 +25,4 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
   styleUrls: ['./summary.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryComponent {
-  
-}
+export class SummaryComponent {}

@@ -12,7 +12,12 @@ import { CardComponent } from '../../shared/components/card/card.component';
       <div class="features-container__cards">
         @for (card of cards; track card.title) {
           <app-card class="features-container__card">
-            <ng-template #title>{{ card.title }}</ng-template>
+            <ng-template #title>
+              <div class="title_row">
+                <i [class]="card.icon" style="color: var(--primary-500)"></i>
+                <p>{{ card.title }}</p>
+                <span></span></div
+            ></ng-template>
             <ng-template #content>
               <p>{{ card.description }}</p>
               <img
@@ -59,7 +64,7 @@ export class FeaturesComponent {
         icon: 'pi pi-fw pi-upload',
         title: 'Bulk Ice Slot Import',
         description:
-          'Easily import multiple ice time slots in bulk, saving you time and effort. Keep your team’s schedule up-to-date with minimal hassle. Export schedule in the format of Youth Sports Management Platforms like Crossbar and SportsEngine.',
+          'Easily import multiple ice time slots in bulk, saving you time and effort.  Export schedule in the format of Youth Sports Management Platforms like Crossbar and SportsEngine.',
         image: 'bulk-upload.gif',
       },
     ];
