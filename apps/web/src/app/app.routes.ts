@@ -19,7 +19,7 @@ export const routes: Routes = [
         path: 'pricing',
         loadComponent: () =>
           import('./landing/pricing/pricing.component').then(
-            (m) => m.PricingComponent
+            (m) => m.PricingComponent,
           ),
       },
       {
@@ -31,28 +31,35 @@ export const routes: Routes = [
         path: 'forgot-password',
         loadComponent: () =>
           import('./auth/forgot-password/forgot-password.component').then(
-            (m) => m.ForgotPasswordComponent
+            (m) => m.ForgotPasswordComponent,
           ),
       },
       {
         path: 'welcome',
         loadComponent: () =>
           import('./auth/new-user/new-user.component').then(
-            (m) => m.NewUserComponent
+            (m) => m.NewUserComponent,
           ),
       },
       {
         path: 'contact',
         loadComponent: () =>
           import('./landing/contact/contact.component').then(
-            (m) => m.ContactComponent
+            (m) => m.ContactComponent,
+          ),
+      },
+      {
+        path: 'developer',
+        loadComponent: () =>
+          import('./developer/developer.component').then(
+            (m) => m.DeveloperComponent,
           ),
       },
       {
         path: 'callback',
         loadComponent: () =>
           import('./auth/callback/callback.component').then(
-            (m) => m.CallbackComponent
+            (m) => m.CallbackComponent,
           ),
       },
     ],
@@ -62,7 +69,7 @@ export const routes: Routes = [
     canActivate: [() => import('./guards/auth.guard').then((m) => m.authGuard)],
     loadComponent: () =>
       import('./container/container.component').then(
-        (m) => m.ContainerComponent
+        (m) => m.ContainerComponent,
       ),
     children: [
       {
@@ -74,21 +81,21 @@ export const routes: Routes = [
         path: 'opponents',
         loadComponent: () =>
           import('./opponents/opponents.component').then(
-            (m) => m.OpponentsComponent
+            (m) => m.OpponentsComponent,
           ),
       },
       {
         path: 'tournaments',
         loadComponent: () =>
           import('./tournaments/tournaments.component').then(
-            (m) => m.TournamentsComponent
+            (m) => m.TournamentsComponent,
           ),
       },
       {
         path: 'schedule',
         loadComponent: () =>
           import('./schedule/schedule.component').then(
-            (m) => m.ScheduleComponent
+            (m) => m.ScheduleComponent,
           ),
       },
       {
@@ -100,28 +107,33 @@ export const routes: Routes = [
         path: 'complete-profile',
         loadComponent: () =>
           import('./auth/register/register.component').then(
-            (m) => m.RegisterComponent
+            (m) => m.RegisterComponent,
           ),
       },
       {
         path: 'reset-password',
         loadComponent: () =>
           import('./auth/update-password/update-password.component').then(
-            (m) => m.UpdatePasswordComponent
+            (m) => m.UpdatePasswordComponent,
           ),
       },
       {
         path: 'inbox',
         loadComponent: () =>
           import('./conversations/conversations.component').then(
-            (m) => m.ConversationsComponent
+            (m) => m.ConversationsComponent,
           ),
       },
       {
         path: 'chat/:id',
         loadComponent: () =>
-          import('./chat/chat.component').then(
-            (m) => m.ChatComponent
+          import('./chat/chat.component').then((m) => m.ChatComponent),
+      },
+      {
+        path: 'developer',
+        loadComponent: () =>
+          import('./developer/developer.component').then(
+            (m) => m.DeveloperComponent,
           ),
       },
     ],

@@ -1,4 +1,5 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ApiKeyInterceptor } from './shared/api-key.interceptor';
 import {
   APP_INITIALIZER,
   ApplicationConfig,
@@ -10,6 +11,7 @@ import {
   APP_CONFIG,
   AssociationService,
   AuthService,
+  MessagesService,
   SupabaseService,
   TeamsService,
   UserService,
@@ -21,6 +23,8 @@ import {
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
+
+const apiKeyInterceptor = new ApiKeyInterceptor();
 
 /**
  * Initialize auth session on app startup
@@ -62,13 +66,18 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([
+        (req, next) => apiKeyInterceptor.intercept(req, { handle: next }),
+      ]),
+    ),
     provideIonicAngular({}),
     LoadingService,
     NavigationService,
     UserService,
     AssociationService,
     TeamsService,
+    MessagesService,
     {
       provide: APP_CONFIG,
       useValue: {

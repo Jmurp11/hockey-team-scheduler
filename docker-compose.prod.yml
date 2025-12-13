@@ -43,6 +43,12 @@ services:
       # Angular container port
       - "traefik.http.services.web.loadbalancer.server.port=8080"
       - "traefik.docker.network=web"
+      # Add API Docs
+      - "traefik.http.routers.web-api.rule=Host(`rinklink.ai`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.web-api.entrypoints=websecure"
+      - "traefik.http.routers.web-api.tls=true"
+      - "traefik.http.routers.web-api.tls.certresolver=le"
+      - "traefik.http.services.web-api.loadbalancer.server.port=3000"
     networks:
       - web
 

@@ -1,14 +1,17 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   NearbyTeamsParams,
   NearbyTeamsQueryDto,
   Team,
   TeamsQueryDto,
 } from '../types';
+
 import { TeamsService } from './teams.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('teams')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/teams')
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
@@ -22,6 +25,10 @@ export class TeamsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   @ApiParam({ name: 'id', required: true, description: 'The ID of the team' })
   async getTeam(@Param('id') id: number): Promise<Team | null> {
     return this.teamsService.getTeam(id);
@@ -36,6 +43,10 @@ export class TeamsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async getTeams(@Query() query: TeamsQueryDto): Promise<Team[]> {
     return this.teamsService.getTeams(query);
   }
@@ -49,6 +60,10 @@ export class TeamsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Not Found.' })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+  })
   async getNearbyTeams(
     @Query() queryParams: NearbyTeamsQueryDto,
   ): Promise<Partial<Team>[] | null> {
