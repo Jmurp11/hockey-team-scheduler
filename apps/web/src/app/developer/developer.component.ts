@@ -40,11 +40,11 @@ import { ButtonModule } from 'primeng/button';
       @use 'mixins/mixins' as *;
       .container {
         width: 100%;
-        height: 65%;
+        height: 100%;
         @include flex(space-evenly, center, column);
 
         @media (max-width: 768px) {
-          height: 75%;
+          height: 100%;
           width: 100%;
           overflow-y: auto;
         }
@@ -67,27 +67,26 @@ import { ButtonModule } from 'primeng/button';
         background-color: #ffffff;
         font-size: 16px;
         width: 80vw;
-        height: 40vh;
+        height: auto;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         border-radius: 8px;
-        padding: 1rem;
         margin-bottom: 2rem;
 
         ::ng-deep .p-card-body {
-          height: 100%;
+          height: 100% !important;
+          padding: 8px !important;
         }
 
         @media (max-width: 768px) {
-          margin-bottom: 7rem;
           font-size: 12px;
-          max-height: 60vh;
-          padding-bottom: 2rem;
-          width: 80vw;
+          height: auto;
+          width: 90%;
         }
 
         ::ng-deep .p-card-body {
-          max-height: 60vh;
+          height: auto !important;
           width: 100% !important;
+          padding: 8px !important;
         }
       }
     `,

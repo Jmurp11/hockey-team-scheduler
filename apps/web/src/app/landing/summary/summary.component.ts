@@ -9,15 +9,12 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
   template: `
     <div class="summary-container">
       <h2 class="summary-container__content">
-        Simplify Your Youth Hockey Scheduling
+        The Smarter Way to Schedule Youth Hockey
       </h2>
       <div class="summary-container__content">
-        RinkLink.ai streamlines the process of scheduling youth hockey games.
-        Upload your available ice slots and receive suggestions for teams at
-        your skill level with matching availability. Manage your schedule
-        effortlessly throughout the season.
+        RinkLink.ai is your all-in-one assistant for youth hockey scheduling. Harness AI to automatically contact opponents, negotiate game times, and fill your calendar—no more endless emails or phone calls. Instantly match with teams at your skill level, discover tournaments that fit your season, and bulk import ice slots with ease. Focus on the game, not the logistics.
       </div>
-      <div>
+      <div class="get-started">
         <app-get-started size="small" />
       </div>
     </div>
@@ -25,6 +22,4 @@ import { GetStartedComponent } from '../get-started.component.ts/get-started.com
   styleUrls: ['./summary.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryComponent {
-  
-}
+export class SummaryComponent {}
