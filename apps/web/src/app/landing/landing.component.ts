@@ -66,7 +66,7 @@ export class LandingComponent implements OnInit {
   items: MenuItem[] = [
     {
       label: 'Features',
-      routerLink: '/features',
+      routerLink: '/home#features',
     },
     {
       label: 'Pricing',

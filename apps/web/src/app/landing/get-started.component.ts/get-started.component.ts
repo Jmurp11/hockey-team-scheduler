@@ -16,10 +16,10 @@ import { ButtonModule } from 'primeng/button';
   providers: [],
   template: `
     <p-button
-      [rounded]="true"
+      [rounded]="rounded"
       [size]="size"
       label="Get Started"
-      
+      [variant]="variant"
       (onClick)="navigation.navigateToLink('/pricing')"
     />
   `,
@@ -30,6 +30,11 @@ export class GetStartedComponent {
   @Input()
   size: 'small' | 'large' | undefined;
 
+  @Input()
+  rounded: boolean = true;
+
+  @Input()
+  variant?: 'text' | 'outlined';;
   navigation = inject(NavigationService);
 
   

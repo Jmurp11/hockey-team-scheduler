@@ -1,4 +1,4 @@
-@use "mixins/mixins" as *;
+@use 'mixins/mixins' as *;
 
 .main-content {
   @include flex(space-between, center, column);
@@ -22,7 +22,13 @@
     gap: 1rem;
   }
 
-    @media (max-height: 800px) {
-    gap: .5rem;
+  @media (max-height: 800px) {
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    &__section {
+      width: 90%;
+    }
   }
 }
