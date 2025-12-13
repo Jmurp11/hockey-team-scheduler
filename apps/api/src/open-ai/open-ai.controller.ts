@@ -1,15 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import {
-    ApiExcludeController,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+  ApiExcludeController,
+  ApiHeader,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+
 import { OpenAiService } from './open-ai.service';
 import { ContactSchedulerDto, FindTournamentsDto } from './open-ai.types';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiExcludeController()
 @ApiTags('Messages')
+@UseGuards(ApiKeyGuard)
 @Controller('v1/open-ai')
 export class OpenAiController {
   constructor(private readonly openAiService: OpenAiService) {}
@@ -23,6 +27,10 @@ export class OpenAiController {
   @ApiResponse({
     status: 400,
     description: 'Invalid input data',
+  })
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
   })
   async contactScheduler(@Body() contactSchedulerDto: ContactSchedulerDto) {
     return this.openAiService.contactScheduler(contactSchedulerDto);

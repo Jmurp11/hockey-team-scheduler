@@ -15,6 +15,11 @@ import { CardComponent } from '../../shared/components/card/card.component';
             <ng-template #title>{{ card.title }}</ng-template>
             <ng-template #content>
               <p>{{ card.description }}</p>
+              <img
+                class="features-container__card-image"
+                [src]="card.image"
+                [alt]="card.title"
+              />
             </ng-template>
           </app-card>
         }
@@ -25,23 +30,37 @@ import { CardComponent } from '../../shared/components/card/card.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeaturesComponent {
-  cards: { title: string; description: string }[] = [];
+  cards: { title: string; description: string; icon: string; image: string }[] =
+    [];
   constructor() {
     this.cards = [
       {
-        title: 'AI-Driven Game Scheduling',
+        icon: 'pi pi-fw pi-microchip-ai',
+        title: 'AI-Powered Game Scheduling',
         description:
-          'Our AI reaches out to other team managers, negotiates game times, and automatically adds confirmed games to your schedule—saving you time and effort.',
+          'Let our intelligent assistant handle the hassle—automatically contacting opponents, negotiating game times, and adding confirmed games to your calendar.',
+        image: 'ai-chat.png',
       },
       {
-        title: 'Team Availability Suggestions',
+        icon: 'pi pi-fw pi-map-marker',
+        title: 'Smart Opponent Matching',
         description:
-          'Receive suggestions for the teams with matching availability, including team names, ratings, and distances',
+          'Instantly discover teams at your skill level, nearby or on the road. Effortlessly fill your schedule with the right matchups, wherever you play.',
+        image: 'find-nearby-teams.gif',
       },
       {
-        title: 'Location-Based Matching',
+        icon: 'pi pi-fw pi-trophy',
+        title: 'One-Click Tournament Scheduling',
         description:
-          'Find teams located near your home rink or schedule clusters of games for road trips',
+          'Browse and add tournaments that fit your team’s calendar and skill level in seconds. No more searching—just seamless scheduling.',
+        image: 'tournaments.gif',
+      },
+      {
+        icon: 'pi pi-fw pi-upload',
+        title: 'Bulk Ice Slot Import',
+        description:
+          'Easily import multiple ice time slots in bulk, saving you time and effort. Keep your team’s schedule up-to-date with minimal hassle. Export schedule in the format of Youth Sports Management Platforms like Crossbar and SportsEngine.',
+        image: 'bulk-upload.gif',
       },
     ];
   }

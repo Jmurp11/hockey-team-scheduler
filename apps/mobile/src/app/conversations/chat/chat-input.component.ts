@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { sendOutline } from 'ionicons/icons';
@@ -8,7 +9,7 @@ import { InputComponent } from '../../shared/input/input.component';
 @Component({
   selector: 'app-chat-input',
   standalone: true,
-  imports: [InputComponent, ButtonComponent, IonIcon],
+  imports: [InputComponent, ButtonComponent, IonIcon, ReactiveFormsModule],
   template: `
     <div class="chat-input">
       <app-input
@@ -16,8 +17,16 @@ import { InputComponent } from '../../shared/input/input.component';
         placeholder="Type a message..."
         fill="outline"
         class="message-input"
+        [formControl]="messageControl"
+        (keyup.enter)="onSend()"
       ></app-input>
-      <app-button (onClick)="onSend()" shape="round" class="send-button" color="secondary">
+      <app-button 
+        (onClick)="onSend()" 
+        shape="round" 
+        class="send-button" 
+        color="secondary"
+        [disabled]="!messageControl.valid || isSending"
+      >
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </app-button>
     </div>
@@ -52,12 +61,22 @@ import { InputComponent } from '../../shared/input/input.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatInputComponent {
+  @Input() isSending = false;
+  @Output() messageSent = new EventEmitter<string>();
+
+  messageControl = new FormControl('', [Validators.required]);
+
   constructor() {
     addIcons({ sendOutline });
   }
 
-  onSend() {
-    // TODO: Implement send message functionality
-    console.log('Send message');
+  onSend(): void {
+    if (!this.messageControl.valid || this.isSending) return;
+
+    const message = this.messageControl.value?.trim();
+    if (!message) return;
+
+    this.messageSent.emit(message);
+    this.messageControl.reset();
   }
 }

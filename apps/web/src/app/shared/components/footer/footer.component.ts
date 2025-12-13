@@ -13,19 +13,25 @@ import packageInfo from '../../../../../../../package.json';
   imports: [CommonModule, RouterModule],
   template: ` <div class="footer">
     @if (!isMobile) {
-    <div class="footer__content">
-      <div class="footer__policies">
-        <div>Terms of Service</div>
-        <div>Privacy Policy</div>
+      <div class="footer__content">
+        <div class="footer__policies">
+          <div>Terms of Service</div>
+          <div>Privacy Policy</div>
+        </div>
+        <div>&#64;2025 RINKLINKAI LLC All Rights Reserved</div>
+        <div class="footer__socials">
+          @for (social of socials; track social.name) {
+            <div>
+              <i
+                [class]="social.icon"
+                style="font-size: 1rem"
+                (click)="navigate(social.name)"
+              ></i>
+            </div>
+          }
+          <div>v{{ packageInfo.version }}</div>
+        </div>
       </div>
-      <div>&#64;2025 RinkLink.ai All Rights Reserved</div>
-      <div class="footer__socials">
-        <div><i class="pi pi-twitter" style="font-size: 1rem"></i></div>
-        <div><i class="pi pi-instagram" style="font-size: 1rem"></i></div>
-        <div><i class="pi pi-discord" style="font-size: 1rem"></i></div>
-        <div>v{{ packageInfo.version }}</div>
-      </div>
-    </div>
     }
   </div>`,
   styleUrls: ['./footer.component.scss'],
@@ -35,6 +41,20 @@ export class FooterComponent implements OnInit {
   packageInfo = packageInfo;
 
   isMobile = false;
+
+  socials = [
+    { name: 'twitter', icon: 'pi pi-twitter', url: 'https://x.com/RinkLinkAI' },
+    {
+      name: 'instagram',
+      icon: 'pi pi-instagram',
+      url: 'https://www.instagram.com/rinklinkai/',
+    },
+    {
+      name: 'youtube',
+      icon: 'pi pi-youtube',
+      url: 'https://www.youtube.com/channel/UC-KQvlXxb-4ren-nSuJxwww',
+    },
+  ];
 
   ngOnInit(): void {
     this.checkScreenSize();
@@ -47,5 +67,23 @@ export class FooterComponent implements OnInit {
 
   private checkScreenSize() {
     this.isMobile = window.innerWidth <= 1024;
+  }
+
+  navigate(platform: string) {
+    let url = '';
+    switch (platform) {
+      case 'twitter':
+        url = 'https://x.com/RinkLinkAI';
+        break;
+      case 'instagram':
+        url = 'https://www.instagram.com/rinklinkai/';
+        break;
+      case 'youtube':
+        url = 'https://www.youtube.com/channel/UC-KQvlXxb-4ren-nSuJxwww';
+        break;
+      default:
+        return;
+    }
+    window.open(url, '_blank');
   }
 }
