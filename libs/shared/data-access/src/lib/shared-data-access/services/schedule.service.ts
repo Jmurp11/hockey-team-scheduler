@@ -333,7 +333,7 @@ export class ScheduleService {
       location: `${game.city}, ${game.state}, ${game.country}`,
       game_type:
         game.game_type?.charAt(0).toUpperCase() + game.game_type?.slice(1) ||
-        'Unknown',
+        'Open Slot',
       originalTime: game.time,
       time: formatTime(game.time),
     };

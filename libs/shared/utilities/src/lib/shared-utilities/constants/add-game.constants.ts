@@ -1,7 +1,8 @@
 import { setSelect } from '../utilities/select.utility';
 
 // Add game form field configurations
-export function getAddGameFormFields(items: any[]) {
+export function getAddGameFormFields(teams: any[], rinks: any[]) {
+  console.log({ rinks });
   return [
     {
       controlName: 'opponent',
@@ -11,17 +12,20 @@ export function getAddGameFormFields(items: any[]) {
       controlType: 'autocomplete',
       optionLabel: 'label',
       optionValue: 'value',
-      items: items.map((i) => setSelect(i.name, i)),
-      section: 1,
+      items: teams.map((i) => setSelect(i.name, i)),
     },
     {
       controlName: 'rink',
       labelName: 'Rink',
       errorMessage: 'Please enter a Rink',
       autocomplete: false,
-      controlType: 'input',
+      controlType: 'autocomplete',
       type: 'text',
-      section: 1,
+      optionLabel: 'label',
+      optionValue: 'value',
+      items: rinks,
+      allowAddNew: true,
+      isRink: true,
     },
     {
       controlName: 'date',
@@ -38,7 +42,6 @@ export function getAddGameFormFields(items: any[]) {
         showTime: true,
         hourFormat: '12' as '12' | '24',
       },
-      section: 1,
     },
     {
       controlName: 'country',
@@ -46,10 +49,9 @@ export function getAddGameFormFields(items: any[]) {
       errorMessage: 'Please enter a Country',
       autocomplete: false,
       controlType: 'select',
-      section: 1,
       options: {
         itemLabel: 'label',
-        listItems: items
+        listItems: teams
           .map((i) => ({
             label: i.association.country,
             value: i.association.country,
@@ -73,7 +75,6 @@ export function getAddGameFormFields(items: any[]) {
       autocomplete: false,
       controlType: 'input',
       type: 'text',
-      section: 1,
     },
     {
       controlName: 'state',
@@ -81,10 +82,9 @@ export function getAddGameFormFields(items: any[]) {
       errorMessage: 'Please enter a State or Province ',
       autocomplete: false,
       controlType: 'select',
-      section: 1,
       options: {
         itemLabel: 'label',
-        listItems: items
+        listItems: teams
           .map((i) => ({
             label: i.association.state,
             value: i.association.state,

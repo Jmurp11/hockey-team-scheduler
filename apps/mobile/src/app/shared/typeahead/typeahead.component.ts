@@ -22,7 +22,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
     IonSearchbar,
     IonContent,
     IonList,
-    IonTitle
+    IonTitle,
   ],
   template: `
     <ion-header>
@@ -37,7 +37,19 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       <ion-list id="modal-list" [inset]="true">
         @for (item of filteredItems; track item.value) {
           <ion-item (click)="confirmChanges(item)">
-            {{ item.label }}
+            @if (isRink) {
+              <div class="rink">
+                <div class="rink__item">
+                  <span class="rink__label">{{ item.label }}</span>
+                </div>
+                <div class="rink__address">
+                  {{ item.value.city }}, {{ item.value.state }},
+                  {{ item.value.country }}
+                </div>
+              </div>
+            } @else {
+              {{ item.label }}
+            }
           </ion-item>
         }
       </ion-list>
@@ -45,8 +57,35 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
   `,
   styles: [
     `
+      @use 'mixins/mixins' as *;
       ion-item {
         cursor: pointer;
+      }
+
+      .rink {
+        @include flex(center, center, column);
+
+        cursor: pointer;
+
+        &__item {
+          width: 100%;
+          padding: 0.2rem;
+          &__label {
+            font-weight: 500;
+            font-size: 1rem;
+          }
+
+          &__icon {
+            font-size: 1.5rem;
+          }
+        }
+
+        &__address {
+          font-weight: 400;
+          color: var(--gray-400);
+          font-size: 0.875rem;
+          text-align: center;
+        }
       }
     `,
   ],
@@ -54,6 +93,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
 export class TypeaheadComponent implements OnInit {
   @Input() items: AutocompleteOption[] = [];
   @Input() title?: string = 'Select an Option';
+  @Input() isRink: boolean = false;
   @Output()
   selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();

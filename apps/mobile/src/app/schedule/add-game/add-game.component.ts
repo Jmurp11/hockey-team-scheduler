@@ -12,6 +12,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AddGameService,
   AuthService,
+  RinksService,
   ScheduleService,
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
@@ -38,8 +39,8 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { Observable, of, take } from 'rxjs';
-import { tap, switchMap} from 'rxjs/operators';
+import { combineLatest, Observable, of, take } from 'rxjs';
+import { tap, switchMap } from 'rxjs/operators';
 import { AutocompleteComponent } from '../../shared/autocomplete/autocomplete.component';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
@@ -295,6 +296,7 @@ export class AddGameComponent implements OnInit {
   private teamsService = inject(TeamsService);
   private addGameService = inject(AddGameService);
   private toastService = inject(ToastService);
+  private rinksService = inject(RinksService);
   addGameModalService = inject(AddGameModalService);
 
   currentUser = this.authService.currentUser();
@@ -313,11 +315,12 @@ export class AddGameComponent implements OnInit {
 
   isHomeOptions = IS_HOME_OPTIONS;
 
+  private rinkValueChangesSub?: any;
+
   constructor() {
     // Effect to watch for changes in gameData or editMode and update validator
     effect(() => {
       const currentGameData = this.gameData();
-      const currentEditMode = this.editMode();
 
       // Skip if form isn't initialized yet
       if (!this.addGameForm) {
@@ -336,20 +339,61 @@ export class AddGameComponent implements OnInit {
           currentGameData?.id,
         );
       }
+
+      // Re-subscribe to rink value changes after form is re-initialized
+      this.subscribeToRinkValueChanges();
     });
+  }
+
+  private subscribeToRinkValueChanges() {
+    // Unsubscribe previous if exists
+    if (this.rinkValueChangesSub) {
+      this.rinkValueChangesSub.unsubscribe();
+    }
+    const obs = this.rinkValueChanges();
+    if (obs) {
+      this.rinkValueChangesSub = obs
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((rink: any) => this.handleRinkValueChange(rink));
+    }
+  }
+
+  rinkValueChanges() {
+    return this.addGameForm.get('rink')?.valueChanges;
+  }
+
+  handleRinkValueChange(value: any) {
+    if (!value || (value && value.value === 'New Item')) {
+      this.addGameForm.get('city')?.setValue(null);
+      this.addGameForm.get('state')?.setValue(null);
+      this.addGameForm.get('country')?.setValue(null);
+      this.addGameForm.get('city')?.enable();
+      this.addGameForm.get('state')?.enable();
+      this.addGameForm.get('country')?.enable();
+      return;
+    }
+
+    this.addGameForm.get('city')?.setValue(value.city);
+    this.addGameForm.get('state')?.setValue(value.state);
+    this.addGameForm.get('country')?.setValue(value.country);
+    this.addGameForm.get('city')?.disable();
+    this.addGameForm.get('state')?.disable();
+    this.addGameForm.get('country')?.disable();
   }
 
   ngOnInit(): void {
     // Initialize form
     this.addGameForm = initAddGameForm(this.gameData());
 
-    this.items$ = this.teamsService.teams({
-      age: this.currentUser.age,
+    this.items$ = combineLatest({
+      teams: this.teamsService.teams({
+        age: this.currentUser.age,
+      }),
+      rinks: this.rinksService.getRinks(),
     });
-
     this.formFieldsData$ = this.items$.pipe(
       takeUntilDestroyed(this.destroyRef),
-      switchMap((items) => of(getFormFields(items))),
+      switchMap(({ teams, rinks }) => of(getFormFields(teams, rinks))),
     );
 
     // Subscribe to games data and update time conflict validator when games are loaded
@@ -364,6 +408,9 @@ export class AddGameComponent implements OnInit {
           );
         }
       });
+
+    // Subscribe to rink value changes
+    this.subscribeToRinkValueChanges();
   }
 
   getFormControl(controlName: string): FormControl | null {
@@ -394,10 +441,14 @@ export class AddGameComponent implements OnInit {
       return;
     }
 
-    const input = transformAddGameFormData(
-      this.addGameForm.value,
-      this.currentUser.user_id,
-    );
+    const formValue = {
+      ...this.addGameForm.getRawValue(),
+      rink: {
+        label: this.addGameForm.getRawValue().rink.rink,
+        value: this.addGameForm.getRawValue().rink,
+      },
+    };
+    const input = transformAddGameFormData(formValue, this.currentUser.user_id);
 
     const data = this.gameData();
 
@@ -432,7 +483,7 @@ export class AddGameComponent implements OnInit {
             tap((response: Partial<Game>) =>
               this.scheduleService.syncGameIds([response], true),
             ),
-            switchMap((response: Partial<Game>) => of([response]))
+            switchMap((response: Partial<Game>) => of([response])),
           )
       : (
           this.addGameService.addGame(input) as Observable<Partial<Game>[]>
