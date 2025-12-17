@@ -35,6 +35,8 @@ p-datepicker {
   & ::ng-deep .p-datepicker-panel {
     z-index: 1100 !important;
   }
+
+  --p-inputtext-placeholder-color: var(--color-text-secondary) !important;
 }
 
 p-message {

@@ -88,6 +88,12 @@ export class OpponentListComponent {
       team: opponent.team_name,
       location: opponent.location,
     };
+
+    // TODO: get scheduler contact info
+    // TODO: if no contact info, show message and offer user to add it if they have it
+    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
+    // TODO: Let users confirm the initial message
+    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
     return this.openAiService
       .contactScheduler(params)
       .pipe(
