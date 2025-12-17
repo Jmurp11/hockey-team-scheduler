@@ -1,3 +1,5 @@
+@use 'mixins/mixins' as *;
+
 .form-field {
   margin-bottom: 1.5rem;
   min-width: 350px;
@@ -5,12 +7,38 @@
   ::ng-deep input {
     width: 100% !important;
   }
-  
+
   ::ng-deep .p-autocomplete {
     width: 100% !important;
   }
 
   ::ng-deep .p-message {
     margin-top: 0.25rem;
+  }
+}
+
+.rink {
+  @include flex(center, center, column);
+
+  cursor: pointer;
+
+  &__item {
+    width: 100%;
+    padding: 0.2rem;
+    &__label {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    &__icon {
+      font-size: 1.5rem;
+    }
+  }
+
+  &__address {
+    font-weight: 400;
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    text-align: center;
   }
 }

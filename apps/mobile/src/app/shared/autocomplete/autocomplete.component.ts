@@ -39,6 +39,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
           class="ion-page"
           [items]="items"
           [title]="label"
+          [isRink]="isRink"
           (selectionChange)="onSelectionChange($event)"
           (selectionCancel)="onSelectionCancel()"
         ></app-typeahead>
@@ -64,6 +65,7 @@ export class AutocompleteComponent implements ControlValueAccessor {
   @Input() labelPlacement?: 'start' | 'end' | 'fixed' | 'stacked' | 'floating';
   @Input() fill?: 'outline' | 'solid';
   @Input() disabled = false;
+  @Input() isRink: boolean = false;
 
   @Output() selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();
@@ -86,7 +88,10 @@ export class AutocompleteComponent implements ControlValueAccessor {
       typeof this.control.value === 'object'
     ) {
       return (
-        this.control.value.name || this.control.value.value.team_name || null
+        this.control.value.name ||
+        this.control.value.value?.team_name ||
+        this.control.value.rink ||
+        null
       );
     }
 
@@ -113,6 +118,7 @@ export class AutocompleteComponent implements ControlValueAccessor {
     this.onChange(actualValue);
     this.onTouched();
 
+    console.log({ option });
     this.selectionChange.emit(option);
     this.modal.dismiss();
   }

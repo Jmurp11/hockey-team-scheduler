@@ -193,11 +193,18 @@ export type CreateGameDto = Omit<Game, 'id' | 'created_at'>;
 export class GamesQueryDto {
   @ApiProperty({
     name: 'user',
-    required: false,
+    required: true,
     description: 'User ID to filter games by',
     example: 5678,
   })
   user: number;
+  @ApiProperty({
+    name: 'openGamesOnly',
+    required: false,
+    description: 'If true, returns only open games with no opponent assigned',
+    example: false,
+  })
+  openGamesOnly?: boolean;
 }
 
 export class Tournament {

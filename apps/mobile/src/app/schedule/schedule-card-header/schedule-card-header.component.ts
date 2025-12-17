@@ -83,6 +83,8 @@ export class ScheduleCardHeaderComponent {
         return 'success';
       case 'Playoff':
         return 'tertiary';
+      case 'Open Slot':
+        return 'warning';
       default:
         return 'medium';
     }
