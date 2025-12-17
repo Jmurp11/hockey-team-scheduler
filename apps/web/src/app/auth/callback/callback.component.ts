@@ -1,15 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access'
-;
+import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-callback',
   standalone: true,
+  imports: [ProgressSpinnerModule],
   template: `
     <div class="callback-container">
       <div class="loading">
-        <p>Signing you in...</p>
+        <p-progressspinner />
       </div>
     </div>
   `,
