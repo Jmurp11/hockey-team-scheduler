@@ -4,10 +4,7 @@ import { setSelect } from './select.utility';
 import { transformDateTime, getCurrentLocalDateTime } from './time.utility';
 import { gameTimeConflictValidator } from './game-time-conflict.validator';
 import { opponentValidator } from './form.validators';
-
-interface FormValueWithValue {
-  value?: unknown;
-}
+import { SelectItem } from 'primeng/api';
 
 /**
  * Game type options for select inputs
@@ -123,24 +120,25 @@ export function transformAddGameFormData(
   formValue: Record<string, unknown>,
   userId: string,
 ): Record<string, unknown>[] {
+  console.log({ formValue });
   const dateValue = formValue['date'];
   const date =
     dateValue instanceof Date ? dateValue : new Date(dateValue as string);
 
-  const state = formValue['state'] as FormValueWithValue | string;
-  const opponent = formValue['opponent'] as FormValueWithValue | string;
-
+  const state = formValue['state'] as SelectItem | string;
+  const opponent = formValue['opponent'] as SelectItem | string;
+  let rink = formValue['rink'] as SelectItem;
   let apiGameType = formValue['game_type'] as string;
   if (apiGameType && typeof apiGameType === 'string') {
     apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);
   }
 
   const submission = {
-    rink: formValue['rink'],
+    rink: typeof rink === 'object' ? rink.label : rink,
     city: formValue['city'],
     country:
       typeof formValue['country'] === 'object'
-        ? (formValue['country'] as FormValueWithValue).value
+        ? (formValue['country'] as SelectItem).value
         : formValue['country'],
     game_type: apiGameType,
     state: typeof state === 'object' ? state.value : state,

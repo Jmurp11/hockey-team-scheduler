@@ -42,7 +42,8 @@ import { ButtonModule } from 'primeng/button';
         width: 100%;
         height: 100%;
         @include flex(space-evenly, center, column);
-
+        overflow-y: auto;
+        
         @media (max-width: 768px) {
           height: 100%;
           width: 100%;

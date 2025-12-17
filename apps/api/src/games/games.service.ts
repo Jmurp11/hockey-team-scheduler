@@ -18,10 +18,14 @@ export class GamesService {
   }
 
   async findAll(query: GamesQueryDto): Promise<Game[]> {
+    const queryCopy = { user: query.user } as any;
+    if (query.openGamesOnly) {
+      queryCopy.opponent = null;
+    }
     const { data, error } = await supabase
       .from('gamesfull')
       .select('*')
-      .match(query);
+      .match(queryCopy);
 
     if (error) {
       console.error('Error fetching games:', error);

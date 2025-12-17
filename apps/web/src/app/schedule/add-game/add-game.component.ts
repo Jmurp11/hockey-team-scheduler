@@ -17,6 +17,7 @@ import {
   AuthService,
   ScheduleService,
   TeamsService,
+  RinksService,
 } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
@@ -30,7 +31,7 @@ import {
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Observable, take } from 'rxjs';
+import { combineLatest, Observable, take } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { SelectComponent } from '../../shared';
 import { AutoCompleteComponent } from '../../shared/components/auto-complete/auto-complete.component';
@@ -41,6 +42,7 @@ import { SelectButtonComponent } from '../../shared/components/select-button/sel
 import { AddGameDialogService } from './add-game-dialog.service';
 import { getFormFields } from './add-game.constants';
 import { ToastService } from '../../shared/services/toast.service';
+import { SelectItem } from 'primeng/api';
 
 @Component({
   selector: 'app-add-game',
@@ -96,6 +98,8 @@ import { ToastService } from '../../shared/services/toast.service';
                       [items]="field.items || []"
                       [optionLabel]="field.optionLabel"
                       [optionValue]="field.optionValue"
+                      [allowAddNew]="field.allowAddNew || false"
+                      [isRink]="field.isRink || false"
                     />
                   }
                   @case ('date-picker') {
@@ -112,13 +116,13 @@ import { ToastService } from '../../shared/services/toast.service';
                 [control]="getFormControl(addGameForm, 'game_type')"
                 label="Game Type"
                 [options]="gameTypeOptions"
-              ></app-select-button>
+              />
               <div></div>
               <app-select-button
                 [control]="getFormControl(addGameForm, 'isHome')"
                 label="Is Home"
                 [options]="isHomeOptions"
-              ></app-select-button>
+              />
             </div>
           }
           <ng-template #footer>
@@ -169,6 +173,7 @@ export class AddGameComponent implements OnInit {
 
   addGameDialogService = inject(AddGameDialogService);
   teamsService = inject(TeamsService);
+  rinksService = inject(RinksService);
 
   private editModeSignal = signal(false);
   private gameDataSignal = signal<Game | null>(null);
@@ -194,7 +199,6 @@ export class AddGameComponent implements OnInit {
     // Effect to watch for changes in gameData or editMode and update validator
     effect(() => {
       const currentGameData = this.gameDataSignal();
-      const currentEditMode = this.editModeSignal();
 
       // Skip if form isn't initialized yet
       if (!this.addGameForm) {
@@ -213,7 +217,25 @@ export class AddGameComponent implements OnInit {
           currentGameData?.id,
         );
       }
+
+      // Re-subscribe to rink value changes after form is re-initialized
+      this.subscribeToRinkValueChanges();
     });
+  }
+
+  private rinkValueChangesSub?: any;
+
+  private subscribeToRinkValueChanges() {
+    // Unsubscribe previous if exists
+    if (this.rinkValueChangesSub) {
+      this.rinkValueChangesSub.unsubscribe();
+    }
+    const obs = this.rinkValueChanges();
+    if (obs) {
+      this.rinkValueChangesSub = obs
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((rink: any) => this.handleRinkValueChange(rink));
+    }
   }
 
   ngOnInit(): void {
@@ -224,15 +246,21 @@ export class AddGameComponent implements OnInit {
     // Initialize form
     this.addGameForm = initAddGameForm(this.gameData);
 
-    this.items$ = this.teamsService.teams({
-      age: this.currentUser.age,
+    this.items$ = combineLatest({
+      teams: this.teamsService.teams({
+        age: this.currentUser.age,
+      }),
+      rinks: this.rinksService.getRinks(),
     });
-
-    this.items$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((items) => {
-      this.formFieldsData = getFormFields(items);
-    });
+    this.items$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ teams, rinks }) => {
+        this.formFieldsData = getFormFields(teams, rinks);
+      });
 
     this.gamesCache$();
+
+    this.subscribeToRinkValueChanges();
   }
 
   gamesCache$() {
@@ -273,7 +301,7 @@ export class AddGameComponent implements OnInit {
     }
 
     const input = transformAddGameFormData(
-      this.addGameForm.value,
+      this.addGameForm.getRawValue(),
       this.currentUser.user_id,
     );
 
@@ -344,5 +372,33 @@ export class AddGameComponent implements OnInit {
           : 'There was an error adding the game. Please try again.',
       });
     }
+  }
+
+  rinkValueChanges() {
+    return this.addGameForm.get('rink')?.valueChanges;
+  }
+
+  handleRinkValueChange(value: SelectItem | null) {
+    if (!value || (value && value.value === 'New Item')) {
+      this.addGameForm.get('city')?.setValue(null);
+      this.addGameForm.get('state')?.setValue(null);
+      this.addGameForm.get('country')?.setValue(null);
+      this.addGameForm.get('city')?.enable();
+      this.addGameForm.get('state')?.enable();
+      this.addGameForm.get('country')?.enable();
+
+      return;
+    }
+
+    this.addGameForm.get('city')?.setValue(value.value.city);
+    this.addGameForm
+      .get('state')
+      ?.setValue({ label: value.value.state, value: value.value.state });
+    this.addGameForm
+      .get('country')
+      ?.setValue({ label: value.value.country, value: value.value.country });
+    this.addGameForm.get('city')?.disable();
+    this.addGameForm.get('state')?.disable();
+    this.addGameForm.get('country')?.disable();
   }
 }
