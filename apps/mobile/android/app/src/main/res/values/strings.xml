@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Hockey Team Scheduler</string>
-    <string name="title_activity_main">Hockey Team Scheduler</string>
-    <string name="package_name">com.hockeyteamscheduler.mobile</string>
-    <string name="custom_url_scheme">com.hockeyteamscheduler.mobile</string>
+    <string name="app_name">RinkLink.ai</string>
+    <string name="title_activity_main">RinkLink.ai</string>
+    <string name="package_name">com.rinklinkai.mobile</string>
+    <string name="custom_url_scheme">com.rinklinkai.mobile</string>
 </resources>
