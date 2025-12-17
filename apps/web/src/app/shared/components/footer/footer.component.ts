@@ -47,7 +47,7 @@ export class FooterComponent implements OnInit {
     {
       name: 'instagram',
       icon: 'pi pi-instagram',
-      url: 'https://www.instagram.com/rinklinkai/',
+      url: 'https://www.instagram.com/rinklink.ai/',
     },
     {
       name: 'youtube',
