@@ -1,0 +1,29 @@
+{
+  "name": "tournament-etl",
+  "version": "1.0.0",
+  "description": "",
+  "author": "jmurp11",
+  "license": "MIT",
+  "main": "main.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
+    "esm": "^3.2.25",
+    "yargs": "^18.0.0",
+    "openai": "^6.0.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "@types/yargs": "^17.0.33",
+    "dotenv": "^16.5.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "start": "npx tsx src/main.ts",
+    "leagues": "npx tsx src/leagues/insertLeagues.ts",
+    "organizations": "npx tsx src/organizations/insertOrgs.ts",
+    "rankings": "npx tsx src/rankings/insertRankings.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
