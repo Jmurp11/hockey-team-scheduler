@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonFabButton, IonFabList, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -32,6 +32,7 @@ import { AddGameModalService } from '../add-game/add-game-modal.service';
     </ion-fab-list>
   `,
   styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScheduleActionsComponent {
   private addGameModalService = inject(AddGameModalService);

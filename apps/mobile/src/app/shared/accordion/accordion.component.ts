@@ -1,18 +1,36 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, ContentChildren, Input, QueryList, TemplateRef } from '@angular/core';
 import {
-    IonAccordion,
-    IonAccordionGroup,
-    IonItem,
-    IonLabel,
+  Component,
+  ContentChildren,
+  DestroyRef,
+  inject,
+  Input,
+  OnInit,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  IonAccordion,
+  IonAccordionGroup,
+  IonItem,
+  IonLabel,
 } from '@ionic/angular/standalone';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-accordion',
   standalone: true,
-  imports: [IonAccordion, IonAccordionGroup, IonItem, IonLabel, NgTemplateOutlet],
+  imports: [
+    IonAccordion,
+    IonAccordionGroup,
+    IonItem,
+    IonLabel,
+    NgTemplateOutlet,
+  ],
   template: `
-    <ion-accordion-group>
+    <ion-accordion-group [value]="openedAccordion">
       @for (value of values; track value; let i = $index) {
         <ion-accordion [value]="value" [disabled]="disabled">
           <ion-item slot="header" color="light">
@@ -29,8 +47,26 @@ import {
   `,
   styles: [],
 })
-export class AccordionComponent {
+export class AccordionComponent implements OnInit {
   @Input() values?: string[];
   @Input() disabled?: boolean;
   @ContentChildren(TemplateRef) templates?: QueryList<TemplateRef<unknown>>;
+
+  @Input() isCollapsed$!: Observable<boolean>;
+  openedAccordion: string | null = null;
+
+  destroyRef = inject(DestroyRef);
+  ngOnInit(): void {
+    if (this.values && this.values.length > 0) {
+      this.openedAccordion = this.values[0];
+    }
+
+    this.isCollapsed$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((collapsed) => {
+        if (collapsed) {
+          this.openedAccordion = null;
+        }
+      });
+  }
 }

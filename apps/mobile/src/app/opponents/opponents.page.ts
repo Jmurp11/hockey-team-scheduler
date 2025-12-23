@@ -93,7 +93,10 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
 
     <ion-content [scrollY]="false" class="ion-padding">
       <div class="content-wrapper">
-        <app-accordion [values]="['Filters', 'Sort By']">
+        <app-accordion
+          [values]="['Filters', 'Sort By']"
+          [isCollapsed$]="isCollapsed$"
+        >
           <ng-template>
             <app-opponents-filter
               (selectedInputs)="onSearchParamsChanged($event)"
@@ -213,6 +216,7 @@ export class OpponentsPage implements OnInit {
   authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
+  isCollapsed$ = new BehaviorSubject<boolean>(false);
   isLoading = signal<boolean>(false);
   showBackButton = signal<boolean>(false);
 
@@ -279,6 +283,7 @@ export class OpponentsPage implements OnInit {
   onSearchParamsChanged(params: OpponentSearchParams) {
     this.isLoading.set(true);
     this.searchParams$.next(params);
+    this.isCollapsed$.next(true);
   }
 
   onSortFieldChanged(event: CustomEvent) {
@@ -286,6 +291,7 @@ export class OpponentsPage implements OnInit {
       ...this.currentSort$.value,
       field: event.detail.value,
     });
+    this.isCollapsed$.next(true);
   }
 
   onSortDirectionChanged(event: CustomEvent) {
