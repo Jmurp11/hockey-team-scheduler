@@ -3,8 +3,8 @@ import { Game } from '../types/game.type';
 import { setSelect } from './select.utility';
 import { transformDateTime, getCurrentLocalDateTime } from './time.utility';
 import { opponentValidator } from './form.validators';
-import { SelectItem } from 'primeng/api';
 import { SelectOption } from '../types/select-option.type';
+import { Ranking } from '@hockey-team-scheduler/shared-utilities';
 
 /**
  * Game type options for select inputs
@@ -79,7 +79,6 @@ export function initAddGameForm(gameData: any | null = null): FormGroup {
   const gameTypeValue = extractGameType(gameData);
   const isHomeValue = convertIsHomeValue(gameData);
 
-  console.log({ gameData });
   const currentLocalDateTime = getCurrentLocalDateTime();
 
   let dateValue =
@@ -138,9 +137,11 @@ export function transformAddGameFormData(
   const date =
     dateValue instanceof Date ? dateValue : new Date(dateValue as string);
 
-  const state = formValue['state'] as SelectItem | string;
-  const opponent = formValue['opponent'] as SelectItem | string;
-  let rink = formValue['rink'] as SelectItem;
+  const state = formValue['state'] as SelectOption<string> | string;
+  const opponent = formValue['opponent'] as
+    | SelectOption<Ranking | string>
+    | string;
+  let rink = formValue['rink'] as SelectOption<Partial<Game>>;
   let apiGameType = formValue['game_type'] as string;
   if (apiGameType && typeof apiGameType === 'string') {
     apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);
@@ -151,7 +152,7 @@ export function transformAddGameFormData(
     city: formValue['city'],
     country:
       typeof formValue['country'] === 'object'
-        ? (formValue['country'] as SelectItem).value
+        ? (formValue['country'] as SelectOption<string>).value
         : formValue['country'],
     game_type: apiGameType,
     state: typeof state === 'object' ? state.value : state,
@@ -166,7 +167,7 @@ export function transformAddGameFormData(
 }
 
 function handleNullOpponent(opponent: SelectOption<any>) {
-  if (!opponent.label) {
+  if (!opponent || !opponent.label) {
     return null;
   }
 

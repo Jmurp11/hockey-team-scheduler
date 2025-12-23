@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { IonCardContent } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chatbubbleOutline, createOutline, trashOutline } from 'ionicons/icons';
@@ -19,6 +25,7 @@ import { ScheduleCardHeaderComponent } from '../schedule-card-header/schedule-ca
     ScheduleCardContentComponent,
     ScheduleCardFooterComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="schedule-list">
       @if (games && games.length > 0) {
@@ -119,7 +126,7 @@ export class ScheduleListComponent {
         icon: 'location-outline',
         isHome: game.isHome,
       },
-      { label: game.rink, icon: 'time-outline' },
+      { label: game.rink, icon: 'home-outline' },
     ];
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
