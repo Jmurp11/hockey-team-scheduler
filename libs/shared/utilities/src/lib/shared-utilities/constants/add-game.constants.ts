@@ -2,7 +2,6 @@ import { setSelect } from '../utilities/select.utility';
 
 // Add game form field configurations
 export function getAddGameFormFields(teams: any[], rinks: any[]) {
-  console.log({ rinks });
   return [
     {
       controlName: 'opponent',

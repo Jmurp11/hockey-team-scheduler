@@ -15,9 +15,14 @@ import {
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  OpponentSearchParams,
+  Ranking,
+  SelectOption,
   setSelect,
   sort,
   SortDirection,
+  Team,
+  UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonBackButton,
@@ -201,9 +206,8 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
 })
 export class OpponentsPage implements OnInit {
   private addGameModalService = inject(AddGameModalService);
-  private viewContainerRef = inject(ViewContainerRef);
 
-  nearbyTeams$!: Observable<any>;
+  nearbyTeams$!: Observable<Ranking[]>;
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
@@ -217,7 +221,10 @@ export class OpponentsPage implements OnInit {
     setSelect('Rating', 'rating'),
   ];
 
-  private searchParams$ = new BehaviorSubject<any>(null);
+  private searchParams$ = new BehaviorSubject<OpponentSearchParams | null>(
+    null,
+  );
+
   currentSort$ = new BehaviorSubject<{
     field: string;
     sortDirection: SortDirection;
@@ -226,7 +233,9 @@ export class OpponentsPage implements OnInit {
     sortDirection: 'asc',
   });
 
-  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
+  user$: Observable<UserProfile> = toObservable(
+    this.authService.currentUser,
+  ).pipe(
     startWith(null),
     filter((user) => user != null),
   );
@@ -263,11 +272,11 @@ export class OpponentsPage implements OnInit {
       teams: teams$,
       sort: this.currentSort$,
     }).pipe(
-      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir)),
+      map(({ teams, sort: sortDir }) => sort([...(teams as Team[])], sortDir)),
     );
   }
 
-  onSearchParamsChanged(params: any) {
+  onSearchParamsChanged(params: OpponentSearchParams) {
     this.isLoading.set(true);
     this.searchParams$.next(params);
   }
@@ -286,18 +295,22 @@ export class OpponentsPage implements OnInit {
     });
   }
 
-  getNearbyTeams(params: any) {
+  getNearbyTeams(params: OpponentSearchParams) {
+    if (!params.association) {
+      throw new Error('Association is required to search for opponents.');
+    }
+
     return this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
-      p_age: this.authService.currentUser().age.toLowerCase(),
+      p_age: this.authService.currentUser()?.age.toLowerCase() || '',
       p_max_rating: params.rating[1],
       p_min_rating: params.rating[0],
       p_max_distance: params.distance,
     });
   }
 
-  onOpponentSelected(opponent: any) {
-    this.addGameModalService.openModal(opponent, false);
+  onOpponentSelected(opponent: SelectOption<Ranking>) {
+    this.addGameModalService.openModal({ opponent: { ...opponent } }, false);
   }
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { formatTournamentLocation } from '@hockey-team-scheduler/shared-utilities';
+import { formatTournamentLocation, Tournament } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonCardHeader,
   IonCardSubtitle,
@@ -65,7 +65,7 @@ import {
 })
 export class TournamentCardHeaderComponent {
   @Input()
-  tournament: any;
+  tournament!: Tournament;
 
   formatLocation = formatTournamentLocation;
 }

@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { APP_CONFIG } from '../config/app-config';
-import { handleNullOpponent } from '@hockey-team-scheduler/shared-utilities';
+import {
+  CreateGame,
+  Game,
+  handleNullOpponent,
+} from '@hockey-team-scheduler/shared-utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +30,24 @@ export class AddGameService {
   updateGame(game: any) {
     const input = {
       ...game,
-      opponent: game.opponent[0].id,
+      opponent: this.handleOpponent(game.opponent),
     };
     return this.http.put(`${this.config.apiUrl}/games/${game.id}`, input);
+  }
+
+  handleOpponent(opponent: any) {
+    if (opponent && opponent[0].value) {
+      return opponent[0].value.id;
+    }
+
+    if (opponent && opponent[0].isArray) {
+      return opponent[0][0].id;
+    }
+
+    if (opponent && !opponent[0].isArray) {
+      return opponent[0].id;
+    }
+
+    return null;
   }
 }

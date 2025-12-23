@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { filter, Observable, switchMap, take } from 'rxjs';
+import { filter, merge, Observable, switchMap, take } from 'rxjs';
 import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { CardComponent } from '../shared/components/card/card.component';
 import { TableComponent } from '../shared/components/table/table.component';
@@ -21,7 +21,9 @@ import {
 } from '@hockey-team-scheduler/shared-data-access';
 import {
   ExportColumn,
+  Game,
   TableOptions,
+  UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { AddGameDialogService } from './add-game/add-game-dialog.service';
@@ -151,8 +153,10 @@ export class ScheduleComponent implements OnInit {
     ],
   };
 
-  user$: Observable<any> = toObservable(this.authService.currentUser);
-  tableData$: Observable<any[] | null> | undefined;
+  user$: Observable<UserProfile | null> = toObservable(
+    this.authService.currentUser,
+  );
+  tableData$: Observable<Game[] | null> | undefined;
 
   actions: any[] = [];
 
@@ -168,7 +172,7 @@ export class ScheduleComponent implements OnInit {
 
     this.tableData$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
-      switchMap((user) => this.scheduleService.gamesFull(user.user_id)),
+      switchMap((user) => this.scheduleService.gamesFull(user!.user_id)),
     );
   }
 
@@ -202,7 +206,7 @@ export class ScheduleComponent implements OnInit {
         icon: 'pi pi-trash',
         iconPos: 'right',
         command: () => {
-          this.scheduleService.optimisticDeleteGame(rowData.id);
+          this.scheduleService.setDeleteRecord(rowData.id);
           this.scheduleService
             .deleteGame(rowData.id)
             .pipe(take(1))

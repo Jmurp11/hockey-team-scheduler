@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { SelectOption } from '@hockey-team-scheduler/shared-utilities';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { MessageModule } from 'primeng/message';
 import { SelectButtonModule } from 'primeng/selectbutton';
@@ -33,7 +34,7 @@ export class SelectButtonComponent {
   control: FormControl;
 
   @Input()
-  options: { label: string; value: string }[] = [];
+  options: SelectOption<any>[] = [];
 
 
 }

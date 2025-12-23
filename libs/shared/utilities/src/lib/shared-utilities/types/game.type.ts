@@ -1,3 +1,5 @@
+import { SelectOption } from "./select-option.type";
+
 export interface Game {
   id: string;
   created_at: string;
@@ -8,8 +10,8 @@ export interface Game {
   state: string;
   country: string;
   rink: string;
-  opponent: number | { label: string; value: any } | { team_name: string; id: number };
-  user: number;
+  opponent: number | SelectOption<any> | { team_name: string; id: number };
+  user: string;
   isHome: boolean;
   tournamentName?: string;
 }

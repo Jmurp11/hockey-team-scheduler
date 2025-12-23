@@ -26,7 +26,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
 import { SliderComponent } from '../../shared/components/slider/slider.component';
 
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { getFormControl, OpponentSearchParams } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-opponents',
@@ -131,7 +131,7 @@ export class OpponentsFilterComponent implements OnInit {
 
   @Input() userDefault$: Observable<SelectItem>;
 
-  @Output() selectedInputs = new EventEmitter<any>();
+  @Output() selectedInputs = new EventEmitter<OpponentSearchParams>();
 
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);

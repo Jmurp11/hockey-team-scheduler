@@ -29,6 +29,10 @@ import {
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { SearchbarComponent } from '../shared/searchbar/searchbar.component';
 import { TournamentListComponent } from './tournament-list/tournament-list.component';
+import {
+  Tournament,
+  UserProfile,
+} from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-tournaments',
@@ -138,9 +142,11 @@ export class TournamentsPage implements OnInit {
   tournamentsService = inject(TournamentsService);
   private route = inject(ActivatedRoute);
 
-  tournaments$: Observable<any> = new Observable<any>();
-  nearbyTournaments$!: Observable<any>;
-  user$: Observable<any> = toObservable(this.authService.currentUser);
+  tournaments$: Observable<Tournament[]> = new Observable<Tournament[]>();
+  nearbyTournaments$!: Observable<Tournament[]>;
+  user$: Observable<UserProfile | null> = toObservable(
+    this.authService.currentUser,
+  );
 
   isLoading = signal<boolean>(false);
   showBackButton = signal<boolean>(false);
@@ -168,21 +174,22 @@ export class TournamentsPage implements OnInit {
     this.searchParams$.next(event.detail.value || '');
   }
 
-  getNearbyTournaments(): Observable<any> {
+  getNearbyTournaments(): Observable<Tournament[]> {
     return this.user$.pipe(
       tap(() => this.isLoading.set(true)),
       filter((user) => !!user && !!user.association_id),
-      switchMap((user) =>
-        this.tournamentsService.nearByTournaments({
-          p_id: user.association_id,
-        }),
+      switchMap(
+        (user: any) =>
+          this.tournamentsService.nearByTournaments({
+            p_id: user.association_id,
+          }) as Observable<Tournament[]>,
       ),
       tap(() => this.isLoading.set(false)),
       shareReplay(1),
     );
   }
 
-  private createFilteredAndSortedTournaments$(): Observable<any[]> {
+  private createFilteredAndSortedTournaments$(): Observable<Tournament[]> {
     return combineLatest({
       tournaments: this.tournaments$,
       search: this.searchParams$,
