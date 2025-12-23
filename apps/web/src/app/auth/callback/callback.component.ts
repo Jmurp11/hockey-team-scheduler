@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
+
 @Component({
   selector: 'app-callback',
   standalone: true,
