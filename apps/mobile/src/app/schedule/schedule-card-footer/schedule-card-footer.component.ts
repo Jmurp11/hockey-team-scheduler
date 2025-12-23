@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chatbubbleOutline, createOutline, trashOutline } from 'ionicons/icons';
@@ -13,6 +13,7 @@ import { ToastService } from '../../shared/toast/toast.service';
   selector: 'app-schedule-card-footer',
   standalone: true,
   imports: [CommonModule, ButtonComponent, IonIcon],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<div class="footer-content">
     @for (button of buttons; track button.label) {
       <app-button
@@ -21,7 +22,11 @@ import { ToastService } from '../../shared/toast/toast.service';
         [fill]="'outline'"
         [size]="'default'"
       >
-        <ion-icon slot="icon-only" [name]="button.icon" [color]="button.color" />
+        <ion-icon
+          slot="icon-only"
+          [name]="button.icon"
+          [color]="button.color"
+        />
       </app-button>
     }
   </div>`,
@@ -67,11 +72,16 @@ export class ScheduleCardFooterComponent {
   ];
 
   edit(game: any) {
-    this.addGameModalService.openModal(game, true);
+    const gameData = {
+      ...game,
+      opponent: { label: game.opponent[0].name, value: game.opponent[0] },
+      rink: { label: game.rink, value: game.rink },
+    };
+    this.addGameModalService.openModal(gameData, true);
   }
 
   delete(game: any) {
-    this.scheduleService.optimisticDeleteGame(game.id);
+    this.scheduleService.setDeleteRecord(game.id);
     this.scheduleService
       .deleteGame(game.id)
       .pipe(take(1))

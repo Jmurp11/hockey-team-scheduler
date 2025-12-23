@@ -23,6 +23,7 @@ import { AddGameModalService } from './add-game/add-game-modal.service';
 import { AddGameLazyWrapperComponent } from './add-game/add-game-lazy-wrapper.component';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { ScheduleListComponent } from './schedule-list/schedule-list.component';
+import { Game, UserProfile } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-schedule',
@@ -110,10 +111,10 @@ export class SchedulePage implements OnInit {
   private addGameModalService = inject(AddGameModalService);
   private router = inject(Router);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user$: Observable<any> = toObservable(this.authService.currentUser);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  games$: Observable<any[] | undefined> | undefined;
+  user$: Observable<UserProfile | null> = toObservable(
+    this.authService.currentUser,
+  );
+  games$: Observable<Game[] | undefined> | undefined;
 
   constructor() {
     addIcons({ addOutline, peopleOutline, trophyOutline });
@@ -122,7 +123,7 @@ export class SchedulePage implements OnInit {
   ngOnInit(): void {
     this.games$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
-      switchMap((user) => this.scheduleService.gamesFull(user.user_id)),
+      switchMap((user) => this.scheduleService.gamesFull(user?.user_id || '')),
       map((games) => games?.sort((a, b) => (a.date < b.date ? -1 : 1))),
     );
   }
@@ -143,23 +144,20 @@ export class SchedulePage implements OnInit {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleContactTeam(game: any): void {
+  handleContactTeam(game: Game): void {
     console.log('Contact team manager for game:', game.id);
     // TODO: Implement contact team manager functionality
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleEdit(game: any): void {
+  handleEdit(game: Game): void {
     this.addGameModalService.openModal(
       this.scheduleService.formatUpdateData(game),
       true,
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleDelete(game: any): void {
-    this.scheduleService.optimisticDeleteGame(game.id);
+  handleDelete(game: Game): void {
+    this.scheduleService.setDeleteRecord(game.id);
     this.scheduleService.deleteGame(game.id).pipe(take(1)).subscribe();
   }
 }

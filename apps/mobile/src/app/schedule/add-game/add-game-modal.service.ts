@@ -6,14 +6,14 @@ import { Game } from '@hockey-team-scheduler/shared-utilities';
 })
 export class AddGameModalService {
   private _isOpen = signal(false);
-  private _gameData = signal<Game | null>(null);
+  private _gameData = signal<Partial<Game> | null>(null);
   private _editMode = signal(false);
 
   isOpen = this._isOpen.asReadonly();
   gameData = this._gameData.asReadonly();
   editMode = this._editMode.asReadonly();
 
-  openModal(gameData: Game | null = null, editMode = false) {
+  openModal(gameData: Partial<Game> | null = null, editMode = false) {
     this._gameData.set(gameData);
     this._editMode.set(editMode);
     this._isOpen.set(true);

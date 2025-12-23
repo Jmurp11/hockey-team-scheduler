@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
+import { UserProfile } from '@hockey-team-scheduler/shared-utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +10,7 @@ export class AuthService {
   supabaseClient = inject(SupabaseService).getSupabaseClient();
 
   session = signal<Session | null>(null);
-  currentUser = signal<any>(null);
+  currentUser = signal<UserProfile | null>(null);
 
   async setSession(session: Session | null) {
     this.session.set(session);

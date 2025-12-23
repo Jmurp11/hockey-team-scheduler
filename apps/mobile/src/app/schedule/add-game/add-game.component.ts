@@ -22,7 +22,6 @@ import {
   initAddGameForm,
   IS_HOME_OPTIONS,
   transformAddGameFormData,
-  updateGameTimeConflictValidator,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButton,
@@ -330,16 +329,6 @@ export class AddGameComponent implements OnInit {
       // Reinitialize form when gameData changes
       this.addGameForm = initAddGameForm(currentGameData);
 
-      // Update validator with current game ID when games cache is available
-      const games = this.scheduleService.gamesCache.value;
-      if (games) {
-        updateGameTimeConflictValidator(
-          this.addGameForm,
-          games,
-          currentGameData?.id,
-        );
-      }
-
       // Re-subscribe to rink value changes after form is re-initialized
       this.subscribeToRinkValueChanges();
     });
@@ -387,7 +376,7 @@ export class AddGameComponent implements OnInit {
 
     this.items$ = combineLatest({
       teams: this.teamsService.teams({
-        age: this.currentUser.age,
+        age: this.currentUser?.age,
       }),
       rinks: this.rinksService.getRinks(),
     });
@@ -395,19 +384,6 @@ export class AddGameComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
       switchMap(({ teams, rinks }) => of(getFormFields(teams, rinks))),
     );
-
-    // Subscribe to games data and update time conflict validator when games are loaded
-    this.scheduleService.gamesCache
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((games) => {
-        if (games && this.addGameForm) {
-          updateGameTimeConflictValidator(
-            this.addGameForm,
-            games,
-            this.gameData()?.id,
-          );
-        }
-      });
 
     // Subscribe to rink value changes
     this.subscribeToRinkValueChanges();
@@ -448,19 +424,12 @@ export class AddGameComponent implements OnInit {
         value: this.addGameForm.getRawValue().rink,
       },
     };
-    const input = transformAddGameFormData(formValue, this.currentUser.user_id);
+    const input = transformAddGameFormData(
+      formValue,
+      this.currentUser?.user_id || null,
+    );
 
     const data = this.gameData();
-
-    // Optimistic update
-    if (this.editMode() && data) {
-      this.scheduleService.optimisticUpdateGame({
-        id: data.id,
-        ...input[0],
-      });
-    } else {
-      this.scheduleService.optimisticAddGames(input);
-    }
 
     const operation$ = this.chooseOperation(data, input);
 
@@ -476,23 +445,21 @@ export class AddGameComponent implements OnInit {
 
   chooseOperation(data: any, input: any): Observable<Partial<Game>[]> {
     return this.editMode() && data
-      ? this.addGameService
-          .updateGame({ id: data.id, ...input[0] } as Partial<Game>)
-          .pipe(
-            take(1),
-            tap((response: Partial<Game>) =>
-              this.scheduleService.syncGameIds([response], true),
-            ),
-            switchMap((response: Partial<Game>) => of([response])),
-          )
+      ? this.handleUpdate(data, input)
       : (
           this.addGameService.addGame(input) as Observable<Partial<Game>[]>
-        ).pipe(
-          take(1),
-          tap((response: Partial<Game>[]) =>
-            this.scheduleService.syncGameIds(response),
-          ),
-        );
+        ).pipe(take(1));
+  }
+
+  handleUpdate(data: any, input: any): Observable<Partial<Game>[]> {
+    console.log({ id: data.id });
+    this.scheduleService.setDeleteRecord(data.id);
+    return this.addGameService
+      .updateGame({ id: data.id, ...input[0] } as Partial<Game>)
+      .pipe(
+        take(1),
+        switchMap((response: Partial<Game>) => of([response])),
+      );
   }
 
   handleSubscription(response: any) {

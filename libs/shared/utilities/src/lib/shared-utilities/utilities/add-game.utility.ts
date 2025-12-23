@@ -2,9 +2,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Game } from '../types/game.type';
 import { setSelect } from './select.utility';
 import { transformDateTime, getCurrentLocalDateTime } from './time.utility';
-import { gameTimeConflictValidator } from './game-time-conflict.validator';
 import { opponentValidator } from './form.validators';
-import { SelectItem } from 'primeng/api';
+import { SelectOption } from '../types/select-option.type';
+import { Ranking } from '@hockey-team-scheduler/shared-utilities';
 
 /**
  * Game type options for select inputs
@@ -55,6 +55,12 @@ function convertIsHomeValue(gameData: Game | null): string {
     return 'home';
   }
 
+  if (
+    typeof gameData.isHome === 'string' &&
+    (gameData.isHome === 'home' || gameData.isHome === 'away')
+  ) {
+    return gameData.isHome;
+  }
   // Handle both boolean and string values from API
   const isHomeData = gameData.isHome;
   if (typeof isHomeData === 'boolean') {
@@ -69,10 +75,7 @@ function convertIsHomeValue(gameData: Game | null): string {
  * @param gameData Optional game data for editing mode
  * @param existingGames Optional array of existing games for time conflict validation
  */
-export function initAddGameForm(
-  gameData: any | null = null,
-  existingGames: (Game & { originalTime?: string })[] | null = null,
-): FormGroup {
+export function initAddGameForm(gameData: any | null = null): FormGroup {
   const gameTypeValue = extractGameType(gameData);
   const isHomeValue = convertIsHomeValue(gameData);
 
@@ -82,8 +85,9 @@ export function initAddGameForm(
     gameData && gameData.date
       ? transformDateTime({ date: gameData.date, time: gameData.time })
       : transformDateTime(currentLocalDateTime);
-  return new FormGroup({
-    opponent: new FormControl(gameData?.opponent || null, {
+
+  const form = new FormGroup({
+    opponent: new FormControl(handleNullOpponent(gameData?.opponent) || null, {
       validators: [Validators.required, opponentValidator()],
     }),
     rink: new FormControl(gameData?.rink || null, {
@@ -99,10 +103,7 @@ export function initAddGameForm(
       validators: [Validators.required, Validators.minLength(2)],
     }),
     date: new FormControl(dateValue, {
-      validators: [
-        Validators.required,
-        gameTimeConflictValidator(existingGames, gameData?.id),
-      ],
+      validators: [Validators.required],
     }),
     game_type: new FormControl(gameTypeValue, {
       validators: [Validators.required],
@@ -111,6 +112,15 @@ export function initAddGameForm(
       validators: [Validators.required],
     }),
   });
+
+  // Disable city, state, country if rink has a value on init
+  if (gameData?.rink) {
+    form.get('city')?.disable();
+    form.get('state')?.disable();
+    form.get('country')?.disable();
+  }
+
+  return form;
 }
 
 /**
@@ -118,16 +128,20 @@ export function initAddGameForm(
  */
 export function transformAddGameFormData(
   formValue: Record<string, unknown>,
-  userId: string,
+  userId: string | null,
 ): Record<string, unknown>[] {
-  console.log({ formValue });
+  if (!userId) {
+    throw new Error('User ID is required to submit game data.');
+  }
   const dateValue = formValue['date'];
   const date =
     dateValue instanceof Date ? dateValue : new Date(dateValue as string);
 
-  const state = formValue['state'] as SelectItem | string;
-  const opponent = formValue['opponent'] as SelectItem | string;
-  let rink = formValue['rink'] as SelectItem;
+  const state = formValue['state'] as SelectOption<string> | string;
+  const opponent = formValue['opponent'] as
+    | SelectOption<Ranking | string>
+    | string;
+  let rink = formValue['rink'] as SelectOption<Partial<Game>>;
   let apiGameType = formValue['game_type'] as string;
   if (apiGameType && typeof apiGameType === 'string') {
     apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);
@@ -138,11 +152,11 @@ export function transformAddGameFormData(
     city: formValue['city'],
     country:
       typeof formValue['country'] === 'object'
-        ? (formValue['country'] as SelectItem).value
+        ? (formValue['country'] as SelectOption<string>).value
         : formValue['country'],
     game_type: apiGameType,
     state: typeof state === 'object' ? state.value : state,
-    opponent: [handleOpponent(opponent)],
+    opponent: [opponent],
     isHome: formValue['isHome'] === 'home',
     user: userId,
     date: `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`, // YYYY-MM-DD using local date
@@ -152,42 +166,10 @@ export function transformAddGameFormData(
   return [submission];
 }
 
-export function handleOpponent(opponent: any) {
-  if (typeof opponent === 'object') {
-    if (opponent.value) {
-      return opponent.value;
-    } else {
-      return opponent;
-    }
-  } else {
-    return opponent;
+function handleNullOpponent(opponent: SelectOption<any>) {
+  if (!opponent || !opponent.label) {
+    return null;
   }
-}
 
-/**
- * Update the time conflict validator on an existing form
- * @param form The FormGroup to update
- * @param existingGames Array of existing games for conflict checking
- * @param currentGameId Optional ID of current game being edited
- */
-export function updateGameTimeConflictValidator(
-  form: FormGroup,
-  existingGames: (Game & { originalTime?: string })[] | null,
-  currentGameId?: string,
-): void {
-  const dateControl = form.get('date');
-  if (dateControl) {
-    const currentValidators = [Validators.required];
-
-    // Add the time conflict validator
-    if (existingGames && existingGames.length > 0) {
-      currentValidators.push(
-        gameTimeConflictValidator(existingGames, currentGameId),
-      );
-    }
-
-    // Update validators and revalidate
-    dateControl.setValidators(currentValidators);
-    dateControl.updateValueAndValidity();
-  }
+  return opponent;
 }

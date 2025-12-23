@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { IonContent, IonFooter } from '@ionic/angular/standalone';
@@ -20,17 +27,14 @@ import { MessagesComponent } from './messages.component';
     ChatInputComponent,
   ],
   template: `
-    <app-chat-header 
-      [managerName]="managerName()" 
-      [aiEnabled]="aiEnabled()" 
-    />
-    
+    <app-chat-header [managerName]="managerName()" [aiEnabled]="aiEnabled()" />
+
     <ion-content class="chat-content">
       <app-messages [messages]="messages()" />
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <app-chat-input 
+      <app-chat-input
         (messageSent)="onMessageSent($event)"
         [isSending]="isSending()"
       />
@@ -70,27 +74,32 @@ export class ChatComponent implements OnInit {
   isSending = signal<boolean>(false);
 
   ngOnInit(): void {
-    this.route.params.pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap((params) => {
-        this.conversationId.set(params['id']);
-        this.loadMessages();
-      })
-    ).subscribe();
+    this.route.params
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((params) => {
+          this.conversationId.set(params['id']);
+          this.loadMessages();
+        }),
+      )
+      .subscribe();
   }
 
   loadMessages(): void {
     const id = this.conversationId();
     if (!id) return;
 
-    this.messagesService.getMessages(id).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap((messages) => this.messages.set(messages)),
-      catchError((error) => {
-        console.error('Error loading messages:', error);
-        return of([]);
-      })
-    ).subscribe();
+    this.messagesService
+      .getMessages(id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((messages) => this.messages.set(messages)),
+        catchError((error) => {
+          console.error('Error loading messages:', error);
+          return of([]);
+        }),
+      )
+      .subscribe();
   }
 
   onMessageSent(messageContent: string): void {
@@ -106,22 +115,27 @@ export class ChatComponent implements OnInit {
       createdAt: new Date().toISOString(),
     };
 
-    this.messages.update(msgs => [...msgs, optimisticMessage]);
+    this.messages.update((msgs) => [...msgs, optimisticMessage]);
 
-    this.messagesService.sendMessage(this.conversationId(), messageContent).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap(() => {
-        this.isSending.set(false);
-        // Reload messages to get the actual message from the server
-        this.loadMessages();
-      }),
-      catchError((error) => {
-        console.error('Error sending message:', error);
-        this.isSending.set(false);
-        // Remove optimistic message on error
-        this.messages.update(msgs => msgs.filter(m => m.id !== optimisticMessage.id));
-        return of(null);
-      })
-    ).subscribe();
+    this.messagesService
+      .sendMessage(this.conversationId(), messageContent)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => {
+          this.isSending.set(false);
+          // Reload messages to get the actual message from the server
+          this.loadMessages();
+        }),
+        catchError((error) => {
+          console.error('Error sending message:', error);
+          this.isSending.set(false);
+          // Remove optimistic message on error
+          this.messages.update((msgs) =>
+            msgs.filter((m) => m.id !== optimisticMessage.id),
+          );
+          return of(null);
+        }),
+      )
+      .subscribe();
   }
 }

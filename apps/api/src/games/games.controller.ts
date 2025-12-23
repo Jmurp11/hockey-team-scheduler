@@ -24,7 +24,7 @@ export class GamesController {
 
   @ApiResponse({
     status: 200,
-    description: 'All records have been successfully returned.',
+    description: 'Games created successfully.',
     type: [Game],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })

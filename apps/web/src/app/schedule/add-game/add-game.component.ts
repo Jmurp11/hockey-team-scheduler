@@ -26,8 +26,8 @@ import {
   getFormControl,
   initAddGameForm,
   IS_HOME_OPTIONS,
+  SelectOption,
   transformAddGameFormData,
-  updateGameTimeConflictValidator,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -205,18 +205,12 @@ export class AddGameComponent implements OnInit {
         return;
       }
 
+      console.log({ currentGameData });
       // Reinitialize form when gameData changes
       this.addGameForm = initAddGameForm(currentGameData);
 
       // Update validator with current game ID when games cache is available
       const games = this.scheduleService.gamesCache.value;
-      if (games) {
-        updateGameTimeConflictValidator(
-          this.addGameForm,
-          games,
-          currentGameData?.id,
-        );
-      }
 
       // Re-subscribe to rink value changes after form is re-initialized
       this.subscribeToRinkValueChanges();
@@ -234,7 +228,9 @@ export class AddGameComponent implements OnInit {
     if (obs) {
       this.rinkValueChangesSub = obs
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((rink: any) => this.handleRinkValueChange(rink));
+        .subscribe((rink: SelectOption<Partial<Game> | string>) =>
+          this.handleRinkValueChange(rink),
+        );
     }
   }
 
@@ -248,7 +244,7 @@ export class AddGameComponent implements OnInit {
 
     this.items$ = combineLatest({
       teams: this.teamsService.teams({
-        age: this.currentUser.age,
+        age: this.currentUser?.age,
       }),
       rinks: this.rinksService.getRinks(),
     });
@@ -258,60 +254,18 @@ export class AddGameComponent implements OnInit {
         this.formFieldsData = getFormFields(teams, rinks);
       });
 
-    this.gamesCache$();
-
     this.subscribeToRinkValueChanges();
-  }
-
-  gamesCache$() {
-    return this.scheduleService.gamesCache
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((games) => {
-        if (games && this.addGameForm) {
-          updateGameTimeConflictValidator(
-            this.addGameForm,
-            games,
-            this.gameDataSignal()?.id,
-          );
-        }
-      });
   }
 
   initGameForm() {
     return initAddGameForm(this.gameData);
   }
 
-  handleGameTimeConflictError() {
-    const dateControl = this.addGameForm.get('date');
-    if (dateControl?.errors?.['gameTimeConflict']) {
-      const conflictError = dateControl.errors['gameTimeConflict'];
-      this.toastService.presentToast({
-        severity: 'error',
-        summary: 'Schedule Conflict',
-        detail: conflictError.message,
-      });
-    }
-  }
-
   submit() {
-    // Check for validation errors including time conflicts
-    if (!this.addGameForm.valid) {
-      this.handleGameTimeConflictError();
-      return;
-    }
-
     const input = transformAddGameFormData(
       this.addGameForm.getRawValue(),
-      this.currentUser.user_id,
+      this.currentUser?.user_id || null,
     );
-
-    // Optimistic update - update cache immediately
-    this.editMode && this.gameData
-      ? this.scheduleService.optimisticUpdateGame({
-          id: this.gameData.id,
-          ...input[0],
-        })
-      : this.scheduleService.optimisticAddGames(input);
 
     const operation$ = this.chooseOperation(input);
 
@@ -325,27 +279,26 @@ export class AddGameComponent implements OnInit {
     this.addGameDialogService.closeDialog();
   }
 
+  updateGame$(input: any) {
+    this.scheduleService.setDeleteRecord(this.gameData?.id || null);
+    return (
+      this.addGameService.updateGame({
+        id: this.gameData?.id,
+        ...input[0],
+      }) as Observable<Partial<Game>>
+    ).pipe(take(1));
+  }
+
+  addGame$(input: any) {
+    return (
+      this.addGameService.addGame(input) as Observable<Partial<Game>[]>
+    ).pipe(take(1));
+  }
+
   chooseOperation(input: any): Observable<any> {
     return this.editMode && this.gameData
-      ? (
-          this.addGameService.updateGame({
-            id: this.gameData.id,
-            ...input[0],
-          }) as Observable<Partial<Game>>
-        ).pipe(
-          take(1),
-          tap((response: Partial<Game>) =>
-            this.scheduleService.syncGameIds([response], true),
-          ),
-        )
-      : (
-          this.addGameService.addGame(input) as Observable<Partial<Game>[]>
-        ).pipe(
-          take(1),
-          tap((response: Partial<Game>[]) =>
-            this.scheduleService.syncGameIds(response),
-          ),
-        );
+      ? this.updateGame$(input)
+      : this.addGame$(input);
   }
 
   handleSubscription(response: any) {
@@ -378,8 +331,8 @@ export class AddGameComponent implements OnInit {
     return this.addGameForm.get('rink')?.valueChanges;
   }
 
-  handleRinkValueChange(value: SelectItem | null) {
-    if (!value || (value && value.value === 'New Item')) {
+  handleRinkValueChange(value: SelectOption<Partial<Game> | string> | null) {
+    if (!value || (value && typeof value.value === 'string')) {
       this.addGameForm.get('city')?.setValue(null);
       this.addGameForm.get('state')?.setValue(null);
       this.addGameForm.get('country')?.setValue(null);
@@ -390,15 +343,17 @@ export class AddGameComponent implements OnInit {
       return;
     }
 
-    this.addGameForm.get('city')?.setValue(value.value.city);
-    this.addGameForm
-      .get('state')
-      ?.setValue({ label: value.value.state, value: value.value.state });
-    this.addGameForm
-      .get('country')
-      ?.setValue({ label: value.value.country, value: value.value.country });
-    this.addGameForm.get('city')?.disable();
-    this.addGameForm.get('state')?.disable();
-    this.addGameForm.get('country')?.disable();
+    if (typeof value.value === 'object') {
+      this.addGameForm.get('city')?.setValue(value.value.city);
+      this.addGameForm
+        .get('state')
+        ?.setValue({ label: value.value.state, value: value.value.state });
+      this.addGameForm
+        .get('country')
+        ?.setValue({ label: value.value.country, value: value.value.country });
+      this.addGameForm.get('city')?.disable();
+      this.addGameForm.get('state')?.disable();
+      this.addGameForm.get('country')?.disable();
+    }
   }
 }

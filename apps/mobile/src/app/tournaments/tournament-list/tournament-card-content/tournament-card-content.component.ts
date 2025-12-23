@@ -6,6 +6,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
+import { Tournament } from '@hockey-team-scheduler/shared-utilities';
 import { IonCardContent, IonChip, Platform } from '@ionic/angular/standalone';
 
 @Component({
@@ -78,7 +79,7 @@ import { IonCardContent, IonChip, Platform } from '@ionic/angular/standalone';
 })
 export class TournamentCardContentComponent implements OnInit {
   @Input()
-  tournament: any;
+  tournament!: Tournament;
 
   private platform = inject(Platform);
 
@@ -91,11 +92,9 @@ export class TournamentCardContentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.age = this.tournament.ages
-      ? this.tournament.ages[0].join(', ')
-      : 'N/A';
+    this.age = this.tournament.ages ? this.tournament.ages.join(', ') : 'N/A';
     this.level = this.tournament.levels
-      ? this.tournament.levels[0].join(', ')
+      ? this.tournament.levels.join(', ')
       : 'N/A';
   }
 }

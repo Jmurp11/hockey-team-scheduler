@@ -1,6 +1,11 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { supabase } from '../supabase';
-import { Conversation, CreateConversationDto, MessageDto } from '../types';
+import {
+  Conversation,
+  ConversationWithMessages,
+  CreateConversationDto,
+  MessageDto,
+} from '../types';
 import { OpenAiService } from '../open-ai/open-ai.service';
 import { Twilio } from 'twilio';
 import { env } from 'node:process';
@@ -127,7 +132,7 @@ export class MessageService {
     return messages || [];
   }
 
-  async getConversations(userId: string): Promise<any[]> {
+  async getConversations(userId: string): Promise<ConversationWithMessages[]> {
     const { data: conversations, error } = await supabase
       .from('conversations')
       .select(
@@ -137,6 +142,7 @@ export class MessageService {
         manager_id,
         ai_enabled,
         created_at,
+        updated_at,
         managers (
           name,
           team
@@ -151,38 +157,41 @@ export class MessageService {
       return [];
     }
 
-    // Get last message for each conversation
-    const conversationsWithMessages = await Promise.all(
-      (conversations || []).map(async (convo) => {
-        const { data: lastMessage } = await supabase
-          .from('messages')
-          .select('content, created_at')
-          .eq('conversation_id', convo.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+    return this.getConversationLastMessage(conversations);
+  }
 
-        const { data: unreadCount } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('conversation_id', convo.id)
-          .eq('sender', 'contact')
-          .eq('read', false);
+  // TODO: move to stored procedure or view that returns all of this data
+  async getConversationLastMessage(
+    conversations: Conversation[],
+  ): Promise<ConversationWithMessages[]> {
+    return [];
+    // return Promise.all(
+    //   (conversations || []).map(async (convo) => {
+    //     const { data: lastMessage } = await supabase
+    //       .from('messages')
+    //       .select('content, created_at')
+    //       .eq('conversation_id', convo.id)
+    //       .order('created_at', { ascending: false })
+    //       .limit(1)
+    //       .single();
 
-        console.log({ convo });
-        return;
-        // return {
-        //   id: convo.id,
-        //   user_id: convo.user_id,
-        //   managerName: convo.managers?.name || 'Unknown',
-        //   managerTeam: convo.managers?.team || '',
-        //   lastMessage: lastMessage?.content || '',
-        //   lastMessageTimestamp: lastMessage?.created_at || convo.created_at,
-        //   unreadCount: (unreadCount as any)?.count || 0,
-        // };
-      }),
-    );
+    //     const { data: unreadCount } = await supabase
+    //       .from('messages')
+    //       .select('id', { count: 'exact', head: true })
+    //       .eq('conversation_id', convo.id)
+    //       .eq('sender', 'contact')
+    //       .eq('read', false);
 
-    return conversationsWithMessages;
+    // return {
+    //   id: convo.id,
+    //   user_id: convo.user_id,
+    //   manager_id: convo.manager_id,
+    //   managerTeam: convo.managers?.team || '',
+    //   lastMessage: lastMessage?.content || '',
+    //   lastMessageTimestamp: lastMessage?.created_at || convo.created_at,
+    //   unreadCount: (unreadCount as any)?.count || 0,
+    // };
+    // }),
+    // );
   }
 }

@@ -7,8 +7,15 @@ import {
   signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
-import { SortDirection } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AuthService,
+  TournamentsService,
+} from '@hockey-team-scheduler/shared-data-access';
+import {
+  SortDirection,
+  Tournament,
+  UserProfile,
+} from '@hockey-team-scheduler/shared-utilities';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   BehaviorSubject,
@@ -63,9 +70,11 @@ import { TournamentsListComponent } from './tournaments-list/tournaments-list.co
 export class TournamentsComponent implements OnInit {
   authService = inject(AuthService);
   tournamentsService = inject(TournamentsService);
-  tournaments$: Observable<any> = new Observable<any>();
-  nearbyTournaments$: Observable<any>;
-  user$: Observable<any> = toObservable(this.authService.currentUser);
+  tournaments$: Observable<Tournament[]> = new Observable<Tournament[]>();
+  nearbyTournaments$: Observable<Tournament[]> = new Observable<Tournament[]>();
+  user$: Observable<UserProfile | null> = toObservable(
+    this.authService.currentUser,
+  );
 
   isLoading = signal<boolean>(false);
   sortFields = [
@@ -94,21 +103,22 @@ export class TournamentsComponent implements OnInit {
     this.searchParams$.next(search || '');
   }
 
-  getNearbyTournaments(): Observable<any> {
+  getNearbyTournaments(): Observable<Tournament[]> {
     return this.user$.pipe(
       tap(() => this.isLoading.set(true)),
       filter((user) => !!user && !!user.association_id),
-      switchMap((user) =>
-        this.tournamentsService.nearByTournaments({
-          p_id: user.association_id,
-        }),
+      switchMap(
+        (user: any) =>
+          this.tournamentsService.nearByTournaments({
+            p_id: user.association_id,
+          }) as Observable<Tournament[]>,
       ),
       tap(() => this.isLoading.set(false)),
       shareReplay(1),
     );
   }
 
-  private createFilteredAndSortedTournaments$(): Observable<any[]> {
+  private createFilteredAndSortedTournaments$(): Observable<Tournament[]> {
     return combineLatest({
       tournaments: this.tournaments$,
       sort: this.currentSort$,
@@ -119,7 +129,7 @@ export class TournamentsComponent implements OnInit {
         if (search && search.trim().length > 0) {
           const searchLower = search.toLowerCase();
           filtered = tournaments.filter(
-            (tournament: any) =>
+            (tournament: Tournament) =>
               tournament.name.toLowerCase().includes(searchLower) ||
               tournament.location.toLowerCase().includes(searchLower),
           );
@@ -135,8 +145,8 @@ export class TournamentsComponent implements OnInit {
     sort: { field: string; sortDirection: SortDirection },
   ) {
     return tournaments.sort((a, b) => {
-      const fieldA = a[sort.field];
-      const fieldB = b[sort.field];
+      const fieldA = a[sort.field] || '';
+      const fieldB = b[sort.field] || '';
 
       if (fieldA < fieldB) return sort.sortDirection === 'asc' ? -1 : 1;
       if (fieldA > fieldB) return sort.sortDirection === 'asc' ? 1 : -1;

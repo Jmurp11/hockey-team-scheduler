@@ -8,7 +8,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { AssociationService, AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect } from '@hockey-team-scheduler/shared-utilities';
+import { Profile, setSelect, UserProfile } from '@hockey-team-scheduler/shared-utilities';
 import { filter, map, Observable, startWith } from 'rxjs';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
@@ -41,9 +41,9 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
 
-  profile$: Observable<any>;
+  profile$: Observable<Profile>;
 
-  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
+  user$: Observable<UserProfile> = toObservable(this.authService.currentUser).pipe(
     startWith(null),
     filter((user) => user != null)
   );

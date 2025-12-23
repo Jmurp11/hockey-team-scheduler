@@ -1,4 +1,4 @@
-package com.hockeyteamscheduler.mobile;
+package com.rinklinkai.mobile;
 
 import com.getcapacitor.BridgeActivity;
 
