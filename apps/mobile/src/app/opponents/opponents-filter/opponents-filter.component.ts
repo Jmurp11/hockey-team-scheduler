@@ -17,7 +17,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
-import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
+import { getFormControl, OpponentSearchParams } from '@hockey-team-scheduler/shared-utilities';
 import { IonLabel, IonList, IonSelectOption } from '@ionic/angular/standalone';
 import { SelectItem } from 'primeng/api';
 import { combineLatest, map, Observable, startWith } from 'rxjs';
@@ -161,7 +161,7 @@ import { SelectComponent } from '../../shared/select/select.component';
 export class OpponentsFilterComponent implements OnInit {
   @Input() associations$!: Observable<SelectItem[]>;
   @Input() userDefault$!: Observable<SelectItem>;
-  @Output() selectedInputs = new EventEmitter<any>();
+  @Output() selectedInputs = new EventEmitter<OpponentSearchParams>();
 
   protected loadingService = inject(LoadingService);
   protected destroyRef = inject(DestroyRef);

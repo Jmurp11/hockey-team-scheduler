@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-item.component';
+import { SelectOption } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-opponent-card-content',
@@ -22,7 +23,7 @@ import { OpponentStatItemComponent } from '../opponent-stat-item/opponent-stat-i
 })
 export class OpponentCardContentComponent {
   @Input()
-  values: { label: string; value: string }[];
+  values: SelectOption<any>[];
 
   @Input()
   leagues: string[];

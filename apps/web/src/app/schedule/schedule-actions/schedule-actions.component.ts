@@ -146,20 +146,12 @@ export class ScheduleActionsComponent implements OnInit {
         });
         console.warn('CSV parsing errors:', parseResult.errors);
       }
-
-      // Optimistic update
-      this.scheduleService.optimisticAddGames(games);
-
       // Send to API
       this.addGameService
         .addGame(games)
         .pipe(take(1))
         .subscribe({
           next: (response: any) => {
-            const gameResponses = Array.isArray(response)
-              ? response
-              : [response];
-            this.scheduleService.syncGameIds(gameResponses);
             this.toastService.presentToast({
               severity: 'success',
               summary: 'Upload Successful',
@@ -168,13 +160,12 @@ export class ScheduleActionsComponent implements OnInit {
           },
           error: (error) => {
             console.error('Failed to upload games:', error);
-            // Revert optimistic update
-            this.scheduleService
-              .games(currentUser.user_id)
-              .pipe(take(1))
-              .subscribe((games) => {
-                this.scheduleService.gamesCache.next(games);
-              });
+            // this.scheduleService
+            //   .games(currentUser.user_id)
+            //   .pipe(take(1))
+            //   .subscribe((games) => {
+            //     this.scheduleService.gamesCache.next(games);
+            //   });
             this.toastService.presentToast({
               severity: 'error',
               summary: 'Upload Failed',

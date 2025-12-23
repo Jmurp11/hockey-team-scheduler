@@ -8,7 +8,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { SortDirection } from '@hockey-team-scheduler/shared-utilities';
+import { SelectOption, SortDirection } from '@hockey-team-scheduler/shared-utilities';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { SelectComponent } from '../select/select.component';
@@ -72,13 +72,13 @@ export class SortHeaderComponent implements OnInit {
 
   @Input() resultsCount: number | null = null;
 
-  @Input() sortFields: { label: string; value: string }[] = [];
+  @Input() sortFields: SelectOption<string>[] = [];
 
   @Input() showSearch = false;
 
   private destroyRef = inject(DestroyRef);
 
-  sortOptions: SelectParams<{ label: string; value: string }>;
+  sortOptions: SelectParams<SelectOption<string>>;
 
   sortIconOptions: { icon: string; sort: SortDirection }[] = [
     { icon: 'pi pi-sort-amount-up', sort: 'asc' },
@@ -102,7 +102,7 @@ export class SortHeaderComponent implements OnInit {
 
     this.form = new FormGroup({
       search: new FormControl<string | null>(null),
-      sort: new FormControl<{ label: string; value: string } | null>(
+      sort: new FormControl<SelectOption<string> | null>(
         this.sortFields[0]
       ),
       sortDirection: new FormControl<SortDirection>('asc'),

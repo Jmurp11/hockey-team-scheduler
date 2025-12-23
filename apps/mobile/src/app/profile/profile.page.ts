@@ -11,7 +11,11 @@ import {
   AuthService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
-import { setSelect } from '@hockey-team-scheduler/shared-utilities';
+import {
+  Profile,
+  setSelect,
+  UserProfile,
+} from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButtons,
   IonContent,
@@ -58,12 +62,14 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
       }
     </ion-content>
   `,
-  styles: [`
-    app-profile-header {
-      display: block;
-      margin-bottom: 1rem;
-    }
-  `],
+  styles: [
+    `
+      app-profile-header {
+        display: block;
+        margin-bottom: 1rem;
+      }
+    `,
+  ],
   providers: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -72,13 +78,13 @@ export class ProfilePage implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  profile$!: Observable<any>;
+  profile$!: Observable<Profile>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
+  user$: Observable<UserProfile> = toObservable(
+    this.authService.currentUser,
+  ).pipe(
     startWith(null),
-    filter((user) => user != null)
+    filter((user) => user != null),
   );
   associations$ = this.associationsService.getAssociations();
 
@@ -88,7 +94,7 @@ export class ProfilePage implements OnInit {
         ...user,
         team: setSelect(user.team_name, user.team_id),
         association: setSelect(user.association_name, user.association_id),
-      }))
+      })),
     );
   }
 

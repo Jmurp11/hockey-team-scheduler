@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { formatLocation } from '@hockey-team-scheduler/shared-utilities';
+import {
+  formatLocation,
+  Ranking,
+} from '@hockey-team-scheduler/shared-utilities';
 import {
   IonCardHeader,
   IonCardSubtitle,
@@ -10,12 +13,7 @@ import {
 @Component({
   selector: 'app-opponent-card-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-  ],
+  imports: [CommonModule, IonCardHeader, IonCardTitle, IonCardSubtitle],
   template: `
     <ion-card-header>
       <ion-card-title
@@ -62,11 +60,14 @@ import {
 })
 export class OpponentCardHeaderComponent {
   @Input()
-  opponent: any;
+  opponent!: Ranking;
 
   formatLocation = formatLocation;
 
-  formatDistance(distance: string): string {
+  formatDistance(distance: number | undefined): string {
+    if (!distance) {
+      return 'N/A';
+    }
     return `${distance} mi`;
   }
 }

@@ -15,9 +15,14 @@ import {
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  OpponentSearchParams,
+  Ranking,
+  SelectOption,
   setSelect,
   sort,
   SortDirection,
+  Team,
+  UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -89,7 +94,7 @@ export class OpponentsComponent implements OnInit {
   private addGameDialogService = inject(AddGameDialogService);
   private viewContainerRef = inject(ViewContainerRef);
 
-  nearbyTeams$: Observable<any>;
+  nearbyTeams$: Observable<Ranking[]>;
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
@@ -101,7 +106,9 @@ export class OpponentsComponent implements OnInit {
     setSelect('Rating', 'rating'),
   ];
 
-  private searchParams$ = new BehaviorSubject<any>(null);
+  private searchParams$ = new BehaviorSubject<OpponentSearchParams | null>(
+    null,
+  );
   private currentSort$ = new BehaviorSubject<{
     field: string;
     sortDirection: SortDirection;
@@ -110,12 +117,14 @@ export class OpponentsComponent implements OnInit {
     sortDirection: 'asc',
   });
 
-  user$: Observable<any> = toObservable(this.authService.currentUser).pipe(
+  user$: Observable<UserProfile> = toObservable(
+    this.authService.currentUser,
+  ).pipe(
     startWith(null),
     filter((user) => user != null),
   );
 
-  userAssociation$: Observable<SelectItem> = this.user$.pipe(
+  userAssociation$: Observable<SelectOption<number>> = this.user$.pipe(
     map((user) => ({
       label: user?.association_name,
       value: user?.association_id,
@@ -139,11 +148,11 @@ export class OpponentsComponent implements OnInit {
       teams: teams$,
       sort: this.currentSort$,
     }).pipe(
-      map(({ teams, sort: sortDir }) => sort([...(teams as any[])], sortDir)),
+      map(({ teams, sort: sortDir }) => sort([...(teams as Ranking[])], sortDir)),
     );
   }
 
-  onSearchParamsChanged(params: any) {
+  onSearchParamsChanged(params: OpponentSearchParams) {
     this.isLoading.set(true);
     this.searchParams$.next(params);
   }
@@ -152,26 +161,21 @@ export class OpponentsComponent implements OnInit {
     this.currentSort$.next(sort);
   }
 
-  getNearbyTeams(params: any) {
+  getNearbyTeams(params: OpponentSearchParams) {
+    if (!params.association) {
+      throw new Error('Association is required to search for opponents.');
+    }
     return this.teamsService.nearbyTeams({
       p_id: params.association.value,
       p_girls_only: params.girlsOnly || false,
-      p_age: this.authService.currentUser().age.toLowerCase(),
+      p_age: this.authService.currentUser()?.age.toLowerCase() || '',
       p_max_rating: params.rating[1],
       p_min_rating: params.rating[0],
       p_max_distance: params.distance,
     });
   }
 
-  onOpponentSelected(opponent: any) {
-    this.addGameDialogService.openDialog(
-      {
-        opponent: {
-          label: opponent.opponent.value.team_name,
-          value: opponent.opponent.value,
-        },
-      },
-      false,
-    );
+  onOpponentSelected(opponent: SelectOption<Ranking>) {
+    this.addGameDialogService.openDialog({ opponent: { ...opponent } }, false);
   }
 }

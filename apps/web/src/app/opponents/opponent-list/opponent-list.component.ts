@@ -13,6 +13,8 @@ import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
 import {
   getOpponentCardContent,
   handleLeagues,
+  Ranking,
+  SelectOption,
   setSelect,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
@@ -74,19 +76,19 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
 })
 export class OpponentListComponent {
   @Input()
-  opponents: any[];
+  opponents: Ranking[];
 
   @Output()
-  opponentSelected = new EventEmitter<any>();
+  opponentSelected = new EventEmitter<SelectOption<Ranking>>();
 
   private openAiService = inject(OpenAiService);
 
   destroyRef = inject(DestroyRef);
 
-  async contactScheduler(opponent: any) {
+  async contactScheduler(opponent: Ranking) {
     const params = {
       team: opponent.team_name,
-      location: opponent.location,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
     // TODO: get scheduler contact info
@@ -105,17 +107,17 @@ export class OpponentListComponent {
       });
   }
 
-  getCardContent(opponent: any) {
+  getCardContent(opponent: Ranking) {
     return getOpponentCardContent(opponent);
   }
 
-  handleLeagues(opponent: any): string[] {
+  handleLeagues(opponent: Ranking): string[] {
     return handleLeagues(opponent);
   }
 
-  addGame(opponent: any) {
+  addGame(opponent: Ranking) {
     this.opponentSelected.emit({
-      opponent: setSelect(opponent.name, opponent),
+      ...setSelect(opponent.team_name, opponent),
     });
   }
 }

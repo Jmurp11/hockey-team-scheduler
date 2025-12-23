@@ -15,6 +15,7 @@ import {
   Game,
   getDatesBetween,
   registerForTournament,
+  Tournament,
 } from '@hockey-team-scheduler/shared-utilities';
 import { take } from 'rxjs/internal/operators/take';
 import { ButtonComponent } from '../../shared/button/button.component';
@@ -92,31 +93,30 @@ export class TournamentListComponent {
   private scheduleService = inject(ScheduleService);
   private toastService = inject(ToastService);
 
-  registerForTournament(tournament: any) {
+  registerForTournament(tournament: Tournament) {
     registerForTournament(tournament);
   }
 
-  addToSchedule(tournament: any) {
+  addToSchedule(tournament: Tournament) {
     const gameInfo = createTournamentGameInfo(
       tournament,
-      this.authService.currentUser().user_id,
+      this.authService.currentUser()?.user_id || '',
     );
 
-    const dates = getDatesBetween(tournament.startDate, tournament.endDate);
+    const dates = getDatesBetween(
+      new Date(tournament.startDate),
+      new Date(tournament.endDate),
+    );
     const games = dates.map((date) => ({
       ...gameInfo,
       date,
     }));
 
-    // Optimistic update - add games to cache immediately
-    this.scheduleService.optimisticAddGames(games);
-
     this.addGameService
       .addGame(games)
       .pipe(take(1))
       .subscribe({
-        next: (response) => {
-          this.scheduleService.syncGameIds(response as Partial<Game>[]);
+        next: () => {
           this.toastService.presentSuccessToast(
             `Successfully added ${games.length} tournament games to your schedule!`,
           );

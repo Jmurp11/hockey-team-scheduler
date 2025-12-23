@@ -21,7 +21,11 @@ import { ToastService } from '../../shared/toast/toast.service';
         [fill]="'outline'"
         [size]="'default'"
       >
-        <ion-icon slot="icon-only" [name]="button.icon" [color]="button.color" />
+        <ion-icon
+          slot="icon-only"
+          [name]="button.icon"
+          [color]="button.color"
+        />
       </app-button>
     }
   </div>`,
@@ -71,7 +75,7 @@ export class ScheduleCardFooterComponent {
   }
 
   delete(game: any) {
-    this.scheduleService.optimisticDeleteGame(game.id);
+    this.scheduleService.setDeleteRecord(game.id);
     this.scheduleService
       .deleteGame(game.id)
       .pipe(take(1))
