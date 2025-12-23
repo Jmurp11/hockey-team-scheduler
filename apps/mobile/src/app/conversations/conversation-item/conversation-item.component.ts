@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   ConversationDisplay,
@@ -25,6 +25,7 @@ import { ItemComponent } from '../../shared/item/item.component';
     IonNote,
     IonBadge,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-item [button]="true" [detail]="false" (itemClick)="onMonitorClick()">
       <app-avatar slot="start">

@@ -15,6 +15,7 @@ import {
   Game,
   getDatesBetween,
   registerForTournament,
+  Tournament,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { take } from 'rxjs/internal/operators/take';
@@ -68,24 +69,27 @@ import { ToastService } from '../../shared/services/toast.service';
 })
 export class TournamentsListComponent {
   @Input()
-  tournaments: any[] = [];
+  tournaments: Tournament[] = [];
 
   private addGameService = inject(AddGameService);
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
   private toastService = inject(ToastService);
 
-  registerForTournament(tournament: any) {
+  registerForTournament(tournament: Tournament) {
     registerForTournament(tournament);
   }
 
-  addToSchedule(tournament: any) {
+  addToSchedule(tournament: Tournament) {
     const gameInfo = createTournamentGameInfo(
       tournament,
-      this.authService.currentUser().user_id,
+      this.authService.currentUser()?.user_id || '',
     );
 
-    const dates = getDatesBetween(tournament.startDate, tournament.endDate);
+    const dates = getDatesBetween(
+      new Date(tournament.startDate),
+      new Date(tournament.endDate),
+    );
     const games = dates.map((date) => ({
       ...gameInfo,
       date,
@@ -96,7 +100,6 @@ export class TournamentsListComponent {
       .addGame(games)
       .pipe(take(1))
       .subscribe((response) => {
-        this.scheduleService.syncGameIds(response as Partial<Game>[]);
         if (
           response &&
           (response.hasOwnProperty('opponent') ||

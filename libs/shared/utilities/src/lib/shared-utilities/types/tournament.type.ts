@@ -10,6 +10,8 @@ export interface Tournament {
   age: string[] | null;
   level: string[] | null;
   distance?: number;
+  ages?: string[] | null;
+  levels?: string[] | null;
 }
 
 export interface TournamentProps {

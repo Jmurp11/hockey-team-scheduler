@@ -1,9 +1,6 @@
+import { Ranking } from '../types/ranking.type';
+import { SelectOption } from '../types/select-option.type';
 import { setSelect } from './select.utility';
-
-export interface CardContent {
-  label: string;
-  value: string;
-}
 
 /**
  * Checks if a key is a stat key for opponent data
@@ -20,7 +17,7 @@ export function isStatKey(key: string): boolean {
 export function assignOpponentLabels(
   key: string,
   value: unknown,
-): { label: string; value: unknown } {
+): SelectOption<any> {
   switch (key) {
     case 'agd':
       return setSelect('Average Goal Diff', value);
@@ -38,16 +35,20 @@ export function assignOpponentLabels(
 /**
  * Gets card content for an opponent by filtering and mapping stat keys
  */
-export function getOpponentCardContent(opponent: any): CardContent[] {
+export function getOpponentCardContent(
+  opponent: Ranking,
+): SelectOption<string>[] {
   return Object.entries(opponent)
     .filter(([key]) => isStatKey(key))
-    .map(([key, value]) => assignOpponentLabels(key, value)) as CardContent[];
+    .map(([key, value]) =>
+      assignOpponentLabels(key, value),
+    ) as SelectOption<string>[];
 }
 
 /**
  * Handles parsing and extracting league abbreviations from opponent data
  */
-export function handleLeagues(opponent: any): string[] {
+export function handleLeagues(opponent: Ranking): string[] {
   if (!opponent.leagues || !Array.isArray(opponent.leagues)) {
     return [];
   }

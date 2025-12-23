@@ -5,6 +5,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
+import { Tournament } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-tournament-card-content',
@@ -24,17 +25,15 @@ import {
 })
 export class TournamentCardContentComponent implements OnInit {
   @Input()
-  tournament: any;
+  tournament!: Tournament;
 
   age: string;
   level: string;
 
   ngOnInit(): void {
-    this.age = this.tournament.ages
-      ? this.tournament.ages[0].join(', ')
-      : 'N/A';
+    this.age = this.tournament.ages ? this.tournament.ages.join(', ') : 'N/A';
     this.level = this.tournament.levels
-      ? this.tournament.levels[0].join(', ')
+      ? this.tournament.levels.join(', ')
       : 'N/A';
   }
 }

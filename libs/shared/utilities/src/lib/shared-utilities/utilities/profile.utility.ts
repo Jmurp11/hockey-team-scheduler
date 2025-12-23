@@ -1,10 +1,12 @@
+import { SelectOption } from "../types/select-option.type";
+
 /**
  * Checks and normalizes profile field values
  * Handles strings, arrays, objects with label/value pairs, and numbers
  */
 export function checkProfileField(
-  value: string | string[] | number | { label: string; value: any }
-): string | { label: string; value: any } {
+  value: string | string[] | number | SelectOption<any>,
+): string | SelectOption<any> {
   if (!value) {
     return '';
   }
@@ -21,7 +23,7 @@ export function checkProfileField(
  * Gets the appropriate input type for form fields
  */
 export function getInputType(
-  type?: string
+  type?: string,
 ): 'text' | 'email' | 'number' | 'password' | 'tel' | 'url' {
   const validTypes = ['text', 'email', 'number', 'password', 'tel', 'url'];
   return validTypes.includes(type || '')

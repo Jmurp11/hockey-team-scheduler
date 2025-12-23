@@ -262,13 +262,17 @@ export interface Conversation {
   user_id: string;
   manager_id: string;
   ai_enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Message {
   id: string;
   sender: 'contact' | 'user' | 'assistant';
   content: string;
-  createdAt: string;
+  created_at: string;
+}
+
+export interface ConversationWithMessages extends Conversation {
+  messages: Message[];
 }

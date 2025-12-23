@@ -62,11 +62,6 @@ export class SidebarComponent implements OnInit {
       icon: 'pi pi-fw pi-user',
       routerLink: '/app/profile',
     },
-    {
-      label: 'Developer',
-      icon: 'pi pi-fw pi-code',
-      routerLink: '/app/developer',
-    },
   ];
 
   ngOnInit(): void {}

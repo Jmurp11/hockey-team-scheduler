@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   forwardRef,
   Input,
+  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -21,6 +23,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
   selector: 'app-autocomplete',
   standalone: true,
   imports: [CommonModule, IonModal, TypeaheadComponent, InputComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-input
       [id]="label"
@@ -91,6 +94,7 @@ export class AutocompleteComponent implements ControlValueAccessor {
         this.control.value.name ||
         this.control.value.value?.team_name ||
         this.control.value.rink ||
+        this.control.value.label ||
         null
       );
     }
