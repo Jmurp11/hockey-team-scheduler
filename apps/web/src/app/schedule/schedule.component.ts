@@ -2,17 +2,21 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   ViewContainerRef,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { filter, merge, Observable, switchMap, take } from 'rxjs';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  OpenAiService,
+} from '@hockey-team-scheduler/shared-data-access';
 import { CardComponent } from '../shared/components/card/card.component';
 import { TableComponent } from '../shared/components/table/table.component';
 import {
@@ -22,12 +26,14 @@ import {
 import {
   ExportColumn,
   Game,
+  Ranking,
   TableOptions,
   UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { AddGameDialogService } from './add-game/add-game-dialog.service';
 import { ToastService } from '../shared/services/toast.service';
+import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
 
 @Component({
   selector: 'app-schedule',
@@ -114,6 +120,9 @@ export class ScheduleComponent implements OnInit {
   private addGameDialogService = inject(AddGameDialogService);
   private viewContainerRef = inject(ViewContainerRef);
   private toastService = inject(ToastService);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  private openAiService = inject(OpenAiService);
+  private destroyRef = inject(DestroyRef);
 
   exportColumns: ExportColumn[];
 
@@ -169,6 +178,7 @@ export class ScheduleComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
+    this.contactSchedulerService.setViewContainerRef(this.viewContainerRef);
 
     this.tableData$ = this.user$.pipe(
       filter((user) => !!user && !!user.user_id),
@@ -187,7 +197,11 @@ export class ScheduleComponent implements OnInit {
         icon: 'pi pi-comment',
         iconPos: 'right',
         command: () => {
-          console.log('Contact Team Manager for game id:', rowData.id);
+          const opponent = {
+            ...rowData.opponent[0],
+            team_name: rowData.opponent[0].name,
+          };
+          this.contactScheduler(opponent);
         },
       },
       {
@@ -229,5 +243,28 @@ export class ScheduleComponent implements OnInit {
         },
       },
     ];
+  }
+
+  //TODO: move to shared service
+  async contactScheduler(opponent: Ranking) {
+    const params = {
+      team: opponent.team_name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    console.log('contactScheduler params:', params);
+
+    // TODO: get scheduler contact info
+    // TODO: if no contact info, show message and offer user to add it if they have it
+    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
+    // TODO: Let users confirm the initial message
+    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((response: any) => {
+        console.log('contactScheduler response:', response);
+        this.contactSchedulerService.openDialog(response[0]);
+      });
   }
 }
