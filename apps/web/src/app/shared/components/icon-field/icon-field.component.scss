@@ -1,0 +1,19 @@
+.form-field {
+  margin-bottom: 1.5rem;
+  min-width: 350px;
+
+  input {
+    width: 100%;
+  }
+
+  p-inputicon {
+    cursor: pointer;
+    :hover {
+      color: var(--secondary-color);
+    }
+  }
+
+  ::ng-deep .p-message {
+    margin-top: 0.25rem;
+  }
+}

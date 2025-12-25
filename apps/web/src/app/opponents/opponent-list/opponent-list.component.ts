@@ -6,7 +6,9 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnInit,
   Output,
+  ViewContainerRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
@@ -22,6 +24,7 @@ import { map } from 'rxjs';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
+import { ContactSchedulerDialogService } from '../../contact-scheduler/contact-scheduler.service';
 
 @Component({
   selector: 'app-opponent-list',
@@ -81,30 +84,12 @@ export class OpponentListComponent {
   @Output()
   opponentSelected = new EventEmitter<SelectOption<Ranking>>();
 
-  private openAiService = inject(OpenAiService);
+  @Output()
+  contactSchedulerClicked = new EventEmitter<Ranking>();
 
-  destroyRef = inject(DestroyRef);
-
-  async contactScheduler(opponent: Ranking) {
-    const params = {
-      team: opponent.team_name,
-      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
-    };
-
-    // TODO: get scheduler contact info
-    // TODO: if no contact info, show message and offer user to add it if they have it
-    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
-    // TODO: Let users confirm the initial message
-    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
-    return this.openAiService
-      .contactScheduler(params)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        map((response: any) => JSON.parse(response.output_text)),
-      )
-      .subscribe((response) => {
-        window.alert(JSON.stringify(response));
-      });
+  contactScheduler(opponent: Ranking) {
+    console.log({ opponent });
+    this.contactSchedulerClicked.emit(opponent);
   }
 
   getCardContent(opponent: Ranking) {

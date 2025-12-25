@@ -2,16 +2,18 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   ViewContainerRef,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import {
   AssociationService,
   AuthService,
+  OpenAiService,
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -42,6 +44,7 @@ import { AddGameDialogService } from '../schedule/add-game/add-game-dialog.servi
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
 import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.component';
+import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -80,6 +83,7 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
             <app-opponent-list
               [opponents]="nearbyTeams"
               (opponentSelected)="onOpponentSelected($event)"
+              (contactSchedulerClicked)="contactScheduler($event)"
             />
           </div>
         </div>
@@ -93,6 +97,9 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
 export class OpponentsComponent implements OnInit {
   private addGameDialogService = inject(AddGameDialogService);
   private viewContainerRef = inject(ViewContainerRef);
+  private openAiService = inject(OpenAiService);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  private destroyRef = inject(DestroyRef);
 
   nearbyTeams$: Observable<Ranking[]>;
   associationService = inject(AssociationService);
@@ -136,6 +143,7 @@ export class OpponentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
+    this.contactSchedulerService.setViewContainerRef(this.viewContainerRef);
 
     const teams$ = this.searchParams$.pipe(
       filter((params) => params !== null),
@@ -148,7 +156,9 @@ export class OpponentsComponent implements OnInit {
       teams: teams$,
       sort: this.currentSort$,
     }).pipe(
-      map(({ teams, sort: sortDir }) => sort([...(teams as Ranking[])], sortDir)),
+      map(({ teams, sort: sortDir }) =>
+        sort([...(teams as Ranking[])], sortDir),
+      ),
     );
   }
 
@@ -177,5 +187,27 @@ export class OpponentsComponent implements OnInit {
 
   onOpponentSelected(opponent: SelectOption<Ranking>) {
     this.addGameDialogService.openDialog({ opponent: { ...opponent } }, false);
+  }
+
+  async contactScheduler(opponent: Ranking) {
+    const params = {
+      team: opponent.team_name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    console.log('contactScheduler params:', params);
+
+    // TODO: get scheduler contact info
+    // TODO: if no contact info, show message and offer user to add it if they have it
+    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
+    // TODO: Let users confirm the initial message
+    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((response: any) => {
+        console.log('contactScheduler response:', response);
+        this.contactSchedulerService.openDialog(response[0]);
+      });
   }
 }
