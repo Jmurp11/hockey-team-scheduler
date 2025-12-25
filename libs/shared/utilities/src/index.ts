@@ -19,7 +19,7 @@ export * from './lib/shared-utilities/types/user.type';
 export * from './lib/shared-utilities/types/select-option.type';
 export * from './lib/shared-utilities/types/opponent-search-params.type';
 export * from './lib/shared-utilities/types/ranking.type';
-
+export * from './lib/shared-utilities/types/manager.type';
 // Export all utilities
 export * from './lib/shared-utilities/utilities/add-game.utility';
 export * from './lib/shared-utilities/utilities/auth.utility';

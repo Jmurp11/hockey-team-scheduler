@@ -107,7 +107,7 @@ export class OpenAiService {
 
     if (managers.length === 0) {
       console.warn('No managers found');
-      return response;
+      return managers;
     }
 
     const { error } = await supabase.from('managers').insert(managers);
@@ -117,7 +117,7 @@ export class OpenAiService {
       throw new Error('Could not save manager');
     }
 
-    return response;
+    return managers;
   }
 
   generateSchedulerPrompt(props: SchedulerProps): string {
