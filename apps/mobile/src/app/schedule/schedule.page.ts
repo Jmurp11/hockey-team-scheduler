@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
   AuthService,
+  OpenAiService,
   ScheduleService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -24,6 +25,8 @@ import { AddGameLazyWrapperComponent } from './add-game/add-game-lazy-wrapper.co
 import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
 import { ScheduleListComponent } from './schedule-list/schedule-list.component';
 import { Game, UserProfile } from '@hockey-team-scheduler/shared-utilities';
+import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
+import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/contact-scheduler-lazy-wrapper.component';
 
 @Component({
   selector: 'app-schedule',
@@ -41,6 +44,7 @@ import { Game, UserProfile } from '@hockey-team-scheduler/shared-utilities';
     ScheduleListComponent,
     FloatingActionButtonComponent,
     AddGameLazyWrapperComponent,
+    ContactSchedulerLazyWrapperComponent
   ],
   template: `
     <ion-header>
@@ -76,6 +80,7 @@ import { Game, UserProfile } from '@hockey-team-scheduler/shared-utilities';
     </app-floating-action-button>
 
     <app-add-game-lazy-wrapper />
+    <app-contact-scheduler-lazy-wrapper />
   `,
   styles: [
     `
@@ -110,6 +115,9 @@ export class SchedulePage implements OnInit {
   private scheduleService = inject(ScheduleService);
   private addGameModalService = inject(AddGameModalService);
   private router = inject(Router);
+  private openAiService = inject(OpenAiService);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  private destroyRef = inject(DestroyRef);
 
   user$: Observable<UserProfile | null> = toObservable(
     this.authService.currentUser,
@@ -144,9 +152,22 @@ export class SchedulePage implements OnInit {
     });
   }
 
-  handleContactTeam(game: Game): void {
-    console.log('Contact team manager for game:', game.id);
-    // TODO: Implement contact team manager functionality
+  handleContactTeam(game: any) {
+    console.log('Contact scheduler for game:', game);
+
+    const opponent = game.opponent[0];
+    const params = {
+      team: opponent.name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((response: any) => {
+        console.log('contactScheduler response:', response);
+        this.contactSchedulerService.openModal(response[0]);
+      });
   }
 
   handleEdit(game: Game): void {
