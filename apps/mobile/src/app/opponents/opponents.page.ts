@@ -2,16 +2,18 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   ViewContainerRef,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
   AssociationService,
   AuthService,
+  OpenAiService,
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -56,6 +58,8 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
 import { OpponentsListComponent } from './opponents-list/opponents-list.component';
 import { AddGameModalService } from '../schedule/add-game/add-game-modal.service';
 import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-wrapper.component';
+import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
+import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/contact-scheduler-lazy-wrapper.component';
 
 @Component({
   selector: 'app-opponents',
@@ -76,6 +80,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
     SelectComponent,
     IonSelectOption,
     AddGameLazyWrapperComponent,
+    ContactSchedulerLazyWrapperComponent
   ],
   template: `
     <ion-header>
@@ -151,6 +156,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
               <app-opponents-list
                 [opponents]="nearbyTeams"
                 (opponentSelected)="onOpponentSelected($event)"
+                (contactSchedulerClicked)="onContactSchedulerClicked($event)"
               />
             </div>
           }
@@ -159,6 +165,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
     </ion-content>
 
     <app-add-game-lazy-wrapper />
+    <app-contact-scheduler-lazy-wrapper />
   `,
   styles: [
     `
@@ -209,7 +216,10 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
 })
 export class OpponentsPage implements OnInit {
   private addGameModalService = inject(AddGameModalService);
-
+  private openAiService = inject(OpenAiService);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  private destroyRef = inject(DestroyRef);
+  
   nearbyTeams$!: Observable<Ranking[]>;
   associationService = inject(AssociationService);
   teamsService = inject(TeamsService);
@@ -318,5 +328,25 @@ export class OpponentsPage implements OnInit {
 
   onOpponentSelected(opponent: SelectOption<Ranking>) {
     this.addGameModalService.openModal({ opponent: { ...opponent } }, false);
+  }
+
+  onContactSchedulerClicked(opponent: Ranking) {
+        const params = {
+          team: opponent.team_name,
+          location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+        };
+    
+        // TODO: get scheduler contact info
+        // TODO: if no contact info, show message and offer user to add it if they have it
+        // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
+        // TODO: Let users confirm the initial message
+        // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+        return this.openAiService
+          .contactScheduler(params)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe((response: any) => {
+            console.log('contactScheduler response:', response);
+            this.contactSchedulerService.openModal(response[0]);
+          });
   }
 }

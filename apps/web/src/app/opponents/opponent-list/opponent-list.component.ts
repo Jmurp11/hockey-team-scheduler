@@ -6,9 +6,7 @@ import {
   EventEmitter,
   inject,
   Input,
-  OnInit,
   Output,
-  ViewContainerRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
@@ -20,7 +18,6 @@ import {
   setSelect,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
-import { map } from 'rxjs';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
@@ -87,9 +84,29 @@ export class OpponentListComponent {
   @Output()
   contactSchedulerClicked = new EventEmitter<Ranking>();
 
-  contactScheduler(opponent: Ranking) {
-    console.log({ opponent });
-    this.contactSchedulerClicked.emit(opponent);
+  private openAiService = inject(OpenAiService);
+
+  private destroyRef = inject(DestroyRef);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  
+  async contactScheduler(opponent: Ranking) {
+    const params = {
+      team: opponent.team_name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    // TODO: get scheduler contact info
+    // TODO: if no contact info, show message and offer user to add it if they have it
+    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
+    // TODO: Let users confirm the initial message
+    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((response: any) => {
+        console.log('contactScheduler response:', response);
+        this.contactSchedulerService.openDialog(response[0]);
+      });
   }
 
   getCardContent(opponent: Ranking) {

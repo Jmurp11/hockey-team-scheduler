@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { Manager } from '@hockey-team-scheduler/shared-utilities';
 import { ContactHeaderComponent } from './contact-header/contact-header.component';
 import { ContactContentComponent } from './contact-content/contact-content.component';

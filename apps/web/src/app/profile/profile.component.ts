@@ -1,10 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { AssociationService, AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';

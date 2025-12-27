@@ -5,15 +5,14 @@ import {
   IonItem,
   IonLabel,
   IonList,
-  IonNote,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, locationOutline, timeOutline } from 'ionicons/icons';
+import { homeOutline, locationOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-schedule-card-content',
   standalone: true,
-  imports: [CommonModule, IonItem, IonList, IonLabel, IonIcon, IonNote],
+  imports: [CommonModule, IonItem, IonList, IonLabel, IonIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-list>

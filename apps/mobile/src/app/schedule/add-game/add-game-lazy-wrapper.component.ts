@@ -1,4 +1,4 @@
-import { Component, inject, ViewContainerRef, ComponentRef, effect } from '@angular/core';
+import { Component, inject, ViewContainerRef, ComponentRef, effect, ChangeDetectionStrategy } from '@angular/core';
 import { AddGameModalService } from './add-game-modal.service';
 
 @Component({
@@ -7,7 +7,8 @@ import { AddGameModalService } from './add-game-modal.service';
   template: `
     <ng-container #lazyContainer></ng-container>
   `,
-  imports: []
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddGameLazyWrapperComponent {
   addGameModalService = inject(AddGameModalService);

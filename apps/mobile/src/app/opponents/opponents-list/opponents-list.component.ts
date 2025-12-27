@@ -2,14 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   EventEmitter,
-  inject,
   Input,
   Output,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
 import {
   getOpponentCardContent,
   handleLeagues,
@@ -17,7 +13,6 @@ import {
   SelectOption,
   setSelect,
 } from '@hockey-team-scheduler/shared-utilities';
-import { map } from 'rxjs';
 import { ButtonComponent } from '../../shared/button/button.component';
 import { CardComponent } from '../../shared/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
@@ -63,6 +58,7 @@ import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-car
           </app-button>
         </div>
       </app-card>
+
     }
   `,
   styles: [
@@ -93,23 +89,11 @@ export class OpponentsListComponent {
   @Output()
   opponentSelected = new EventEmitter<SelectOption<Ranking>>();
 
-  private openAiService = inject(OpenAiService);
-  destroyRef = inject(DestroyRef);
+  @Output()
+  contactSchedulerClicked = new EventEmitter<Ranking>();
 
-  async contactScheduler(opponent: Ranking) {
-    const params = {
-      team: opponent.team_name,
-      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
-    };
-    return this.openAiService
-      .contactScheduler(params)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        map((response: any) => JSON.parse(response.output_text)),
-      )
-      .subscribe((response) => {
-        window.alert(JSON.stringify(response));
-      });
+  contactScheduler(opponent: Ranking) {
+    this.contactSchedulerClicked.emit(opponent);
   }
 
   getCardContent(opponent: Ranking) {
@@ -140,7 +124,6 @@ export class OpponentsListComponent {
         return setSelect(key, value);
     }
   }
-
 
   addGame(opponent: Ranking) {
     this.opponentSelected.emit({

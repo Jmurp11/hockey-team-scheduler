@@ -1,10 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { OpponentStatItemComponent } from '../../../opponents/opponent-list/opponent-stat-item/opponent-stat-item.component';
-import {
-  formatTournamentLocation,
-  Tournament,
-} from '@hockey-team-scheduler/shared-utilities';
+import { formatTournamentLocation, Tournament } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-tournament-card-header',
