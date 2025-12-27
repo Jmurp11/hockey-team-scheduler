@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+} from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chatbubbleOutline, createOutline, trashOutline } from 'ionicons/icons';
@@ -42,6 +50,9 @@ import { ToastService } from '../../shared/toast/toast.service';
 })
 export class ScheduleCardFooterComponent {
   @Input() game: any;
+
+  @Output()
+  contactSchedulerClicked = new EventEmitter<any>();
 
   private addGameModalService = inject(AddGameModalService);
   private scheduleService = inject(ScheduleService);
@@ -95,6 +106,6 @@ export class ScheduleCardFooterComponent {
   }
 
   contact(game: any) {
-    console.log({ game });
+    this.contactSchedulerClicked.emit(game);
   }
 }
