@@ -5,18 +5,8 @@ import {
   inject,
   Input,
 } from '@angular/core';
-import {
-  AddGameService,
-  AuthService,
-  ScheduleService,
-} from '@hockey-team-scheduler/shared-data-access';
-import {
-  createTournamentGameInfo,
-  Game,
-  getDatesBetween,
-  registerForTournament,
-  Tournament,
-} from '@hockey-team-scheduler/shared-utilities';
+import { AddGameService, AuthService, ScheduleService } from '@hockey-team-scheduler/shared-data-access';
+import { createTournamentGameInfo, getDatesBetween, registerForTournament, Tournament } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { take } from 'rxjs/internal/operators/take';
 import { CardComponent } from '../../shared/components/card/card.component';

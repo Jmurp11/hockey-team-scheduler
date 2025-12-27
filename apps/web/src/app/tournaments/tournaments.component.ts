@@ -7,26 +7,10 @@ import {
   signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import {
-  AuthService,
-  TournamentsService,
-} from '@hockey-team-scheduler/shared-data-access';
-import {
-  SortDirection,
-  Tournament,
-  UserProfile,
-} from '@hockey-team-scheduler/shared-utilities';
+import { AuthService, TournamentsService } from '@hockey-team-scheduler/shared-data-access';
+import { SortDirection, Tournament, UserProfile } from '@hockey-team-scheduler/shared-utilities';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  shareReplay,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
 import { SortHeaderComponent } from '../shared';
 import { TournamentsListComponent } from './tournaments-list/tournaments-list.component';
 

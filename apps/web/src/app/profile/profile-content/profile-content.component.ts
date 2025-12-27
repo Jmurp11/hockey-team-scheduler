@@ -1,23 +1,8 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  EventEmitter,
-  inject,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
-import {
-  checkProfileField,
-  getFormControl,
-  initProfileForm,
-  Profile,
-  resetProfileForm,
-} from '@hockey-team-scheduler/shared-utilities';
+import { checkProfileField, getFormControl, initProfileForm, Profile, resetProfileForm } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
