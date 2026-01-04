@@ -1,54 +1,73 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { LeaguesService } from './leagues.service';
 import { League } from '../types';
-import { ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiHeader,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
-@ApiTags('leagues')
+@ApiTags('Leagues')
 @UseGuards(ApiKeyGuard)
+@ApiHeader({
+  name: 'x-api-key',
+  description: 'API Key needed to access the endpoints',
+  required: true,
+})
 @Controller('v1/leagues')
 export class LeagueController {
   constructor(private readonly leagueService: LeaguesService) {}
 
   @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'All records have been successfully returned.',
-    type: [League],
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Not Found.' })
-  @ApiHeader({
-    name: 'x-api-key',
-    description: 'API Key needed to access the endpoints',
-  })
+  @ApiOperation({ summary: 'Get all leagues' })
+  @ApiResponse({ status: 200, description: 'List of all leagues', type: [League] })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getLeagues(): Promise<League[]> {
-    return this.leagueService.getLeagues();
+    try {
+      return await this.leagueService.getLeagues();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch leagues',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':abbreviation')
-  @ApiResponse({
-    status: 200,
-    description: 'The record has been successfully returned.',
-    type: League,
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Not Found.' })
-  @ApiHeader({
-    name: 'x-api-key',
-    description: 'API Key needed to access the endpoints',
-  })
+  @ApiOperation({ summary: 'Get a league by abbreviation' })
   @ApiParam({
     name: 'abbreviation',
-    required: true,
-    description: 'The abbreviation of the league',
+    description: 'League abbreviation',
     example: 'NHL',
   })
-  async getLeague(
-    @Param('abbreviation') abbreviation: string,
-  ): Promise<League | null> {
-    return this.leagueService.getLeague(abbreviation);
+  @ApiResponse({ status: 200, description: 'League details', type: League })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 404, description: 'League not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async getLeague(@Param('abbreviation') abbreviation: string): Promise<League> {
+    try {
+      const league = await this.leagueService.getLeague(abbreviation);
+      if (!league) {
+        throw new HttpException('League not found', HttpStatus.NOT_FOUND);
+      }
+      return league;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        'Failed to fetch league',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

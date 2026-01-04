@@ -26,8 +26,8 @@ export class UserService {
       .update({
         association: update.association,
         team: update.team,
-        is_paid: true,
         age: update.age,
+        phone: update.phone,
         name: update.name,
       })
       .eq('user_id', update.id)
@@ -80,5 +80,13 @@ export class UserService {
     const ageGroupRegex = /\b(\d{1,2}U)\b/;
     const match = team.match(ageGroupRegex);
     return match ? match[1] : null;
+  }
+
+  updateAssociationMember(user: UpdateUser) {
+    return this.supabaseClient!.from('association_members').upsert({
+      user_id: user.id,
+      association: user.association,
+      role: 'MANAGER'
+    });
   }
 }

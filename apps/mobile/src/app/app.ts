@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import {
   IonApp,
   IonContent,
@@ -19,12 +20,20 @@ import { addIcons } from 'ionicons';
 import {
   calendar,
   chatbubbles,
+  cog,
   home,
   people,
   person,
   search,
   trophy,
 } from 'ionicons/icons';
+
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: string;
+  adminOnly?: boolean;
+}
 
 @Component({
   standalone: true,
@@ -49,9 +58,11 @@ import {
   styleUrl: './app.scss',
 })
 export class App {
+  private authService = inject(AuthService);
+
   protected title = 'RinkLink.ai (Mobile)';
 
-  public menuItems = [
+  private allMenuItems: MenuItem[] = [
     {
       title: 'Home',
       url: '/app/home',
@@ -82,9 +93,22 @@ export class App {
       url: '/app/profile',
       icon: 'person',
     },
+    {
+      title: 'Admin',
+      url: '/app/admin',
+      icon: 'cog',
+      adminOnly: true,
+    },
   ];
 
+  public menuItems = computed(() => {
+    const user = this.authService.currentUser();
+    const isAdmin = user?.role === 'ADMIN';
+    
+    return this.allMenuItems.filter(item => !item.adminOnly || isAdmin);
+  });
+
   constructor() {
-    addIcons({ home, calendar, people, trophy, chatbubbles, person, search });
+    addIcons({ home, calendar, people, trophy, chatbubbles, person, search, cog });
   }
 }

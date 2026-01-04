@@ -42,6 +42,13 @@ export const authRoutes: Route[] = [
       ),
   },
   {
+    path: 'invite-accept',
+    loadComponent: () =>
+      import('./invite-accept/invite-accept.component').then(
+        (m) => m.InviteAcceptComponent
+      ),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

@@ -24,5 +24,9 @@ export const AUTH_ROUTES: Routes = [
   {
     path: 'callback',
     loadComponent: () => import('./callback/callback.component').then(m => m.CallbackComponent)
+  },
+  {
+    path: 'invite-accept',
+    loadComponent: () => import('./invite-accept/invite-accept.component').then(m => m.InviteAcceptComponent)
   }
 ];

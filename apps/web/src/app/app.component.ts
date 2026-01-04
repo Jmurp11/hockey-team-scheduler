@@ -31,7 +31,7 @@ export class App implements OnInit {
           ? this.authService.setSession(session)
           : this.authService.setSession(null);
         if (event === 'SIGNED_OUT') {
-          this.router.navigate(['/landing']);
+          this.router.navigate(['/']);
         }
       });
   }

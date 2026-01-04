@@ -1,9 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { AssociationService, AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
-import { Profile, setSelect, UserProfile } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AssociationService,
+  AuthService,
+  UserService,
+} from '@hockey-team-scheduler/shared-data-access';
+import {
+  Profile,
+  setSelect,
+  UserProfile,
+} from '@hockey-team-scheduler/shared-utilities';
 import { filter, map, Observable, startWith } from 'rxjs';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
@@ -26,23 +39,23 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
         (formSubmit)="onFormSubmit($event)"
       />
     </div>
-    }`,
+  }`,
   providers: [],
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
-  private associationsService = inject(AssociationService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
 
   profile$: Observable<Profile>;
 
-  user$: Observable<UserProfile> = toObservable(this.authService.currentUser).pipe(
+  user$: Observable<UserProfile> = toObservable(
+    this.authService.currentUser,
+  ).pipe(
     startWith(null),
-    filter((user) => user != null)
+    filter((user) => user != null),
   );
-  associations$ = this.associationsService.getAssociations();
 
   ngOnInit(): void {
     this.profile$ = this.user$.pipe(
@@ -50,7 +63,7 @@ export class ProfileComponent implements OnInit {
         ...user,
         team: setSelect(user.team_name, user.team_id),
         association: setSelect(user.association_name, user.association_id),
-      }))
+      })),
     );
   }
 

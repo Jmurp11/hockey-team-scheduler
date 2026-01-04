@@ -5,12 +5,14 @@ export interface User {
   association: string;
   team: string;
   age: string;
-  stripeCustomerId?: string;
+  phone: string;
 }
 
-export interface UpdateUser extends User{
+export interface UpdateUser extends User {
   password: string;
 }
+
+export type AssociationMemberRole = 'ADMIN' | 'MANAGER' | null;
 
 export interface UserProfile {
   idx: number;
@@ -19,9 +21,10 @@ export interface UserProfile {
   association_name: string;
   team_name: string;
   user_id: string; // UUID
-  age: string;     // e.g. "16u"
+  age: string; // e.g. "16u"
   association_id: number;
   team_id: number;
   team_rating: number;
   email: string;
+  role?: AssociationMemberRole;
 }

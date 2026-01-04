@@ -53,6 +53,13 @@ export const appRoutes: Route[] = [
           import('./profile/profile.page').then((m) => m.ProfilePage),
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./association-admin/association-admin.page').then(
+            (m) => m.AssociationAdminPage,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full',

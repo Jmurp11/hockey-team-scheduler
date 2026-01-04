@@ -80,7 +80,6 @@ export class CallbackComponent implements OnInit {
 
       if (data.session) {
         const needsProfile = await this.checkUserProfile(data.session.user.id);
-
         if (needsProfile) {
           this.router.navigate(['/app/complete-profile']);
         } else {

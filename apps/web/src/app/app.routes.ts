@@ -62,6 +62,13 @@ export const routes: Routes = [
             (m) => m.CallbackComponent,
           ),
       },
+      {
+        path: 'auth/invite-accept',
+        loadComponent: () =>
+          import('./auth/invite-accept/invite-accept.component').then(
+            (m) => m.InviteAcceptComponent,
+          ),
+      },
     ],
   },
   {
@@ -104,6 +111,13 @@ export const routes: Routes = [
           import('./profile/profile.component').then((m) => m.ProfileComponent),
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./association-admin/association-admin.component').then(
+            (m) => m.AssociationAdminComponent,
+          ),
+      },
+      {
         path: 'complete-profile',
         loadComponent: () =>
           import('./auth/register/register.component').then(
@@ -117,18 +131,18 @@ export const routes: Routes = [
             (m) => m.UpdatePasswordComponent,
           ),
       },
-      {
-        path: 'inbox',
-        loadComponent: () =>
-          import('./conversations/conversations.component').then(
-            (m) => m.ConversationsComponent,
-          ),
-      },
-      {
-        path: 'chat/:id',
-        loadComponent: () =>
-          import('./chat/chat.component').then((m) => m.ChatComponent),
-      },
+      // {
+      //   path: 'inbox',
+      //   loadComponent: () =>
+      //     import('./conversations/conversations.component').then(
+      //       (m) => m.ConversationsComponent,
+      //     ),
+      // },
+      // {
+      //   path: 'chat/:id',
+      //   loadComponent: () =>
+      //     import('./chat/chat.component').then((m) => m.ChatComponent),
+      // },
     ],
   },
 ];
