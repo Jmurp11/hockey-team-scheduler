@@ -11,9 +11,12 @@ import { TournamentsModule } from './tournaments/tournaments.module';
 import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { RinkModule } from './rinks/rink.module';
+import { EmailModule } from './email/email.module';
+
 @Module({
   imports: [
     AssociationsModule,
+    EmailModule,
     GamesModule,
     LeaguesModule,
     OpenAiModule,

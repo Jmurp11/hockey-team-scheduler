@@ -28,7 +28,6 @@ export class ContactSchedulerDialogService {
     }
 
     if (this.viewContainerRef) {
-      console.log('Creating ContactSchedulerComponent');
       this.componentRef = this.viewContainerRef.createComponent(
         ContactSchedulerComponent,
       );

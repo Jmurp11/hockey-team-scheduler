@@ -18,7 +18,7 @@ import packageInfo from '../../../../../../../package.json';
           <div>Terms of Service</div>
           <div>Privacy Policy</div>
         </div>
-        <div>&#64;2025 RINKLINKAI LLC All Rights Reserved</div>
+        <div>&#64;{{ date }} RINKLINKAI LLC All Rights Reserved</div>
         <div class="footer__socials">
           @for (social of socials; track social.name) {
             <div>
@@ -56,6 +56,7 @@ export class FooterComponent implements OnInit {
     },
   ];
 
+  date = new Date().getFullYear();
   ngOnInit(): void {
     this.checkScreenSize();
   }

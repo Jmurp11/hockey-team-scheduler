@@ -1,8 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
+
+interface MenuItem {
+  label: string;
+  icon: string;
+  routerLink: string;
+  adminOnly?: boolean;
+}
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -14,7 +28,7 @@ import { BadgeModule } from 'primeng/badge';
       </span>
     </div>
     <ul class="navigation__list">
-      @for (item of items; track item.label) {
+      @for (item of visibleMenuItems(); track item.label) {
         <li class="navigation__item">
           <a
             routerLink="{{ item.routerLink }}"
@@ -30,23 +44,25 @@ import { BadgeModule } from 'primeng/badge';
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
+  private authService = inject(AuthService);
+
   sidebarVisible = true;
 
   title = 'RinkLink.ai';
   logo = 'assets/logo.svg';
-  //logo = null;
-  items = [
+
+  allMenuItems: MenuItem[] = [
     {
       label: 'Schedule',
       icon: 'pi pi-fw pi-calendar',
       routerLink: '/app/schedule',
     },
-    {
-      label: 'Inbox',
-      icon: 'pi pi-fw pi-inbox',
-      routerLink: '/app/inbox',
-    },
+    // {
+    //   label: 'Inbox',
+    //   icon: 'pi pi-fw pi-inbox',
+    //   routerLink: '/app/inbox',
+    // },
     {
       label: 'Opponents',
       icon: 'pi pi-fw pi-search',
@@ -62,7 +78,18 @@ export class SidebarComponent implements OnInit {
       icon: 'pi pi-fw pi-user',
       routerLink: '/app/profile',
     },
+    {
+      label: 'Admin',
+      icon: 'pi pi-fw pi-cog',
+      routerLink: '/app/admin',
+      adminOnly: true,
+    },
   ];
 
-  ngOnInit(): void {}
+  visibleMenuItems = computed(() => {
+    const user = this.authService.currentUser();
+    const isAdmin = user?.role === 'ADMIN';
+
+    return this.allMenuItems.filter((item) => !item.adminOnly || isAdmin);
+  });
 }

@@ -12,7 +12,7 @@
 
       <ion-content>
         <ion-list>
-          @for (item of menuItems; track item.url) {
+          @for (item of menuItems(); track item.url) {
           <ion-menu-toggle autoHide="false">
             <ion-item
               [routerLink]="item.url"

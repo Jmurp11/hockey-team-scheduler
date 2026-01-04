@@ -83,6 +83,11 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
                 label="Name"
               />
 
+              <app-input
+                [control]="getFormControl(registerForm, 'phone')"
+                label="Phone Number"
+              />
+
               <app-auto-complete
                 [control]="getFormControl(registerForm, 'association')"
                 label="Association"
@@ -157,6 +162,7 @@ export class RegisterComponent implements OnInit {
   }
 
   initForm() {
+    const phoneRegex = /^\d{10}$/;
     return new FormGroup(
       {
         email: new FormControl(
@@ -173,6 +179,13 @@ export class RegisterComponent implements OnInit {
         }),
         name: new FormControl(null, {
           validators: [Validators.required],
+        }),
+        phone: new FormControl(null, {
+          validators: [
+            Validators.required,
+            Validators.minLength(10),
+            Validators.pattern(phoneRegex),
+          ],
         }),
         association: new FormControl(null, {
           validators: [Validators.required],

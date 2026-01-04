@@ -39,6 +39,7 @@ export class CallbackComponent implements OnInit {
 
   private async handleAuthCallback() {
     try {
+      console.log('Handling auth callback');
       // Handle the auth callback
       const { data, error } = await this.supabaseService
         .getSupabaseClient()!
@@ -54,6 +55,7 @@ export class CallbackComponent implements OnInit {
 
       if (data.session) {
         const needsProfile = await this.checkUserProfile(data.session.user.id);
+        console.log({session: data.session, needsProfile});
 
         if (needsProfile) {
           this.router.navigate(['/app/complete-profile']);
