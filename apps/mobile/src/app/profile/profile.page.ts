@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import {
-  AssociationService,
+  AssociationsService,
   AuthService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
@@ -74,7 +74,7 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage implements OnInit {
-  private associationsService = inject(AssociationService);
+  private associationsService = inject(AssociationsService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
 

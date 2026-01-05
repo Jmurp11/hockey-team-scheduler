@@ -38,6 +38,8 @@ export function parseTournamentLocation(location: string): {
 export function createTournamentGameInfo(
   tournament: any,
   user_id: string,
+  team_id?: number,
+  association_id?: number,
 ): Omit<CreateGame, 'date'> {
   const location = parseTournamentLocation(tournament.location);
 
@@ -51,6 +53,8 @@ export function createTournamentGameInfo(
     game_type: 'tournament',
     isHome: false,
     user: user_id,
+    team: team_id as number,
+    association: association_id as number,
     tournamentName: tournament.name,
   };
 }

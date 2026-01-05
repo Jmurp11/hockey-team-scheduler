@@ -7,9 +7,11 @@ import {
   inject,
   Input,
   Output,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
   getOpponentCardContent,
   handleLeagues,
@@ -18,6 +20,7 @@ import {
   setSelect,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
@@ -32,9 +35,15 @@ import { ContactSchedulerDialogService } from '../../contact-scheduler/contact-s
     ButtonModule,
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
+    ProgressSpinnerModule,
   ],
   providers: [],
   template: `
+    @if (contactingScheduler()) {
+      <div class="loading-overlay">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
     @for (opponent of opponents; track opponent.team_name) {
       <app-card>
         <ng-template #header>
@@ -88,6 +97,8 @@ export class OpponentListComponent {
 
   private destroyRef = inject(DestroyRef);
   private contactSchedulerService = inject(ContactSchedulerDialogService);
+
+  contactingScheduler = signal(false);
   
   async contactScheduler(opponent: Ranking) {
     const params = {
@@ -95,17 +106,19 @@ export class OpponentListComponent {
       location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
-    // TODO: get scheduler contact info
-    // TODO: if no contact info, show message and offer user to add it if they have it
-    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
-    // TODO: Let users confirm the initial message
-    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+    this.contactingScheduler.set(true);
+
     return this.openAiService
       .contactScheduler(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((response: any) => {
-        console.log('contactScheduler response:', response);
-        this.contactSchedulerService.openDialog(response[0]);
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openDialog(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
       });
   }
 

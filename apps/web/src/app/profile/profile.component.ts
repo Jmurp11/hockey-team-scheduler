@@ -8,7 +8,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import {
-  AssociationService,
+  AssociationsService,
   AuthService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';

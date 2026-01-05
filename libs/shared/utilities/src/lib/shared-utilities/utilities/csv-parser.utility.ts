@@ -27,6 +27,8 @@ export interface ParsedGameData {
   time: string; // HH:MM:SS format
   isHome: boolean;
   user: string;
+  team: number | null;
+  association: number | null;
 }
 
 export interface CsvParseResult {
@@ -216,6 +218,8 @@ function parseGameRow(
     time: parsedTime,
     isHome: true, // Default to home games
     user: userId,
+    team: null as any, // Will be set by AddGameService from current user
+    association: null as any, // Will be set by AddGameService from current user
   };
 }
 

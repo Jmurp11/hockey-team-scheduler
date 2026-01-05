@@ -67,6 +67,11 @@ export class SidebarComponent {
 
   allMenuItems: MenuItem[] = [
     {
+      label: 'Dashboard',
+      icon: 'pi pi-fw pi-home',
+      routerLink: '/app/dashboard',
+    },
+    {
       label: 'Schedule',
       icon: 'pi pi-fw pi-calendar',
       routerLink: '/app/schedule',

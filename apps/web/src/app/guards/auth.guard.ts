@@ -27,7 +27,7 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
       authService.session.set(null);
       authService.currentUser.set(null);
       console.log('No valid user, redirecting to login');
-      return router.createUrlTree(['/login']);
+      return router.createUrlTree(['/auth/login']);
     }
 
     // User is authenticated, ensure session is set
@@ -41,6 +41,6 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
     console.error('Auth guard unexpected error:', error);
     authService.session.set(null);
     authService.currentUser.set(null);
-    return router.createUrlTree(['/login']);
+    return router.createUrlTree(['/auth/login']);
   }
 };

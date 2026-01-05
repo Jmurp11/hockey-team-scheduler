@@ -57,7 +57,8 @@ import { AuthContainerComponent } from '../auth-container/auth-container.compone
             />
             <div class="form-actions">
               <p-button
-                [disabled]="newUserForm.invalid"
+                [disabled]="newUserForm.invalid || loading()"
+                [loading]="loading()"
                 label="Get Login Link"
                 styleClass="w-full"
                 (click)="magicLink()"
@@ -78,6 +79,7 @@ export class NewUserComponent implements OnInit {
 
   emailSent = signal(false);
   isInvitedUser = signal(false);
+  loading = signal(false);
 
   newUserForm: FormGroup = initMagicLinkForm();
 
@@ -107,10 +109,14 @@ export class NewUserComponent implements OnInit {
   }
 
   async magicLink() {
+    this.loading.set(true);
+    
     const { error } = await this.userService.loginWithMagicLink(
       this.newUserForm.get('email')?.value
     );
 
+    this.loading.set(false);
+    
     if (!error) {
       this.emailSent.set(true);
     }
