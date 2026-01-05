@@ -24,7 +24,7 @@ export class AddGameService {
       ...game,
       opponent: handleNullOpponent(game),
     }));
-    return this.http.post(`${this.config.apiUrl}/games/add-games`, input);
+    return this.http.post(`${this.config.apiUrl}/games`, input);
   }
 
   updateGame(game: any) {

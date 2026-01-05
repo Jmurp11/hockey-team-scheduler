@@ -8,6 +8,7 @@ export interface AssociationMember {
   // Joined fields
   user_name?: string;
   user_email?: string;
+  team_name?: string;
 }
 
 export interface AssociationInvitation {

@@ -8,7 +8,6 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
   const router = inject(Router);
 
   try {
-    // Get the current session
     const client = supabaseService.getSupabaseClient();
 
     if (!client) {
@@ -16,27 +15,32 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
       return router.createUrlTree(['/login']);
     }
 
+    // Use getUser() instead of getSession() - getUser() validates the session
+    // by making a request to Supabase, ensuring the session hasn't been revoked
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await client.auth.getSession();
+    } = await client.auth.getUser();
 
-    if (error) {
-      console.error('Auth guard error:', error);
+    if (error || !user) {
+      // Clear any stale session data
+      authService.session.set(null);
+      authService.currentUser.set(null);
+      console.log('No valid user, redirecting to login');
       return router.createUrlTree(['/login']);
     }
 
-    // Check if user is authenticated
-    if (session && session.user) {
+    // User is authenticated, ensure session is set
+    const { data: { session } } = await client.auth.getSession();
+    if (session) {
       authService.setSession(session);
-      return true;
     }
-
-    // No session found, redirect to login
-    console.log('No session found, redirecting to login');
-    return router.createUrlTree(['/login']);
+    
+    return true;
   } catch (error) {
     console.error('Auth guard unexpected error:', error);
+    authService.session.set(null);
+    authService.currentUser.set(null);
     return router.createUrlTree(['/login']);
   }
 };
