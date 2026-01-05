@@ -43,6 +43,7 @@ import { personRemove } from 'ionicons/icons';
             <ion-label>
               <h2>{{ member.user_name || 'Unknown' }}</h2>
               <p>{{ member.user_email }}</p>
+              <p class="team-name">{{ member.team_name || 'No team assigned' }}</p>
             </ion-label>
             <ion-badge slot="end" [color]="getStatusColor(member.status)">
               {{ member.status }}
@@ -78,6 +79,12 @@ import { personRemove } from 'ionicons/icons';
 
     ion-badge {
       margin-left: 0.5rem;
+    }
+
+    .team-name {
+      font-size: 0.8rem;
+      color: var(--ion-color-primary);
+      font-style: italic;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,

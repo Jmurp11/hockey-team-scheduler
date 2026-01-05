@@ -5,16 +5,17 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 
 interface MenuItem {
   label: string;
   icon: string;
-  routerLink: string;
+  routerLink?: string;
   adminOnly?: boolean;
+  action?: () => void;
 }
 
 @Component({
@@ -30,13 +31,23 @@ interface MenuItem {
     <ul class="navigation__list">
       @for (item of visibleMenuItems(); track item.label) {
         <li class="navigation__item">
-          <a
-            routerLink="{{ item.routerLink }}"
-            class="navigation__link"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            ><i class="{{ item.icon }}"></i>{{ item.label }}</a
-          >
+          @if (item.routerLink) {
+            <a
+              [routerLink]="item.routerLink"
+              class="navigation__link"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              <i class="{{ item.icon }}"></i>{{ item.label }}
+            </a>
+          } @else if (item.action) {
+            <a
+              class="navigation__link"
+              (click)="item.action()"
+            >
+              <i class="{{ item.icon }}"></i>{{ item.label }}
+            </a>
+          }
         </li>
       }
     </ul>
@@ -46,6 +57,8 @@ interface MenuItem {
 })
 export class SidebarComponent {
   private authService = inject(AuthService);
+  private userService = inject(UserService);
+  private router = inject(Router);
 
   sidebarVisible = true;
 
@@ -58,11 +71,6 @@ export class SidebarComponent {
       icon: 'pi pi-fw pi-calendar',
       routerLink: '/app/schedule',
     },
-    // {
-    //   label: 'Inbox',
-    //   icon: 'pi pi-fw pi-inbox',
-    //   routerLink: '/app/inbox',
-    // },
     {
       label: 'Opponents',
       icon: 'pi pi-fw pi-search',
@@ -84,6 +92,11 @@ export class SidebarComponent {
       routerLink: '/app/admin',
       adminOnly: true,
     },
+    {
+      label: 'Logout',
+      icon: 'pi pi-fw pi-sign-out',
+      action: () => this.logout(),
+    },
   ];
 
   visibleMenuItems = computed(() => {
@@ -92,4 +105,13 @@ export class SidebarComponent {
 
     return this.allMenuItems.filter((item) => !item.adminOnly || isAdmin);
   });
+
+  async logout() {
+    try {
+      await this.userService.logout();
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
 }

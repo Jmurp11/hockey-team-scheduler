@@ -76,6 +76,18 @@ export class UserService {
     return this.supabaseClient!.auth.resetPasswordForEmail(email);
   }
 
+  async logout() {
+    const { error } = await this.supabaseClient!.auth.signOut();
+    if (error) {
+      console.error('Error logging out:', error);
+      throw error;
+    }
+    // Clear the session and current user in auth service
+    this.authService.session.set(null);
+    this.authService.currentUser.set(null);
+    return { success: true };
+  }
+
   getAge(team: string) {
     const ageGroupRegex = /\b(\d{1,2}U)\b/;
     const match = team.match(ageGroupRegex);

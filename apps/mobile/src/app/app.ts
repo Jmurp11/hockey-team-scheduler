@@ -1,9 +1,10 @@
 import { Component, computed, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
 import {
   IonApp,
   IonContent,
+  IonFooter,
   IonHeader,
   IonIcon,
   IonItem,
@@ -22,6 +23,7 @@ import {
   chatbubbles,
   cog,
   home,
+  logOutOutline,
   people,
   person,
   search,
@@ -51,6 +53,7 @@ interface MenuItem {
     IonLabel,
     IonMenuToggle,
     IonSplitPane,
+    IonFooter,
     RouterModule,
   ],
   selector: 'app-root',
@@ -59,6 +62,8 @@ interface MenuItem {
 })
 export class App {
   private authService = inject(AuthService);
+  private userService = inject(UserService);
+  private router = inject(Router);
 
   protected title = 'RinkLink.ai (Mobile)';
 
@@ -67,11 +72,6 @@ export class App {
       title: 'Home',
       url: '/app/home',
       icon: 'home',
-    },
-    {
-      title: 'Inbox',
-      url: '/app/conversations',
-      icon: 'chatbubbles',
     },
     {
       title: 'Schedule',
@@ -109,6 +109,15 @@ export class App {
   });
 
   constructor() {
-    addIcons({ home, calendar, people, trophy, chatbubbles, person, search, cog });
+    addIcons({ home, calendar, people, trophy, chatbubbles, person, search, cog, logOutOutline });
+  }
+
+  async logout() {
+    try {
+      await this.userService.logout();
+      this.router.navigate(['/auth/login']);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   }
 }

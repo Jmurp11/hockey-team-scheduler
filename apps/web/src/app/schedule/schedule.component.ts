@@ -225,7 +225,7 @@ export class ScheduleComponent implements OnInit {
             .deleteGame(rowData.id)
             .pipe(take(1))
             .subscribe((response) => {
-              if (!response) {
+              if (response.message === 'Game deleted successfully') {
                 this.toastService.presentToast({
                   severity: 'success',
                   summary: 'Game Deleted',

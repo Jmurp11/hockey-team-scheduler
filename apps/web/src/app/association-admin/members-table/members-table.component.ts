@@ -37,6 +37,7 @@ import { TableComponent } from '../../shared/components/table/table.component';
         <tr>
           <td>{{ member.user_name || 'N/A' }}</td>
           <td>{{ member.user_email || 'N/A' }}</td>
+          <td>{{ member.team_name || 'N/A' }}</td>
           <td>
             <p-tag
               [value]="member.role"
@@ -76,10 +77,11 @@ export class MembersTableComponent {
     columns: [
       { field: 'user_name', header: 'Name', sortable: true },
       { field: 'user_email', header: 'Email', sortable: true },
+      { field: 'team_name', header: 'Team', sortable: true },
       { field: 'role', header: 'Role', sortable: true },
       { field: 'status', header: 'Status', sortable: true },
     ],
-    globalFilterFields: ['user_name', 'user_email', 'role', 'status'],
+    globalFilterFields: ['user_name', 'user_email', 'team_name', 'role', 'status'],
     paginator: true,
     rows: 10,
     rowsPerPageOptions: [5, 10, 25],

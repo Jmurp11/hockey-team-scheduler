@@ -97,7 +97,8 @@ export class AssociationsService {
     // Note: subscriptions references associations via 'association' column (reverse FK)
     const { data: association, error } = await supabase
       .from('associations')
-      .select(`
+      .select(
+        `
         id,
         name,
         subscriptions:subscriptions!association(
@@ -116,7 +117,11 @@ export class AssociationsService {
           role,
           status,
           created_at,
-          app_users!association_members_user_id_fkey(name, email)
+          app_users!association_members_user_id_fkey(
+            name,
+            email,
+            rankings!app_users_team_fkey(team_name)
+          )
         ),
         invitations(
           id,
@@ -128,7 +133,8 @@ export class AssociationsService {
           expires_at,
           created_at
         )
-      `)
+      `,
+      )
       .eq('id', associationId)
       .single();
 
@@ -136,10 +142,11 @@ export class AssociationsService {
       console.error('Error fetching association admin data:', error);
       throw new Error('Association not found');
     }
-
     // Find active subscription
-    const activeSubscription = (association.subscriptions || [])
-      .find((sub: any) => sub.status === 'ACTIVE') || null;
+    const activeSubscription =
+      (association.subscriptions || []).find(
+        (sub: any) => sub.status === 'ACTIVE',
+      ) || null;
 
     // Transform members to include user_name and user_email, filter out REMOVED
     const transformedMembers = (association.association_members || [])
@@ -153,6 +160,7 @@ export class AssociationsService {
         created_at: member.created_at,
         user_name: member.app_users?.name || null,
         user_email: member.app_users?.email || null,
+        team_name: member.app_users?.rankings?.team_name || null,
       }));
 
     // Process invitations - filter for pending/expired and check expiry dates
@@ -178,7 +186,8 @@ export class AssociationsService {
   async getAssociationMembers(associationId: string) {
     const { data: members, error } = await supabase
       .from('association_members')
-      .select(`
+      .select(
+        `
         id,
         user_id,
         association,
@@ -186,7 +195,8 @@ export class AssociationsService {
         status,
         created_at,
         users!inner(name, email)
-      `)
+      `,
+      )
       .eq('association', associationId)
       .neq('status', 'REMOVED');
 
@@ -210,7 +220,9 @@ export class AssociationsService {
   async getAssociationInvitations(associationId: string) {
     const { data: invitations, error } = await supabase
       .from('invitations')
-      .select('id, subscription_id, association, email, role, status, expires_at, created_at')
+      .select(
+        'id, subscription_id, association, email, role, status, expires_at, created_at',
+      )
       .eq('association', associationId);
 
     if (error) {
