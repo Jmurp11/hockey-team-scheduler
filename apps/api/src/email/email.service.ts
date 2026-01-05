@@ -9,6 +9,12 @@ interface InvitationEmailParams {
   role: string;
 }
 
+interface ContactEmailParams {
+  fromEmail: string;
+  subject: string;
+  message: string;
+}
+
 @Injectable()
 export class EmailService {
   private transporter: nodemailer.Transporter;
@@ -213,5 +219,153 @@ If you didn't expect this invitation, you can safely ignore this email.
       console.error('❌ SMTP connection failed:', error);
       return false;
     }
+  }
+
+  async sendContactEmail(params: ContactEmailParams): Promise<boolean> {
+    const { fromEmail, subject, message } = params;
+    const adminEmail = process.env.ADMIN_EMAIL;
+
+    if (!adminEmail) {
+      console.error('ADMIN_EMAIL environment variable is not set');
+      return false;
+    }
+
+    const html = this.buildContactHtml({ fromEmail, subject, message });
+
+    try {
+      await this.transporter.sendMail({
+        from: `"RinkLink.ai Contact Form" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+        to: adminEmail,
+        replyTo: fromEmail,
+        subject: `[Contact Form] ${subject}`,
+        html,
+        text: this.buildContactText({ fromEmail, subject, message }),
+      });
+      return true;
+    } catch (error) {
+      console.error('Error sending contact email:', error);
+      return false;
+    }
+  }
+
+  private buildContactHtml(params: {
+    fromEmail: string;
+    subject: string;
+    message: string;
+  }): string {
+    const { fromEmail, subject, message } = params;
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+              line-height: 1.6; 
+              color: #333; 
+              margin: 0;
+              padding: 0;
+              background-color: #f5f5f5;
+            }
+            .container { 
+              max-width: 600px; 
+              margin: 0 auto; 
+              padding: 20px; 
+            }
+            .header { 
+              background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%); 
+              color: white; 
+              padding: 30px 20px; 
+              text-align: center; 
+              border-radius: 8px 8px 0 0; 
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .content { 
+              background: white; 
+              padding: 30px; 
+              border-radius: 0 0 8px 8px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .content h2 {
+              color: #1a365d;
+              margin-top: 0;
+            }
+            .field-label {
+              font-weight: 600;
+              color: #4a5568;
+              margin-bottom: 4px;
+            }
+            .field-value {
+              background: #f7fafc;
+              padding: 12px;
+              border-radius: 4px;
+              margin-bottom: 16px;
+              border-left: 3px solid #3182ce;
+            }
+            .message-content {
+              white-space: pre-wrap;
+              word-wrap: break-word;
+            }
+            .footer { 
+              text-align: center; 
+              margin-top: 20px; 
+              color: #718096; 
+              font-size: 12px; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🏒 RinkLink.ai Contact Form</h1>
+            </div>
+            <div class="content">
+              <h2>New Contact Message</h2>
+              
+              <div class="field-label">From:</div>
+              <div class="field-value">${fromEmail}</div>
+              
+              <div class="field-label">Subject:</div>
+              <div class="field-value">${subject}</div>
+              
+              <div class="field-label">Message:</div>
+              <div class="field-value message-content">${message}</div>
+            </div>
+            <div class="footer">
+              <p>This message was sent via the RinkLink.ai contact form.</p>
+              <p>© ${new Date().getFullYear()} RinkLink.ai. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  private buildContactText(params: {
+    fromEmail: string;
+    subject: string;
+    message: string;
+  }): string {
+    const { fromEmail, subject, message } = params;
+
+    return `
+RinkLink.ai Contact Form - New Message
+
+From: ${fromEmail}
+Subject: ${subject}
+
+Message:
+${message}
+
+---
+This message was sent via the RinkLink.ai contact form.
+© ${new Date().getFullYear()} RinkLink.ai. All rights reserved.
+    `.trim();
   }
 }
