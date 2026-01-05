@@ -6,6 +6,7 @@ export * from './lib/shared-data-access/services/add-game.service';
 export * from './lib/shared-data-access/services/associations.service';
 export * from './lib/shared-data-access/services/association-admin.service';
 export * from './lib/shared-data-access/services/contact.service';
+export * from './lib/shared-data-access/services/dashboard.service';
 export * from './lib/shared-data-access/services/leagues.service';
 export * from './lib/shared-data-access/services/messages.service';
 export * from './lib/shared-data-access/services/openai.service';

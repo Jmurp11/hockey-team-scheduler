@@ -19,7 +19,7 @@ import { AutoCompleteComponent } from '../../shared/components/auto-complete/aut
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
-import { AssociationService } from '@hockey-team-scheduler/shared-data-access';
+import { AssociationsService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
@@ -51,7 +51,7 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
   providers: [
     LoadingService,
     NavigationService,
-    AssociationService,
+    AssociationsService,
     TeamsService,
     SupabaseService,
     UserService,
@@ -133,7 +133,7 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
 export class RegisterComponent implements OnInit {
   protected loadingService = inject(LoadingService);
 
-  associationsService = inject(AssociationService);
+  associationsService = inject(AssociationsService);
 
   authService = inject(AuthService);
 

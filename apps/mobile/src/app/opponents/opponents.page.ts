@@ -11,7 +11,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
-  AssociationService,
+  AssociationsService,
   AuthService,
   OpenAiService,
   TeamsService,
@@ -142,6 +142,12 @@ import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/conta
           </ng-template>
         </app-accordion>
 
+        @if (contactingScheduler()) {
+          <div class="loading-overlay">
+            <app-loading name="circular"></app-loading>
+          </div>
+        }
+
         @if (isLoading()) {
           <div class="loading-container">
             <app-loading name="circular"></app-loading>
@@ -180,6 +186,18 @@ import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/conta
         display: flex;
         flex-direction: column;
         height: 100%;
+        position: relative;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        @include flex(center, center, row);
+        z-index: 9999;
       }
 
       .loading-container {
@@ -221,13 +239,14 @@ export class OpponentsPage implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   nearbyTeams$!: Observable<Ranking[]>;
-  associationService = inject(AssociationService);
+  AssociationsService = inject(AssociationsService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   isCollapsed$ = new BehaviorSubject<boolean>(false);
   isLoading = signal<boolean>(false);
+  contactingScheduler = signal<boolean>(false);
   showBackButton = signal<boolean>(false);
 
   sortFields = [
@@ -262,7 +281,7 @@ export class OpponentsPage implements OnInit {
   );
 
   associations$: Observable<SelectItem[]> =
-    this.associationService.getAssociations();
+    this.AssociationsService.getAssociations();
 
   ngOnInit(): void {
     // Check if we came from the schedule page
@@ -336,11 +355,19 @@ export class OpponentsPage implements OnInit {
       location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
+    this.contactingScheduler.set(true);
+
     return this.openAiService
       .contactScheduler(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((response: any) => {
-        this.contactSchedulerService.openModal(response[0]);
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openModal(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
       });
   }
 }

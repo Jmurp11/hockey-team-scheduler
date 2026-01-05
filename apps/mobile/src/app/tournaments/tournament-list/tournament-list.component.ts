@@ -98,9 +98,12 @@ export class TournamentListComponent {
   }
 
   addToSchedule(tournament: Tournament) {
+    const currentUser = this.authService.currentUser();
     const gameInfo = createTournamentGameInfo(
       tournament,
-      this.authService.currentUser()?.user_id || '',
+      currentUser?.user_id || '',
+      currentUser?.team_id,
+      currentUser?.association_id,
     );
 
     const dates = getDatesBetween(

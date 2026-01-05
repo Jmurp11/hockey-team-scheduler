@@ -1,6 +1,9 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  UserService,
+} from '@hockey-team-scheduler/shared-data-access';
 import {
   IonApp,
   IonContent,
@@ -19,6 +22,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  barChart,
   calendar,
   chatbubbles,
   cog,
@@ -69,9 +73,9 @@ export class App {
 
   private allMenuItems: MenuItem[] = [
     {
-      title: 'Home',
-      url: '/app/home',
-      icon: 'home',
+      title: 'Dashboard',
+      url: '/app/dashboard',
+      icon: 'bar-chart',
     },
     {
       title: 'Schedule',
@@ -104,12 +108,22 @@ export class App {
   public menuItems = computed(() => {
     const user = this.authService.currentUser();
     const isAdmin = user?.role === 'ADMIN';
-    
-    return this.allMenuItems.filter(item => !item.adminOnly || isAdmin);
+
+    return this.allMenuItems.filter((item) => !item.adminOnly || isAdmin);
   });
 
   constructor() {
-    addIcons({ home, calendar, people, trophy, chatbubbles, person, search, cog, logOutOutline });
+    addIcons({
+      barChart,
+      calendar,
+      people,
+      trophy,
+      chatbubbles,
+      person,
+      search,
+      cog,
+      logOutOutline,
+    });
   }
 
   async logout() {

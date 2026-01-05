@@ -9,7 +9,7 @@ import {
 import { provideRouter } from '@angular/router';
 import {
   APP_CONFIG,
-  AssociationService,
+  AssociationsService,
   AuthService,
   MessagesService,
   SupabaseService,
@@ -75,7 +75,7 @@ export const appConfig: ApplicationConfig = {
     LoadingService,
     NavigationService,
     UserService,
-    AssociationService,
+    AssociationsService,
     TeamsService,
     MessagesService,
     {

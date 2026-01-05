@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { AssociationService } from '@hockey-team-scheduler/shared-data-access';
+import { AssociationsService } from '@hockey-team-scheduler/shared-data-access';
 import { AuthService } from '@hockey-team-scheduler/shared-data-access';
 import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
 import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
@@ -38,6 +38,11 @@ import { ContactSchedulerDialogService } from '../contact-scheduler/contact-sche
     ProgressSpinnerModule,
   ],
   template: ` <div class="container">
+    @if (contactingScheduler()) {
+      <div class="loading-overlay">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
     <app-opponents
       (selectedInputs)="onSearchParamsChanged($event)"
       [associations$]="associations$"
@@ -81,11 +86,12 @@ export class OpponentsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   nearbyTeams$: Observable<Ranking[]>;
-  associationService = inject(AssociationService);
+  AssociationsService = inject(AssociationsService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
 
   isLoading = signal<boolean>(false);
+  contactingScheduler = signal<boolean>(false);
 
   sortFields = [
     setSelect('Distance', 'distance'),
@@ -118,7 +124,7 @@ export class OpponentsComponent implements OnInit {
   );
 
   associations$: Observable<SelectItem[]> =
-    this.associationService.getAssociations();
+    this.AssociationsService.getAssociations();
 
   ngOnInit(): void {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
@@ -174,17 +180,19 @@ export class OpponentsComponent implements OnInit {
       location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
-    // TODO: get scheduler contact info
-    // TODO: if no contact info, show message and offer user to add it if they have it
-    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
-    // TODO: Let users confirm the initial message
-    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
+    this.contactingScheduler.set(true);
+
     return this.openAiService
       .contactScheduler(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((response: any) => {
-        console.log('contactScheduler response:', response);
-        this.contactSchedulerService.openDialog(response[0]);
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openDialog(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
       });
   }
 }

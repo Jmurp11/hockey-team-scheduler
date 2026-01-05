@@ -205,7 +205,6 @@ export class AddGameComponent implements OnInit {
         return;
       }
 
-      console.log({ currentGameData });
       // Reinitialize form when gameData changes
       this.addGameForm = initAddGameForm(currentGameData);
 

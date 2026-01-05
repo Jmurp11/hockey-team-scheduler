@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="dashboard-container">
+    @if (loading()) {
+      <div class="loading-container">
+        <app-loading name="crescent" color="primary" />
+      </div>
+    } @else if (dashboardData()) {
+      <h1 class="team-name">{{ dashboardData()!.teamName }}</h1>
+
+      <!-- Stats Row -->
+      <div class="stats-grid">
+        <app-current-record-card
+          [record]="dashboardData()!.record"
+          [wins]="dashboardData()!.wins"
+          [losses]="dashboardData()!.losses"
+          [ties]="dashboardData()!.ties"
+          [rating]="dashboardData()!.rating"
+        />
+
+        <app-strength-of-schedule-card
+          [strengthOfSchedule]="dashboardData()!.strengthOfSchedule"
+        />
+
+        <app-goal-differential-card
+          [averageGoalDifferential]="dashboardData()!.averageGoalDifferential"
+        />
+
+        <app-game-slots-card
+          [openGameSlots]="dashboardData()!.openGameSlots"
+          [totalGames]="dashboardData()!.totalGames"
+        />
+      </div>
+
+      <!-- Upcoming Games -->
+      <app-upcoming-games-card [games]="dashboardData()!.upcomingGames" />
+
+      <!-- Upcoming Tournaments -->
+      <app-upcoming-tournaments-card
+        [tournaments]="dashboardData()!.upcomingTournaments"
+      />
+    } @else {
+      <div class="error-container">
+        <app-card>
+          <ion-card-content>
+            <p>Unable to load dashboard data. Please try again later.</p>
+          </ion-card-content>
+        </app-card>
+      </div>
+    }
+  </div>
+</ion-content>

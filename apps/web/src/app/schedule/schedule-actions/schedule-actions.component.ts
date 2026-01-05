@@ -2,16 +2,23 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  EventEmitter,
   inject,
   OnInit,
+  Output,
+  signal,
   ViewContainerRef,
 } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
-import { take } from 'rxjs';
+import { filter, Observable, take } from 'rxjs';
 
 import {
   AddGameService,
+  AssociationsService,
   AuthService,
   ScheduleService,
 } from '@hockey-team-scheduler/shared-data-access';
@@ -20,18 +27,37 @@ import {
   FileUploadParams,
   parseCsvToGames,
   readFileAsText,
+  SelectParams,
+  UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import { FileUploadComponent } from '../../shared/components/file-upload/file-upload.component';
+import { SelectComponent } from '../../shared/components/select/select.component';
 import { ToastService } from '../../shared/services/toast.service';
+
+export interface TeamOption {
+  label: string;
+  value: string;
+}
+
+export interface TeamSelectionEvent {
+  type: 'user' | 'team' | 'association';
+  id: string;
+}
 
 @Component({
   selector: 'app-schedule-actions',
   standalone: true,
-  imports: [CommonModule, RouterModule, Button, FileUploadComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    Button,
+    FileUploadComponent,
+    SelectComponent,
+    ReactiveFormsModule,
+  ],
   providers: [],
   template: `
     <div class="row">
-      <div></div>
       <div class="sub-row">
         <p-button
           icon="pi pi-plus"
@@ -53,6 +79,15 @@ import { ToastService } from '../../shared/services/toast.service';
           (click)="findTournaments()"
         />
       </div>
+      @if (isAdmin()) {
+        <div class="team-selector">
+          <app-select
+            [control]="teamSelectControl"
+            [label]="'View Schedule For'"
+            [options]="teamSelectOptions()"
+          />
+        </div>
+      }
     </div>
   `,
   styleUrls: ['./schedule-actions.component.scss'],
@@ -61,11 +96,31 @@ import { ToastService } from '../../shared/services/toast.service';
 export class ScheduleActionsComponent implements OnInit {
   addGameDialogService = inject(AddGameDialogService);
   private authService = inject(AuthService);
+  private associationsService = inject(AssociationsService);
   private scheduleService = inject(ScheduleService);
   private addGameService = inject(AddGameService);
   private toastService = inject(ToastService);
   private viewContainerRef = inject(ViewContainerRef);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+
+  // Admin team selector - use toObservable to handle async user loading
+  currentUser = this.authService.currentUser;
+  user$: Observable<UserProfile | null> = toObservable(this.currentUser);
+  isAdmin = signal<boolean>(false);
+  teamOptions = signal<TeamOption[]>([]);
+  teamSelectControl = new FormControl<TeamOption | null>(null);
+  teamSelectOptions = signal<SelectParams<TeamOption>>({
+    listItems: [],
+    itemLabel: 'label',
+    isAutoComplete: false,
+    emptyMessage: 'No teams available',
+    placeholder: 'Select Team',
+    errorMessage: '',
+    showClear: false,
+  });
+
+  @Output() teamSelectionChange = new EventEmitter<TeamSelectionEvent>();
 
   fileUploadParams: FileUploadParams = {
     mode: 'basic',
@@ -84,6 +139,94 @@ export class ScheduleActionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
+
+    // Subscribe to team select control value changes
+    this.teamSelectControl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((selectedOption) => {
+        if (selectedOption) {
+          this.onTeamChange(selectedOption.value);
+        }
+      });
+
+    // Load team options for admins using user$ observable
+    this.user$
+      .pipe(
+        filter((user): user is UserProfile => !!user),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((user) => {
+        this.isAdmin.set(user.role === 'ADMIN');
+        if (user.role === 'ADMIN' && user.association_id) {
+          this.loadTeamOptions(user.association_id, user.team_id);
+        }
+      });
+  }
+
+  private loadTeamOptions(associationId: number, userTeamId: number): void {
+    this.associationsService
+      .getAssociation(associationId)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((association) => {
+        if (association?.teams) {
+          const options: TeamOption[] = [
+            {
+              label: '📊 Master View (All Teams)',
+              value: `association:${associationId}`,
+            },
+            ...association.teams.map((team: any) => {
+              // Handle both 'name' and 'team_name' field names from API
+              const teamName = team.team || 'Unknown Team';
+              const teamId = team.id?.toString() || '';
+              const isMyTeam = teamId === userTeamId.toString();
+              return {
+                label: isMyTeam ? `⭐ ${teamName} (My Team)` : teamName,
+                value: `team:${teamId}`,
+              };
+            }),
+          ];
+
+          // Set options on signals
+          this.teamOptions.set(options);
+          this.teamSelectOptions.set({
+            listItems: options,
+            itemLabel: 'label',
+            isAutoComplete: false,
+            emptyMessage: 'No teams available',
+            placeholder: 'Select Team',
+            errorMessage: '',
+            showClear: false,
+          });
+
+          // Find and set default to user's team
+          const defaultOption = options.find(
+            (opt) => opt.value === `team:${userTeamId}`,
+          );
+          if (defaultOption) {
+            this.teamSelectControl.setValue(defaultOption, {
+              emitEvent: false,
+            });
+          }
+
+          // Emit initial selection so parent component loads the correct data
+          this.teamSelectionChange.emit({
+            type: 'team',
+            id: userTeamId.toString(),
+          });
+        }
+      });
+  }
+
+  onTeamChange(value: string): void {
+    if (!value) return;
+
+    if (value.startsWith('association:')) {
+      const associationId = value.replace('association:', '');
+      this.teamSelectionChange.emit({ type: 'association', id: associationId });
+    } else if (value.startsWith('team:')) {
+      const teamId = value.replace('team:', '');
+      this.teamSelectionChange.emit({ type: 'team', id: teamId });
+    }
   }
 
   async openAddGameDialog() {

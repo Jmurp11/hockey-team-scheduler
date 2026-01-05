@@ -39,7 +39,6 @@ export class CallbackComponent implements OnInit {
 
   private async handleAuthCallback() {
     try {
-      console.log('Handling auth callback');
       // Handle the auth callback
       const { data, error } = await this.supabaseService
         .getSupabaseClient()!
@@ -63,7 +62,7 @@ export class CallbackComponent implements OnInit {
           this.router.navigate(['/app/schedule']);
         }
       } else {
-        console.log('No session found');
+        ('No session found');
         this.router.navigate(['/login']);
       }
     } catch (error) {

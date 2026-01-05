@@ -186,6 +186,18 @@ export class Game {
     example: true,
   })
   isHome: boolean;
+
+  @ApiProperty({
+    description: 'Team ID (from rankings)',
+    example: 1234,
+  })
+  team: number;
+
+  @ApiProperty({
+    description: 'Association ID',
+    example: 5678,
+  })
+  association: number;
 }
 
 export type CreateGameDto = Omit<Game, 'id' | 'created_at'>;
@@ -193,11 +205,11 @@ export type CreateGameDto = Omit<Game, 'id' | 'created_at'>;
 export class GamesQueryDto {
   @ApiProperty({
     name: 'user',
-    required: true,
+    required: false,
     description: 'User ID to filter games by',
     example: 5678,
   })
-  user: number;
+  user?: number;
   @ApiProperty({
     name: 'openGamesOnly',
     required: false,
@@ -205,6 +217,20 @@ export class GamesQueryDto {
     example: false,
   })
   openGamesOnly?: boolean;
+  @ApiProperty({
+    name: 'teamId',
+    required: false,
+    description: 'Team ID to filter games by (returns all games for users on this team)',
+    example: 1234,
+  })
+  teamId?: number;
+  @ApiProperty({
+    name: 'associationId',
+    required: false,
+    description: 'Association ID to filter games by (returns all games for all teams in the association)',
+    example: 5678,
+  })
+  associationId?: number;
 }
 
 export class Tournament {
