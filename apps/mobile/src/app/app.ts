@@ -115,7 +115,7 @@ export class App {
   async logout() {
     try {
       await this.userService.logout();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     } catch (error) {
       console.error('Logout failed:', error);
     }

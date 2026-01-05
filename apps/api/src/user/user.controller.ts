@@ -5,6 +5,7 @@ import {
   Get,
   Headers,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -38,6 +39,10 @@ class CreateInvitationDto {
   email: string;
   role?: 'ADMIN' | 'MANAGER';
   inviter_user_id?: string;
+}
+
+class UpdateMemberRoleDto {
+  role: 'ADMIN' | 'MANAGER';
 }
 
 class ValidateInvitationDto {
@@ -359,6 +364,36 @@ export class UserController {
     } catch (error: any) {
       (res as any).status(500).json({
         message: 'Error removing member',
+        error: error.message,
+      });
+    }
+  }
+
+  @Patch('members/:id/role')
+  @ApiOperation({
+    summary: 'Update member role',
+    description: 'Updates the role of a member in an association (ADMIN or MANAGER).',
+  })
+  @ApiBody({ type: UpdateMemberRoleDto })
+  @ApiResponse({ status: 200, description: 'Member role updated successfully' })
+  @ApiResponse({ status: 404, description: 'Member not found' })
+  @ApiResponse({ status: 400, description: 'Invalid role' })
+  async updateMemberRole(
+    @Param('id') id: string,
+    @Body() body: UpdateMemberRoleDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const updatedMember = await this.userService.updateMemberRole(id, body.role);
+
+      (res as any).status(200).json({
+        message: 'Member role updated successfully',
+        member: updatedMember,
+      });
+    } catch (error: any) {
+      const statusCode = error.message === 'Member not found' ? 404 : 500;
+      (res as any).status(statusCode).json({
+        message: 'Error updating member role',
         error: error.message,
       });
     }

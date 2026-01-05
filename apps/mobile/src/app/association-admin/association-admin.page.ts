@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
   AssociationAdminService,
@@ -83,6 +85,7 @@ import { InviteMemberComponent } from './invite-member/invite-member.component';
           [members]="adminData()!.members"
           [invitations]="adminData()!.invitations"
           (removeMember)="onRemoveMember($event)"
+          (updateMemberRole)="onUpdateMemberRole($event)"
           (resendInvitation)="onResendInvitation($event)"
           (cancelInvitation)="onCancelInvitation($event)"
         />
@@ -128,6 +131,7 @@ export class AssociationAdminPage implements OnInit {
   private toastController = inject(ToastController);
   private router = inject(Router);
   private inviteMemberModalService = inject(InviteMemberModalService);
+  private destroyRef = inject(DestroyRef);
 
   currentUser = this.authService.currentUser;
   loading = signal(true);
@@ -151,7 +155,9 @@ export class AssociationAdminPage implements OnInit {
 
   private loadAdminData(associationId: string) {
     this.loading.set(true);
-    this.adminService.getAssociationAdminData(associationId).subscribe({
+    this.adminService.getAssociationAdminData(associationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (data) => {
         this.adminData.set(data);
         this.loading.set(false);
@@ -165,7 +171,9 @@ export class AssociationAdminPage implements OnInit {
   }
 
   async onRemoveMember(member: AssociationMember) {
-    this.adminService.removeMember(member.id).subscribe({
+    this.adminService.removeMember(member.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: async () => {
         await this.showToast('Member removed successfully', 'success');
         const user = this.currentUser();
@@ -179,8 +187,27 @@ export class AssociationAdminPage implements OnInit {
     });
   }
 
+  async onUpdateMemberRole(event: { member: AssociationMember; role: 'ADMIN' | 'MANAGER' }) {
+    this.adminService.updateMemberRole(event.member.id, event.role)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+      next: async () => {
+        await this.showToast(`Member role updated to ${event.role}`, 'success');
+        const user = this.currentUser();
+        if (user) {
+          this.loadAdminData(user.association_id.toString());
+        }
+      },
+      error: async () => {
+        await this.showToast('Failed to update member role', 'danger');
+      },
+    });
+  }
+
   async onResendInvitation(invitation: AssociationInvitation) {
-    this.adminService.resendInvitation(invitation.id).subscribe({
+    this.adminService.resendInvitation(invitation.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: async (result) => {
         if (result.success) {
           await this.showToast('Invitation resent successfully', 'success');
@@ -197,7 +224,9 @@ export class AssociationAdminPage implements OnInit {
   }
 
   async onCancelInvitation(invitation: AssociationInvitation) {
-    this.adminService.cancelInvitation(invitation.id).subscribe({
+    this.adminService.cancelInvitation(invitation.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: async () => {
         await this.showToast('Invitation cancelled successfully', 'success');
         const user = this.currentUser();

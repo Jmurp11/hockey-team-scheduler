@@ -706,6 +706,22 @@ export class UserService {
     }
   }
 
+  async updateMemberRole(memberId: string, role: 'ADMIN' | 'MANAGER') {
+    // Update member role and return the updated record in a single call
+    const { data: updatedMember, error } = await supabase
+      .from('association_members')
+      .update({ role })
+      .eq('id', memberId)
+      .select('id, user_id, association, role, status')
+      .single();
+
+    if (error || !updatedMember) {
+      throw new Error(error?.code === 'PGRST116' ? 'Member not found' : 'Failed to update member role');
+    }
+
+    return updatedMember;
+  }
+
   private async hashToken(token: string): Promise<string> {
     const crypto = await import('crypto');
     return crypto.createHash('sha256').update(token).digest('hex');
