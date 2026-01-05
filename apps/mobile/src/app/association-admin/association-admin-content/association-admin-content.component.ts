@@ -59,6 +59,7 @@ import { InvitationsListComponent } from '../invitations-list/invitations-list.c
         <app-members-list
           [members]="members"
           (removeMember)="removeMember.emit($event)"
+          (updateMemberRole)="updateMemberRole.emit($event)"
         />
       }
 
@@ -103,6 +104,7 @@ export class AssociationAdminContentComponent {
   @Input() invitations: AssociationInvitation[] = [];
 
   @Output() removeMember = new EventEmitter<AssociationMember>();
+  @Output() updateMemberRole = new EventEmitter<{ member: AssociationMember; role: 'ADMIN' | 'MANAGER' }>();
   @Output() resendInvitation = new EventEmitter<AssociationInvitation>();
   @Output() cancelInvitation = new EventEmitter<AssociationInvitation>();
 

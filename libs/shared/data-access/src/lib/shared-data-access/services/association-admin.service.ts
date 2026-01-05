@@ -50,6 +50,16 @@ export class AssociationAdminService {
   }
 
   /**
+   * Update a member's role (ADMIN or MANAGER)
+   */
+  updateMemberRole(memberId: string, role: 'ADMIN' | 'MANAGER'): Observable<{ message: string; member: AssociationMember }> {
+    return this.http.patch<{ message: string; member: AssociationMember }>(
+      `${this.config.apiUrl}/users/members/${memberId}/role`,
+      { role }
+    );
+  }
+
+  /**
    * Resend an invitation email
    */
   resendInvitation(invitationId: string): Observable<{ success: boolean }> {

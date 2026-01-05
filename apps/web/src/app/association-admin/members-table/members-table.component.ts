@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
+  inject,
   Input,
   Output,
 } from '@angular/core';
@@ -14,6 +16,8 @@ import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { FormsModule } from '@angular/forms';
 import { TableComponent } from '../../shared/components/table/table.component';
 
 @Component({
@@ -24,6 +28,8 @@ import { TableComponent } from '../../shared/components/table/table.component';
     ButtonModule,
     TagModule,
     ConfirmDialogModule,
+    ToggleSwitchModule,
+    FormsModule,
     TableComponent,
   ],
   providers: [ConfirmationService],
@@ -50,28 +56,65 @@ import { TableComponent } from '../../shared/components/table/table.component';
               [severity]="getStatusSeverity(member.status)"
             />
           </td>
-          <td>
-            @if (member.role !== 'ADMIN') {
-              <p-button
-                icon="pi pi-trash"
-                severity="danger"
-                [text]="true"
-                size="small"
-                (click)="onRemove(member)"
-                pTooltip="Remove member"
-              />
-            }
+          <td class="actions-cell">
+            <div class="actions-container">
+              <div class="admin-toggle" pTooltip="Toggle Admin Role">
+                <p-toggleswitch
+                  [ngModel]="member.role === 'ADMIN'"
+                  (onChange)="onToggleAdmin(member, $event)"
+                />
+                <span class="toggle-label">Admin</span>
+              </div>
+              @if (member.role !== 'ADMIN') {
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  size="small"
+                  (click)="onRemove(member)"
+                  pTooltip="Remove member"
+                />
+              }
+            </div>
           </td>
         </tr>
       </ng-template>
     </app-table>
     <p-confirmDialog />
   `,
+  styles: [`
+    .actions-cell {
+      min-width: 180px;
+    }
+
+    .actions-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .admin-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-label {
+      font-size: 0.875rem;
+      color: var(--text-color-secondary);
+    }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MembersTableComponent {
+  private cdr = inject(ChangeDetectorRef);
+
   @Input() members: AssociationMember[] = [];
   @Output() removeMember = new EventEmitter<AssociationMember>();
+  @Output() updateMemberRole = new EventEmitter<{ member: AssociationMember; role: 'ADMIN' | 'MANAGER' }>();
+
+  // Track pending toggle to handle revert on cancel
+  private pendingToggleMemberId: string | null = null;
 
   tableOpts: TableOptions = {
     columns: [
@@ -108,6 +151,34 @@ export class MembersTableComponent {
       default:
         return 'secondary';
     }
+  }
+
+  onToggleAdmin(member: AssociationMember, event: any) {
+    const newRole = event.checked ? 'ADMIN' : 'MANAGER';
+    const action = event.checked ? 'promote' : 'demote';
+    const roleLabel = event.checked ? 'an admin' : 'a regular member';
+    this.pendingToggleMemberId = member.id;
+
+    this.confirmationService.confirm({
+      message: `Are you sure you want to ${action} ${member.user_name || member.user_email} to ${roleLabel}?`,
+      header: 'Confirm Role Change',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: event.checked ? 'p-button-primary' : 'p-button-warning',
+      accept: () => {
+        this.pendingToggleMemberId = null;
+        this.updateMemberRole.emit({ member, role: newRole });
+      },
+      reject: () => {
+        // Revert the toggle by forcing change detection
+        this.pendingToggleMemberId = null;
+        // Temporarily mutate to trigger ngModel update, then restore
+        const originalRole = member.role;
+        member.role = newRole; // Set to the toggled value
+        this.cdr.detectChanges();
+        member.role = originalRole; // Restore original
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   onRemove(member: AssociationMember) {

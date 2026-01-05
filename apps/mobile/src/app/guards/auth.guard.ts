@@ -17,7 +17,7 @@ export const authGuard: CanActivateFn = async (): Promise<
 
     if (!client) {
       console.error('Supabase client not available');
-      return router.createUrlTree(['/auth/login']);
+      return router.createUrlTree(['/login']);
     }
 
     // Use getUser() instead of getSession() - getUser() validates the session
@@ -32,7 +32,7 @@ export const authGuard: CanActivateFn = async (): Promise<
       authService.session.set(null);
       authService.currentUser.set(null);
       console.log('No valid user, redirecting to login');
-      return router.createUrlTree(['/auth/login']);
+      return router.createUrlTree(['/login']);
     }
 
     // User is authenticated, ensure session is set
@@ -46,6 +46,6 @@ export const authGuard: CanActivateFn = async (): Promise<
     console.error('Auth guard unexpected error:', error);
     authService.session.set(null);
     authService.currentUser.set(null);
-    return router.createUrlTree(['/auth/login']);
+    return router.createUrlTree(['/login']);
   }
 };

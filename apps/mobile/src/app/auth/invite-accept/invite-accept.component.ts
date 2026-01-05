@@ -206,6 +206,6 @@ export class InviteAcceptComponent implements OnInit {
   }
 
   goToLogin() {
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 }

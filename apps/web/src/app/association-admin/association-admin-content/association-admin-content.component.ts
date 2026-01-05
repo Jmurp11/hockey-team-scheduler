@@ -68,6 +68,7 @@ import { InvitationsTableComponent } from '../invitations-table/invitations-tabl
             <app-members-table
               [members]="members"
               (removeMember)="removeMember.emit($event)"
+              (updateMemberRole)="updateMemberRole.emit($event)"
             />
           </p-tabpanel>
 
@@ -133,6 +134,7 @@ export class AssociationAdminContentComponent {
   @Input() subscriptionId: string = '';
 
   @Output() removeMember = new EventEmitter<AssociationMember>();
+  @Output() updateMemberRole = new EventEmitter<{ member: AssociationMember; role: 'ADMIN' | 'MANAGER' }>();
   @Output() inviteMember = new EventEmitter<void>();
   @Output() resendInvitation = new EventEmitter<AssociationInvitation>();
   @Output() cancelInvitation = new EventEmitter<AssociationInvitation>();

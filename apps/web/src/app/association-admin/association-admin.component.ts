@@ -60,6 +60,7 @@ import { InviteMemberDialogService } from './invite-member/invite-member-dialog.
           [invitations]="adminData()!.invitations"
           [subscriptionId]="adminData()!.subscription?.id || ''"
           (removeMember)="onRemoveMember($event)"
+          (updateMemberRole)="onUpdateMemberRole($event)"
           (resendInvitation)="onResendInvitation($event)"
           (cancelInvitation)="onCancelInvitation($event)"
         />
@@ -170,6 +171,33 @@ export class AssociationAdminComponent implements OnInit {
             severity: 'error',
             summary: 'Error',
             detail: 'Failed to remove member',
+          });
+        },
+      });
+  }
+
+  onUpdateMemberRole(event: { member: AssociationMember; role: 'ADMIN' | 'MANAGER' }) {
+    this.adminService
+      .updateMemberRole(event.member.id, event.role)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Member role updated to ${event.role}`,
+          });
+          // Reload data
+          const user = this.currentUser();
+          if (user) {
+            this.loadAdminData(user.association_id.toString());
+          }
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update member role',
           });
         },
       });
