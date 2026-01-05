@@ -54,7 +54,6 @@ export class CallbackComponent implements OnInit {
 
       if (data.session) {
         const needsProfile = await this.checkUserProfile(data.session.user.id);
-        console.log({session: data.session, needsProfile});
 
         if (needsProfile) {
           this.router.navigate(['/app/complete-profile']);
