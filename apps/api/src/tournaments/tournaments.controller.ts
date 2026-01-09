@@ -1,13 +1,16 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -18,6 +21,7 @@ import {
 import { TournamentsService } from './tournaments.service';
 import { Tournament, TournamentProps } from '../types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
+import { CreateTournamentDto } from './create-tournament.dto';
 
 @ApiTags('Tournaments')
 @UseGuards(ApiKeyGuard)
@@ -45,6 +49,49 @@ export class TournamentsController {
     } catch (error) {
       throw new HttpException(
         'Failed to fetch tournaments',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Creates a new tournament submission from tournament directors.
+   * Supports both free listings and paid featured tournaments.
+   */
+  @Post()
+  @ApiOperation({
+    summary: 'Create a new tournament',
+    description:
+      'Submit a new tournament listing. Set featured=true for paid featured listings.',
+  })
+  @ApiBody({ type: CreateTournamentDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Tournament created successfully',
+    type: Tournament,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict - Tournament with same name and start date already exists',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async createTournament(
+    @Body() createTournamentDto: CreateTournamentDto,
+  ): Promise<Tournament> {
+    try {
+      return await this.tournamentsService.createTournament(createTournamentDto);
+    } catch (error) {
+      // Handle duplicate tournament error (unique constraint violation)
+      if (error.message?.includes('duplicate') || error.code === '23505') {
+        throw new HttpException(
+          'A tournament with this name and start date already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        error.message || 'Failed to create tournament',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
