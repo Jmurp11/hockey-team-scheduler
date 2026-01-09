@@ -203,8 +203,25 @@
     margin-bottom: 1.5rem;
   }
 
-  .btn-primary {
-    max-width: 300px;
-    margin: 0 auto;
+  .success-actions {
+    @include flex(center, center, row);
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .btn-primary,
+    .btn-secondary {
+      max-width: 220px;
+      margin: 0;
+    }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+
+      .btn-primary,
+      .btn-secondary {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
   }
 }

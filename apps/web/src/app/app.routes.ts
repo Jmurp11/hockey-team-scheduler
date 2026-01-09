@@ -56,6 +56,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'tournaments',
+        loadComponent: () =>
+          import(
+            './landing/tournaments/tournaments-public.component'
+          ).then((m) => m.TournamentsPublicComponent),
+      },
+      {
         path: 'tournament-director',
         loadComponent: () =>
           import(

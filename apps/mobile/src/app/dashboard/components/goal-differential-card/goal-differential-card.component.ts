@@ -7,7 +7,7 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { football } from 'ionicons/icons';
+import { medal } from 'ionicons/icons';
 import { CardComponent } from '../../../shared/card/card.component';
 
 @Component({
@@ -25,7 +25,7 @@ import { CardComponent } from '../../../shared/card/card.component';
     <app-card>
       <ion-card-header>
         <ion-card-title>
-          <ion-icon name="football"></ion-icon>
+          <ion-icon name="medal"></ion-icon>
           Avg +/-
         </ion-card-title>
       </ion-card-header>
@@ -86,7 +86,7 @@ export class GoalDifferentialCardComponent {
   @Input({ required: true }) averageGoalDifferential!: number;
 
   constructor() {
-    addIcons({ football });
+    addIcons({ medal });
   }
 
   get formattedDifferential(): string {

@@ -1,9 +1,10 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,9 +12,11 @@ import { TournamentsService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import { CreateTournamentDto } from '@hockey-team-scheduler/shared-utilities';
 import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { TournamentDirectorFormComponent } from './tournament-director-form/tournament-director-form.component';
+import { SeoService } from '../../shared/services/seo.service';
 
 /**
  * Tournament Director landing page component.
@@ -22,7 +25,7 @@ import { TournamentDirectorFormComponent } from './tournament-director-form/tour
  * Workflow:
  * 1. User fills out tournament details
  * 2. User chooses free submission or featured ($99)
- * 3. If featured: redirect to Stripe checkout, then save with featured=true on success
+ * 3. If featured: redirect to Stripe Checkout, then save with featured=true on success callback
  * 4. If free: save immediately with featured=false
  */
 @Component({
@@ -33,16 +36,17 @@ import { TournamentDirectorFormComponent } from './tournament-director-form/tour
     CardComponent,
     TournamentDirectorFormComponent,
     ToastModule,
+    ProgressSpinnerModule,
   ],
   providers: [MessageService],
   template: `
-    <div class="tournament-director-container">
-      <div class="hero-section">
+    <main class="tournament-director-container">
+      <header class="hero-section">
         <h1>List Your Tournament</h1>
         <p class="subtitle">
-          Reach thousands of hockey teams looking for their next tournament
+          Reach hockey teams across North America looking for their next tournament
         </p>
-      </div>
+      </header>
 
       @switch (currentView()) {
         @case ('form') {
@@ -84,33 +88,23 @@ import { TournamentDirectorFormComponent } from './tournament-director-form/tour
                   </ul>
                   <button
                     class="btn-primary"
-                    (click)="showStripeCheckout()"
+                    (click)="redirectToStripeCheckout()"
                     [disabled]="loadingService.isLoading()"
                   >
-                    Get Featured
+                    @if (loadingService.isLoading()) {
+                      <p-progressSpinner
+                        strokeWidth="4"
+                        [style]="{ width: '20px', height: '20px' }"
+                      />
+                      Processing...
+                    } @else {
+                      Get Featured
+                    }
                   </button>
                 </div>
               </div>
               <button class="back-link" (click)="currentView.set('form')">
                 &larr; Back to form
-              </button>
-            </ng-template>
-          </app-card>
-        }
-        @case ('stripe') {
-          <app-card class="stripe-card">
-            <ng-template #title>Complete Your Payment</ng-template>
-            <ng-template #content>
-              <div class="stripe-container">
-                <!-- Stripe Pricing Table embedded via script -->
-                <div id="stripe-pricing-table"></div>
-                <p class="stripe-note">
-                  After successful payment, your tournament will be featured
-                  automatically.
-                </p>
-              </div>
-              <button class="back-link" (click)="currentView.set('pricing')">
-                &larr; Back to options
               </button>
             </ng-template>
           </app-card>
@@ -128,28 +122,46 @@ import { TournamentDirectorFormComponent } from './tournament-director-form/tour
                 <p class="success-detail">
                   Teams can now discover your tournament in our listings.
                 </p>
-                <button class="btn-primary" (click)="resetForm()">
-                  Submit Another Tournament
-                </button>
+                <div class="success-actions">
+                  <button class="btn-primary" (click)="resetForm()">
+                    Submit Another Tournament
+                  </button>
+                  <button class="btn-secondary" (click)="viewTournaments()">
+                    View All Tournaments
+                  </button>
+                </div>
               </div>
             </ng-template>
           </app-card>
         }
       }
-    </div>
+    </main>
     <p-toast />
   `,
   styleUrls: ['./tournament-director.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TournamentDirectorComponent {
+export class TournamentDirectorComponent implements OnInit {
   protected loadingService = inject(LoadingService);
   private tournamentsService = inject(TournamentsService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
+  private document = inject(DOCUMENT);
+  private seoService = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seoService.updateTags({
+      title: 'List Your Hockey Tournament - RinkLink.ai Tournament Directors',
+      description:
+        'List your youth hockey tournament on RinkLink.ai and reach thousands of teams. Free listings available. Featured listings get priority placement and promotion for $99.',
+      url: 'https://rinklink.ai/tournament-director',
+      keywords:
+        'list hockey tournament, tournament director, hockey tournament marketing, promote hockey tournament, youth hockey events',
+    });
+  }
 
   // View state management
-  currentView = signal<'form' | 'pricing' | 'success' | 'stripe'>('form');
+  currentView = signal<'form' | 'pricing' | 'success'>('form');
 
   // Stores the pending tournament data before submission
   pendingTournament = signal<CreateTournamentDto | null>(null);
@@ -182,60 +194,61 @@ export class TournamentDirectorComponent {
   }
 
   /**
-   * Shows the Stripe checkout for featured listings.
-   * Injects the Stripe pricing table script.
+   * Creates a Stripe Checkout Session and redirects user to Stripe.
+   * Tournament data is stored in the session metadata for retrieval after payment.
    */
-  showStripeCheckout() {
-    this.currentView.set('stripe');
+  redirectToStripeCheckout() {
+    const tournament = this.pendingTournament();
+    if (!tournament) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please fill out the tournament form first.',
+      });
+      return;
+    }
 
-    // Inject Stripe pricing table after view update
-    setTimeout(() => {
-      this.injectStripePricingTable();
-    }, 100);
+    this.loadingService.setLoading(true);
+
+    const baseUrl = this.document.location.origin;
+    const successUrl = `${baseUrl}/tournament-director/success`;
+    const cancelUrl = `${baseUrl}/tournament-director`;
+
+    this.tournamentsService
+      .createFeaturedCheckout({
+        tournament: { ...tournament, featured: true },
+        successUrl,
+        cancelUrl,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.loadingService.setLoading(false);
+          // Redirect to Stripe Checkout
+          if (response.url) {
+            window.location.href = response.url;
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to create checkout session. Please try again.',
+            });
+          }
+        },
+        error: (err) => {
+          this.loadingService.setLoading(false);
+          console.error('Stripe checkout error:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to process payment. Please try again.',
+          });
+        },
+      });
   }
 
   /**
-   * Injects the Stripe pricing table script and element.
-   */
-  private injectStripePricingTable() {
-    const container = document.getElementById('stripe-pricing-table');
-    if (!container) return;
-
-    // Clear existing content
-    container.innerHTML = '';
-
-    // Create and add the stripe-pricing-table element
-    const pricingTable = document.createElement('stripe-pricing-table');
-    pricingTable.setAttribute(
-      'pricing-table-id',
-      'prctbl_1SniSJIIVtFpI9s5rZSb1nEy',
-    );
-    pricingTable.setAttribute(
-      'publishable-key',
-      'pk_test_51RjUsHIIVtFpI9s5sKbxndFhWOndlpzW4iDrP2vQd51cwATj9ic8CXFNKlh3TUMII43qihw9mrWT9nmJRNOH4Oaw00dgCssny1',
-    );
-
-    // Store tournament data in session storage for retrieval after Stripe redirect
-    if (this.pendingTournament()) {
-      sessionStorage.setItem(
-        'pendingTournament',
-        JSON.stringify(this.pendingTournament()),
-      );
-    }
-
-    container.appendChild(pricingTable);
-
-    // Load Stripe script if not already loaded
-    if (!document.querySelector('script[src*="stripe.com/v3/pricing-table"]')) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://js.stripe.com/v3/pricing-table.js';
-      document.head.appendChild(script);
-    }
-  }
-
-  /**
-   * Submits the tournament to the backend.
+   * Submits the tournament to the backend (for free listings).
    */
   private submitTournament(featured: boolean) {
     const tournament = this.pendingTournament();
@@ -283,5 +296,12 @@ export class TournamentDirectorComponent {
   resetForm() {
     this.pendingTournament.set(null);
     this.currentView.set('form');
+  }
+
+  /**
+   * Navigate to view all tournaments.
+   */
+  viewTournaments() {
+    window.location.href = '/tournaments';
   }
 }

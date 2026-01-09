@@ -8,6 +8,32 @@
   @include flex(space-between, center, row);
 }
 
+// Featured filter section
+.sort-header__featured {
+  @include flex(flex-start, center, row);
+  flex-shrink: 0;
+
+  ::ng-deep app-select-button {
+    .p-selectbutton {
+      .p-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        height: 3.5rem;
+
+        &.p-highlight {
+          background: var(--p-primary-color);
+          border-color: var(--p-primary-color);
+          color: white;
+        }
+      }
+    }
+
+    .form-field {
+      margin-bottom: 0 !important;
+    }
+  }
+}
+
 .sort-header__results {
   @include flex(flex-start, center, row);
   font-size: 0.9rem;

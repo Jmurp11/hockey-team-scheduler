@@ -30,7 +30,7 @@ import { addIcons } from 'ionicons';
 import {
   barChart,
   calendar,
-  footballOutline,
+  medalOutline,
   statsChart,
   timer,
   trophy,
@@ -86,7 +86,7 @@ export class DashboardPage implements OnInit {
     addIcons({
       barChart,
       calendar,
-      footballOutline,
+      medalOutline,
       statsChart,
       timer,
       trophy,

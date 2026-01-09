@@ -122,7 +122,6 @@ export class AutocompleteComponent implements ControlValueAccessor {
     this.onChange(actualValue);
     this.onTouched();
 
-    console.log({ option });
     this.selectionChange.emit(option);
     this.modal.dismiss();
   }

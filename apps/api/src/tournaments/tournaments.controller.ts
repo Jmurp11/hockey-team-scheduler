@@ -21,7 +21,19 @@ import {
 import { TournamentsService } from './tournaments.service';
 import { Tournament, TournamentProps } from '../types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
-import { CreateTournamentDto } from './create-tournament.dto';
+import {
+  CreateFeaturedCheckoutDto,
+  CreateTournamentDto,
+  VerifyPaymentDto,
+} from './create-tournament.dto';
+
+/**
+ * Response type for Stripe checkout session creation
+ */
+class CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
 
 @ApiTags('Tournaments')
 @UseGuards(ApiKeyGuard)
@@ -33,6 +45,122 @@ import { CreateTournamentDto } from './create-tournament.dto';
 @Controller('v1/tournaments')
 export class TournamentsController {
   constructor(private readonly tournamentsService: TournamentsService) {}
+
+  /**
+   * Get all public tournaments for display.
+   * Featured tournaments are returned first, then sorted by date.
+   */
+  @Get('public')
+  @ApiOperation({
+    summary: 'Get all public tournaments',
+    description:
+      'Returns all upcoming tournaments for public display. Featured tournaments appear first.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of public tournaments sorted by featured status and date',
+    type: [Tournament],
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async getPublicTournaments(): Promise<Tournament[]> {
+    try {
+      return await this.tournamentsService.getPublicTournaments();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch public tournaments',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Creates a Stripe Checkout Session for a featured tournament listing.
+   * Returns the checkout URL for redirecting the user.
+   */
+  @Post('featured/checkout')
+  @ApiOperation({
+    summary: 'Create Stripe checkout for featured tournament',
+    description:
+      'Creates a Stripe Checkout Session for purchasing a featured tournament listing ($99). Returns the checkout URL.',
+  })
+  @ApiBody({ type: CreateFeaturedCheckoutDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Checkout session created successfully',
+    type: CheckoutSessionResponse,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid input data' })
+  @ApiResponse({ status: 500, description: 'Internal server error - Stripe not configured' })
+  async createFeaturedCheckout(
+    @Body() dto: CreateFeaturedCheckoutDto,
+  ): Promise<CheckoutSessionResponse> {
+    try {
+      return await this.tournamentsService.createFeaturedCheckoutSession(
+        dto.tournament,
+        dto.successUrl,
+        dto.cancelUrl,
+      );
+    } catch (error) {
+      if (error.message === 'Stripe is not configured') {
+        throw new HttpException(
+          'Payment processing is not configured',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        error.message || 'Failed to create checkout session',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Verifies a Stripe payment and creates the featured tournament.
+   * Called after successful Stripe checkout redirect.
+   */
+  @Post('featured/verify-payment')
+  @ApiOperation({
+    summary: 'Verify payment and create featured tournament',
+    description:
+      'Verifies the Stripe checkout session payment and creates the featured tournament listing.',
+  })
+  @ApiBody({ type: VerifyPaymentDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Featured tournament created successfully',
+    type: Tournament,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payment not verified or session invalid',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async verifyPaymentAndCreateTournament(
+    @Body() dto: VerifyPaymentDto,
+  ): Promise<Tournament> {
+    try {
+      const tournament = await this.tournamentsService.createFeaturedTournamentFromSession(
+        dto.sessionId,
+      );
+
+      if (!tournament) {
+        throw new HttpException(
+          'Payment not verified or session invalid',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return tournament;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.message || 'Failed to verify payment and create tournament',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get all tournaments' })

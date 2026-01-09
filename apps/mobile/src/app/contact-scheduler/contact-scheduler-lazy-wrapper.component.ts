@@ -45,7 +45,6 @@ export class ContactSchedulerLazyWrapperComponent {
       this.componentRef = this.viewContainer.createComponent(
         ContactSchedulerComponent,
       );
-      console.log('ContactSchedulerComponent loaded dynamically');
     } catch (error) {
       console.error('Failed to load ContactSchedulerComponent:', error);
     }

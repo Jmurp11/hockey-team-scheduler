@@ -3,8 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
-  Input,
-  OnInit,
 } from '@angular/core';
 import { ContactHeaderComponent } from './contact-header/contact-header.component';
 import { ContactContentComponent } from './contact-content/contact-content.component';
@@ -95,19 +93,12 @@ import { ButtonComponent } from '../shared/button/button.component';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactSchedulerComponent implements OnInit {
+export class ContactSchedulerComponent {
   contactSchedulerDialogService = inject(ContactSchedulerDialogService);
 
   manager = this.contactSchedulerDialogService.managerData();
 
   cancel() {
     this.contactSchedulerDialogService.closeModal();
-  }
-
-  ngOnInit() {
-    console.log(
-      'ContactSchedulerComponent initialized with manager:',
-      this.manager,
-    );
   }
 }

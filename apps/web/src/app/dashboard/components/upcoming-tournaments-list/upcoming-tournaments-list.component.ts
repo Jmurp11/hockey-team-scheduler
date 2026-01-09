@@ -1,8 +1,13 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
+import { sortTournamentsWithFeaturedFirst, UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
 
+/**
+ * Upcoming tournaments list component for the dashboard.
+ * Displays upcoming tournaments with featured tournaments highlighted.
+ * Featured tournaments are shown first and have a special badge.
+ */
 @Component({
   selector: 'app-upcoming-tournaments-list',
   standalone: true,
@@ -11,8 +16,18 @@ import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
     @if (tournaments.length > 0) {
       <div class="scroll-container">
         <div class="tournaments-list">
-          @for (tournament of tournaments; track tournament.id) {
-            <div class="tournament-item">
+          @for (tournament of sortedTournaments; track tournament.id) {
+            <div
+              class="tournament-item"
+              [class.tournament-item--featured]="tournament.featured"
+            >
+              <!-- Featured badge for highlighted tournaments -->
+              @if (tournament.featured) {
+                <div class="featured-badge">
+                  <i class="pi pi-star-fill"></i>
+                  <span>Featured</span>
+                </div>
+              }
               <div class="tournament-name">{{ tournament.name }}</div>
               <div class="tournament-dates">
                 {{ tournament.startDate | date : 'MMM d' }}
@@ -85,12 +100,29 @@ import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
 
       .tournament-item {
         @include flex(flex-start, flex-start, column);
+        position: relative;
         gap: 0.25rem;
         padding: 0.75rem;
         border-radius: 0.5rem;
         background-color: var(--gray-50, #f9fafb);
         border: 1px solid var(--gray-200, #e5e7eb);
         flex-shrink: 0;
+        transition: all 0.2s ease;
+
+        // Featured tournament styling
+        &--featured {
+          background: linear-gradient(
+            135deg,
+            var(--p-primary-50, #eff6ff) 0%,
+            white 100%
+          );
+          border-color: var(--p-primary-200, #bfdbfe);
+          box-shadow: 0 2px 4px rgba(59, 130, 246, 0.08);
+
+          .tournament-name {
+            color: var(--p-primary-700, #1d4ed8);
+          }
+        }
 
         .tournament-name {
           font-weight: 600;
@@ -111,6 +143,26 @@ import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
         .tournament-rink {
           color: var(--gray-400, #9ca3af);
           font-size: 0.75rem;
+        }
+      }
+
+      // Featured badge styling
+      .featured-badge {
+        position: absolute;
+        top: -6px;
+        right: 8px;
+        @include flex(center, center, row);
+        gap: 0.2rem;
+        background: linear-gradient(135deg, #facc15 0%, #fb923c 100%);
+        color: white;
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+
+        i {
+          font-size: 0.5rem;
         }
       }
 
@@ -157,4 +209,12 @@ import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
 })
 export class UpcomingTournamentsListComponent {
   @Input({ required: true }) tournaments!: UpcomingTournament[];
+
+  /**
+   * Returns tournaments sorted with featured ones first.
+   * Uses the shared utility function for consistent sorting across the app.
+   */
+  get sortedTournaments(): UpcomingTournament[] {
+    return sortTournamentsWithFeaturedFirst(this.tournaments, 'startDate', 'asc');
+  }
 }
