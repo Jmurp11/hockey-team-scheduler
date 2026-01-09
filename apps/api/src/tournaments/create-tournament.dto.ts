@@ -74,3 +74,37 @@ export class CreateTournamentDto {
   })
   featured: boolean;
 }
+
+/**
+ * DTO for creating a Stripe Checkout Session for featured tournament listing.
+ */
+export class CreateFeaturedCheckoutDto {
+  @ApiProperty({
+    description: 'Tournament data to store in checkout session',
+    type: CreateTournamentDto,
+  })
+  tournament: CreateTournamentDto;
+
+  @ApiProperty({
+    description: 'URL to redirect to after successful payment',
+    example: 'https://rinklink.ai/tournament-director/success',
+  })
+  successUrl: string;
+
+  @ApiProperty({
+    description: 'URL to redirect to if payment is canceled',
+    example: 'https://rinklink.ai/tournament-director',
+  })
+  cancelUrl: string;
+}
+
+/**
+ * DTO for verifying Stripe payment and creating featured tournament.
+ */
+export class VerifyPaymentDto {
+  @ApiProperty({
+    description: 'Stripe Checkout Session ID',
+    example: 'cs_test_abc123',
+  })
+  sessionId: string;
+}

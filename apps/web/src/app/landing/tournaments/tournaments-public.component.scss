@@ -1,0 +1,227 @@
+@use 'mixins/mixins' as *;
+
+.tournaments-public-container {
+  @include flex(flex-start, center, column);
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.hero-section {
+  text-align: center;
+  max-width: 700px;
+  padding: 2rem 0;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-500);
+
+    @media (max-width: 768px) {
+      font-size: 1.75rem;
+    }
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.content-section {
+  width: 100%;
+  max-width: 1200px;
+}
+
+// Filter controls - all items inline
+.filter-controls {
+  @include flex(space-between, center, row);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  flex-wrap: wrap;
+
+  // Search field using PrimeNG IconField
+  .search-field {
+    flex: 1;
+    min-width: 200px;
+    max-width: 350px;
+
+    .search-input {
+      width: 100%;
+      padding-right: 2.5rem;
+    }
+
+    .clear-icon {
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--p-text-color);
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .search-field {
+      max-width: 100%;
+    }
+
+    ::ng-deep .p-selectbutton {
+      width: 100%;
+    }
+
+    ::ng-deep .p-button {
+      width: 100%;
+    }
+  }
+}
+
+.results-info {
+  @include flex(flex-start, center, row);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0 0.25rem;
+  flex-wrap: wrap;
+
+  .results-count {
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+  }
+
+  .search-badge {
+    background: var(--p-surface-100);
+    color: var(--p-text-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .filter-badge {
+    background: var(--secondary-100);
+    color: var(--secondary-700);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+// Loading state
+.loading-container {
+  @include flex(center, center, column);
+  padding: 4rem;
+  gap: 1rem;
+
+  p {
+    color: var(--p-text-muted-color);
+  }
+}
+
+// Error state
+.error-card {
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.error-content {
+  @include flex(center, center, column);
+  padding: 2rem;
+  gap: 1rem;
+
+  .error-icon {
+    font-size: 3rem;
+    color: var(--p-red-500);
+  }
+
+  p {
+    color: var(--p-text-muted-color);
+    text-align: center;
+  }
+}
+
+// Empty state
+.empty-card {
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.empty-content {
+  @include flex(center, center, column);
+  padding: 2rem;
+  gap: 1rem;
+
+  .empty-icon {
+    font-size: 3rem;
+    color: var(--p-text-muted-color);
+  }
+
+  p {
+    color: var(--p-text-muted-color);
+    text-align: center;
+    margin: 0;
+  }
+}
+
+// Tournament grid
+.tournaments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  align-items: stretch; // Ensure grid items stretch to same height
+
+  // Each card wrapper needs to stretch
+  app-tournament-public-card {
+    display: block;
+    height: 100%;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+// CTA Section
+.cta-section {
+  @include flex(center, center, column);
+  width: 100%;
+  max-width: 800px;
+  padding: 3rem 2rem;
+  margin-top: 2rem;
+  background: linear-gradient(
+    135deg,
+    var(--secondary-50) 0%,
+    var(--secondary-100) 100%
+  );
+  border-radius: 16px;
+  text-align: center;
+
+  h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--primary-700);
+  }
+
+  p {
+    color: var(--p-text-color);
+    max-width: 600px;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-buttons {
+    @include flex(center, center, row);
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}

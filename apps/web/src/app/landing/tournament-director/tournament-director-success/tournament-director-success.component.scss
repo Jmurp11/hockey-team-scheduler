@@ -2,86 +2,170 @@
 
 .success-container {
   @include flex(center, center, column);
-  min-height: 80vh;
-  width: 100vw;
+  min-height: 100vh;
+  width: 100%;
   padding: 2rem;
+  background: var(--p-surface-ground);
 }
 
 .status-card {
   width: 100%;
-  max-width: 500px;
-}
+  max-width: 550px;
 
-.loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 2rem;
+  &.success {
+    ::ng-deep .p-card {
+      border-top: 4px solid var(--p-green-500);
+    }
+  }
 
-  p {
-    color: var(--p-text-muted-color);
+  &.error {
+    ::ng-deep .p-card {
+      border-top: 4px solid var(--p-red-500);
+    }
   }
 }
 
-.success-content,
-.error-content {
-  text-align: center;
-  padding: 1rem;
+// Loading state
+.loading-content {
+  @include flex(center, center, column);
+  padding: 3rem 2rem;
+  gap: 1rem;
 
   p {
     font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    color: var(--p-text-color);
+    margin: 0;
   }
 
-  .success-detail {
+  .loading-detail {
+    font-size: 0.9rem;
     color: var(--p-text-muted-color);
-    margin-bottom: 1.5rem;
   }
 }
 
-.success-icon {
-  font-size: 4rem;
-  color: var(--p-green-500);
-  margin-bottom: 1rem;
+// Success state
+.success-content {
+  @include flex(center, center, column);
+  padding: 1.5rem;
+  gap: 1.5rem;
+  text-align: center;
+
+  h2 {
+    font-size: 1.5rem;
+    color: var(--p-text-color);
+    margin: 0;
+  }
+
+  p {
+    color: var(--p-text-muted-color);
+    line-height: 1.6;
+    margin: 0;
+  }
 }
 
-.error-icon {
-  font-size: 4rem;
-  color: var(--p-red-500);
-  margin-bottom: 1rem;
+.success-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-green-50) 0%, var(--p-green-100) 100%);
+  @include flex(center, center, row);
+
+  .success-icon {
+    font-size: 3rem;
+    color: var(--p-green-500);
+  }
 }
 
-.btn-primary,
-.btn-secondary {
-  display: block;
+.benefits-list {
+  @include flex(flex-start, flex-start, column);
+  gap: 0.75rem;
   width: 100%;
-  max-width: 250px;
-  margin: 0.5rem auto;
-  padding: 0.75rem 1.5rem;
+  padding: 1rem;
+  background: var(--p-surface-50);
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+  text-align: left;
 }
 
-.btn-primary {
-  background: var(--p-primary-color);
-  color: white;
+.benefit-item {
+  @include flex(flex-start, center, row);
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--p-text-color);
 
-  &:hover {
-    background: var(--p-primary-700);
+  i {
+    font-size: 1rem;
+    color: var(--p-primary-color);
+    width: 20px;
+    text-align: center;
+
+    &.pi-star-fill {
+      color: var(--p-yellow-500);
+    }
   }
 }
 
-.btn-secondary {
-  background: transparent;
-  color: var(--p-primary-color);
-  border: 1px solid var(--p-primary-color);
+// Error state
+.error-content {
+  @include flex(center, center, column);
+  padding: 1.5rem;
+  gap: 1.5rem;
+  text-align: center;
 
-  &:hover {
-    background: var(--p-primary-50);
+  p {
+    color: var(--p-text-color);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .error-detail {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.error-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-red-50) 0%, var(--p-red-100) 100%);
+  @include flex(center, center, row);
+
+  .error-icon {
+    font-size: 3rem;
+    color: var(--p-red-500);
+  }
+}
+
+// Shared action buttons
+.action-buttons {
+  @include flex(center, center, row);
+  gap: 1rem;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+
+  ::ng-deep .p-button {
+    min-width: 180px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+
+    ::ng-deep .p-button {
+      width: 100%;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .success-container {
+    padding: 1rem;
+  }
+
+  .success-content,
+  .error-content,
+  .loading-content {
+    padding: 1rem;
   }
 }

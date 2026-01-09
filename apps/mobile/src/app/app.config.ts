@@ -43,7 +43,6 @@ function initializeAuth(
         } = await client.auth.getSession();
         if (session) {
           await authService.setSession(session);
-          console.log('Session restored on app startup');
         }
 
         // Listen for auth state changes

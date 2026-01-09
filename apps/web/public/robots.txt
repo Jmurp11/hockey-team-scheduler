@@ -1,0 +1,25 @@
+# RinkLink.ai - Robots.txt
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /contact
+Allow: /tournaments
+Allow: /tournament-director
+Allow: /developer
+
+# Disallow authenticated areas
+Disallow: /app/
+Disallow: /auth/
+Disallow: /callback
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /welcome
+
+# Disallow private/internal pages
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://rinklink.ai/sitemap.xml

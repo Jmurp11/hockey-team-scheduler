@@ -31,7 +31,6 @@ export const authGuard: CanActivateFn = async (): Promise<
       // Clear any stale session data
       authService.session.set(null);
       authService.currentUser.set(null);
-      console.log('No valid user, redirecting to login');
       return router.createUrlTree(['/auth/login']);
     }
 

@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   inject,
+  OnInit,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -20,6 +21,7 @@ import { ToastModule } from 'primeng/toast';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { TextAreaComponent } from '../../shared/components/text-area/text-area.component';
+import { SeoService } from '../../shared/services/seo.service';
 
 import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
 
@@ -37,7 +39,8 @@ import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
   ],
   providers: [MessageService],
   template: `
-    <div class="contact-container">
+    <main class="contact-container">
+      <h1 class="sr-only">Contact RinkLink.ai</h1>
       <app-card class="card">
         <ng-template #title>Contact Us</ng-template>
         <ng-template #content>
@@ -70,17 +73,18 @@ import { getFormControl } from '@hockey-team-scheduler/shared-utilities';
           </p-button
         ></ng-template>
       </app-card>
-    </div>
+    </main>
     <p-toast />
   `,
   styleUrls: ['./contact.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   protected loadingService = inject(LoadingService);
   private contactService = inject(ContactService);
   private messageService = inject(MessageService);
   private destroyRef = inject(DestroyRef);
+  private seoService = inject(SeoService);
 
   getFormControl = getFormControl;
 
@@ -95,6 +99,27 @@ export class ContactComponent {
       validators: [Validators.required, Validators.minLength(6)],
     }),
   });
+
+  ngOnInit(): void {
+    this.seoService.updateTags({
+      title: 'Contact Us - RinkLink.ai Hockey Scheduling Support',
+      description:
+        'Get in touch with RinkLink.ai for support, questions, or feedback about our youth hockey scheduling platform. We\'re here to help your team succeed.',
+      url: 'https://rinklink.ai/contact',
+      keywords:
+        'contact rinklink, hockey scheduling support, youth hockey help, sports management contact, customer service',
+    });
+
+    // Add ContactPage structured data
+    this.seoService.addStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'ContactPage',
+      name: 'Contact RinkLink.ai',
+      description:
+        'Contact page for RinkLink.ai youth hockey scheduling platform',
+      url: 'https://rinklink.ai/contact',
+    });
+  }
 
   submit() {
     if (this.contactForm.invalid) {

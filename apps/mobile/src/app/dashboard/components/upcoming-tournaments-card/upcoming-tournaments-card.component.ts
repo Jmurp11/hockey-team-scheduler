@@ -1,8 +1,9 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
+import { sortTournamentsWithFeaturedFirst, UpcomingTournament } from '@hockey-team-scheduler/shared-utilities';
 import {
+  IonBadge,
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
@@ -12,10 +13,15 @@ import {
   IonList,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { chevronForward, trophy } from 'ionicons/icons';
+import { chevronForward, star, trophy } from 'ionicons/icons';
 import { CardComponent } from '../../../shared/card/card.component';
 import { ButtonComponent } from '../../../shared/button/button.component';
 
+/**
+ * Upcoming tournaments card component for the mobile dashboard.
+ * Displays upcoming tournaments with featured tournaments highlighted.
+ * Featured tournaments are shown first and have a special badge.
+ */
 @Component({
   selector: 'app-upcoming-tournaments-card',
   standalone: true,
@@ -24,6 +30,7 @@ import { ButtonComponent } from '../../../shared/button/button.component';
     DatePipe,
     CardComponent,
     ButtonComponent,
+    IonBadge,
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
@@ -43,10 +50,19 @@ import { ButtonComponent } from '../../../shared/button/button.component';
       <ion-card-content>
         @if (tournaments.length > 0) {
           <ion-list lines="full">
-            @for (tournament of tournaments.slice(0, 3); track tournament.id) {
-              <ion-item>
+            @for (tournament of sortedTournaments.slice(0, 3); track tournament.id) {
+              <ion-item [class.featured-item]="tournament.featured">
                 <ion-label>
-                  <h3>{{ tournament.name }}</h3>
+                  <div class="tournament-header">
+                    <h3 [class.featured-name]="tournament.featured">{{ tournament.name }}</h3>
+                    <!-- Featured badge for highlighted tournaments -->
+                    @if (tournament.featured) {
+                      <ion-badge class="featured-badge" color="warning">
+                        <ion-icon name="star"></ion-icon>
+                        Featured
+                      </ion-badge>
+                    }
+                  </div>
                   <p>
                     {{ tournament.startDate | date : 'MMM d' }}
                     @if (tournament.startDate !== tournament.endDate) {
@@ -103,11 +119,26 @@ import { ButtonComponent } from '../../../shared/button/button.component';
       ion-item {
         --padding-start: 16px;
         --padding-end: 16px;
+        transition: background 0.2s ease;
+
+        // Featured item styling
+        &.featured-item {
+          --background: linear-gradient(
+            135deg,
+            var(--ion-color-primary-tint, #e0e7ff) 0%,
+            white 100%
+          );
+        }
 
         h3 {
           font-weight: 600;
           font-size: 0.9375rem;
           margin-bottom: 4px;
+
+          // Featured tournament name styling
+          &.featured-name {
+            color: var(--ion-color-primary-shade, #1d4ed8);
+          }
         }
 
         p {
@@ -122,6 +153,31 @@ import { ButtonComponent } from '../../../shared/button/button.component';
         .rink {
           font-size: 0.6875rem;
           color: var(--ion-color-medium-shade);
+        }
+      }
+
+      // Tournament header with name and badge
+      .tournament-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 2px;
+      }
+
+      // Featured badge styling
+      .featured-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 8px;
+        flex-shrink: 0;
+
+        ion-icon {
+          font-size: 0.55rem;
+          color: inherit;
         }
       }
 
@@ -147,11 +203,19 @@ import { ButtonComponent } from '../../../shared/button/button.component';
 })
 export class UpcomingTournamentsCardComponent {
   private router = inject(Router);
-  
+
   @Input({ required: true }) tournaments!: UpcomingTournament[];
 
   constructor() {
-    addIcons({ trophy, chevronForward });
+    addIcons({ trophy, chevronForward, star });
+  }
+
+  /**
+   * Returns tournaments sorted with featured ones first.
+   * Uses the shared utility function for consistent sorting across the app.
+   */
+  get sortedTournaments(): UpcomingTournament[] {
+    return sortTournamentsWithFeaturedFirst(this.tournaments, 'startDate', 'asc');
   }
 
   navigateToTournaments(): void {
