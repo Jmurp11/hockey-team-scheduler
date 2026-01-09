@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { supabase } from '../supabase';
 import { Tournament, TournamentProps } from '../types';
+import { CreateTournamentDto } from './create-tournament.dto';
 
 @Injectable()
 export class TournamentsService {
@@ -41,6 +42,37 @@ export class TournamentsService {
 
     if (error) {
       console.error('Error fetching nearby tournaments:', error);
+    }
+
+    return data;
+  }
+
+  /**
+   * Creates a new tournament in the database.
+   * Maps DTO fields to database column names (camelCase to snake_case where needed).
+   */
+  async createTournament(dto: CreateTournamentDto): Promise<Tournament> {
+    const { data, error } = await supabase
+      .from('tournaments')
+      .insert({
+        name: dto.name,
+        email: dto.email,
+        location: dto.location,
+        startDate: dto.startDate,
+        endDate: dto.endDate,
+        age: dto.age || null,
+        level: dto.level || null,
+        registrationUrl: dto.registrationUrl || null,
+        rink: dto.rink || null,
+        description: dto.description || null,
+        featured: dto.featured,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating tournament:', error);
+      throw error;
     }
 
     return data;

@@ -56,6 +56,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'tournament-director',
+        loadComponent: () =>
+          import(
+            './landing/tournament-director/tournament-director.component'
+          ).then((m) => m.TournamentDirectorComponent),
+      },
+      {
+        path: 'tournament-director/success',
+        loadComponent: () =>
+          import(
+            './landing/tournament-director/tournament-director-success/tournament-director-success.component'
+          ).then((m) => m.TournamentDirectorSuccessComponent),
+      },
+      {
         path: 'callback',
         loadComponent: () =>
           import('./auth/callback/callback.component').then(
