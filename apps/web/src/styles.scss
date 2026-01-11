@@ -187,6 +187,14 @@ body {
   --p-textarea-focus-border-color: var(--secondary-500) !important;
 
   --p-tag-info-background: var(--primary-500) !important;
+
+  --p-multiselect-option-selected-color: var(--secondary-700) !important;
+  --p-multiselect-option-focus-background: var(--secondary-100) !important;
+  --p-multiselect-option-selected-background: var(--secondary-100) !important;
+  --p-multiselect-option-selected-focus-color: var(--secondary-700) !important;
+  --p-multiselect-option-selected-focus-background: var(
+    --secondary-200
+  ) !important;
 }
 
 /* PrimeNG Toast Font Styling - Direct CSS approach */

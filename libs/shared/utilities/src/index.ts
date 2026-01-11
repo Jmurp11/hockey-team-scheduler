@@ -1,4 +1,5 @@
 // Export all types
+export * from './lib/shared-utilities/types/api-user.type';
 export * from './lib/shared-utilities/types/association.type';
 export * from './lib/shared-utilities/types/association-admin.type';
 export * from './lib/shared-utilities/types/chat-summary.type';

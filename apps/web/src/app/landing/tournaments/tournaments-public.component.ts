@@ -271,6 +271,14 @@ export class TournamentsPublicComponent implements OnInit {
         'youth hockey tournaments, hockey tournament directory, find hockey tournaments, register hockey tournament, hockey events',
     });
 
+    // Add BreadcrumbList structured data
+    this.seoService.addStructuredData(
+      this.seoService.getBreadcrumbListSchema([
+        { name: 'Home', url: 'https://rinklink.ai' },
+        { name: 'Tournaments', url: 'https://rinklink.ai/tournaments' },
+      ]),
+    );
+
     this.loadTournaments();
   }
 

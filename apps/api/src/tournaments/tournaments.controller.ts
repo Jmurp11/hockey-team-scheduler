@@ -36,12 +36,6 @@ class CheckoutSessionResponse {
 }
 
 @ApiTags('Tournaments')
-@UseGuards(ApiKeyGuard)
-@ApiHeader({
-  name: 'x-api-key',
-  description: 'API Key needed to access the endpoints',
-  required: true,
-})
 @Controller('v1/tournaments')
 export class TournamentsController {
   constructor(private readonly tournamentsService: TournamentsService) {}
@@ -49,12 +43,13 @@ export class TournamentsController {
   /**
    * Get all public tournaments for display.
    * Featured tournaments are returned first, then sorted by date.
+   * This endpoint is publicly accessible without authentication.
    */
   @Get('public')
   @ApiOperation({
     summary: 'Get all public tournaments',
     description:
-      'Returns all upcoming tournaments for public display. Featured tournaments appear first.',
+      'Returns all upcoming tournaments for public display. Featured tournaments appear first. No authentication required.',
   })
   @ApiResponse({
     status: 200,
@@ -78,6 +73,12 @@ export class TournamentsController {
    * Returns the checkout URL for redirecting the user.
    */
   @Post('featured/checkout')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({
     summary: 'Create Stripe checkout for featured tournament',
     description:
@@ -90,6 +91,7 @@ export class TournamentsController {
     type: CheckoutSessionResponse,
   })
   @ApiResponse({ status: 400, description: 'Bad request - Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
   @ApiResponse({ status: 500, description: 'Internal server error - Stripe not configured' })
   async createFeaturedCheckout(
     @Body() dto: CreateFeaturedCheckoutDto,
@@ -119,6 +121,12 @@ export class TournamentsController {
    * Called after successful Stripe checkout redirect.
    */
   @Post('featured/verify-payment')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({
     summary: 'Verify payment and create featured tournament',
     description:
@@ -134,6 +142,7 @@ export class TournamentsController {
     status: 400,
     description: 'Payment not verified or session invalid',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async verifyPaymentAndCreateTournament(
     @Body() dto: VerifyPaymentDto,
@@ -163,6 +172,12 @@ export class TournamentsController {
   }
 
   @Get()
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({ summary: 'Get all tournaments' })
   @ApiResponse({
     status: 200,
@@ -187,6 +202,12 @@ export class TournamentsController {
    * Supports both free listings and paid featured tournaments.
    */
   @Post()
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({
     summary: 'Create a new tournament',
     description:
@@ -226,6 +247,12 @@ export class TournamentsController {
   }
 
   @Get('nearbyTournaments')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({
     summary: 'Get nearby tournaments',
     description: 'Returns tournaments near the specified association',
@@ -274,6 +301,12 @@ export class TournamentsController {
   }
 
   @Get(':id')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
   @ApiOperation({ summary: 'Get a tournament by ID' })
   @ApiParam({
     name: 'id',

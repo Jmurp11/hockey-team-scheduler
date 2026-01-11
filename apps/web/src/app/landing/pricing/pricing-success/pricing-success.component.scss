@@ -1,0 +1,179 @@
+@use 'mixins/mixins' as *;
+
+.success-container {
+  @include flex(center, center, column);
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  background: var(--p-surface-ground);
+}
+
+.status-card {
+  width: 100%;
+  max-width: 550px;
+
+  &.success {
+    ::ng-deep .p-card {
+      border-top: 4px solid var(--p-green-500);
+    }
+  }
+
+  &.error {
+    ::ng-deep .p-card {
+      border-top: 4px solid var(--p-red-500);
+    }
+  }
+}
+
+// Loading state
+.loading-content {
+  @include flex(center, center, column);
+  padding: 3rem 2rem;
+  gap: 1rem;
+
+  p {
+    font-size: 1.1rem;
+    color: var(--p-text-color);
+    margin: 0;
+  }
+
+  .loading-detail {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+// Success state
+.success-content {
+  @include flex(center, center, column);
+  padding: 1.5rem;
+  gap: 1.5rem;
+  text-align: center;
+
+  h2 {
+    font-size: 1.5rem;
+    color: var(--p-text-color);
+    margin: 0;
+  }
+
+  p {
+    color: var(--p-text-muted-color);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.success-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-green-50) 0%, var(--p-green-100) 100%);
+  @include flex(center, center, row);
+
+  .success-icon {
+    font-size: 3rem;
+    color: var(--p-green-500);
+  }
+}
+
+.benefits-list {
+  @include flex(flex-start, flex-start, column);
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: var(--p-surface-50);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.benefit-item {
+  @include flex(flex-start, center, row);
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--p-text-color);
+
+  i {
+    font-size: 1rem;
+    color: var(--secondary-500);
+    width: 20px;
+    text-align: center;
+  }
+}
+
+// Error state
+.error-content {
+  @include flex(center, center, column);
+  padding: 1.5rem;
+  gap: 1.5rem;
+  text-align: center;
+
+  p {
+    color: var(--p-text-color);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .error-detail {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.error-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p-red-50) 0%, var(--p-red-100) 100%);
+  @include flex(center, center, row);
+
+  .error-icon {
+    font-size: 3rem;
+    color: var(--p-red-500);
+  }
+}
+
+// Magic link form
+.magic-link-form {
+  width: 100%;
+  max-width: 320px;
+  @include flex(center, center, column);
+  gap: 1rem;
+
+  ::ng-deep .p-button {
+    margin-top: 0.5rem;
+  }
+}
+
+// Shared action buttons
+.action-buttons {
+  @include flex(center, center, row);
+  gap: 1rem;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+
+  ::ng-deep .p-button {
+    min-width: 180px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+
+    ::ng-deep .p-button {
+      width: 100%;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .success-container {
+    padding: 1rem;
+  }
+
+  .success-content,
+  .error-content,
+  .loading-content {
+    padding: 1rem;
+  }
+}

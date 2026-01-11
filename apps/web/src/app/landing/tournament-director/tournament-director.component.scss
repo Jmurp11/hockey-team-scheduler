@@ -56,10 +56,10 @@
   &.featured {
     background: linear-gradient(
       135deg,
-      var(--p-primary-50) 0%,
-      var(--p-primary-100) 100%
+      var(--secondary-50) 0%,
+      var(--secondary-100) 100%
     );
-    border-color: var(--p-primary-color);
+    border-color: var(--secondary-500);
   }
 
   h3 {
@@ -70,7 +70,7 @@
   .price {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--p-primary-color);
+    color: var(--secondary-500);
     margin-bottom: 1rem;
   }
 
@@ -88,7 +88,7 @@
         content: '\2713';
         position: absolute;
         left: 0;
-        color: var(--p-primary-color);
+        color: var(--secondary-500);
       }
     }
   }
@@ -98,7 +98,7 @@
   position: absolute;
   top: -10px;
   right: 20px;
-  background: var(--p-primary-color);
+  background: var(--secondary-500);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -124,11 +124,11 @@
 }
 
 .btn-primary {
-  background: var(--p-primary-color);
+  background: var(--secondary-500);
   color: white;
 
   &:hover:not(:disabled) {
-    background: var(--p-primary-700);
+    background: var(--secondary-700);
   }
 }
 
@@ -145,7 +145,7 @@
 .back-link {
   background: none;
   border: none;
-  color: var(--p-primary-color);
+  color: var(--secondary-500);
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0;

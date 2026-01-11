@@ -11,7 +11,6 @@ import {
   Tournament,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
-  IonBadge,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -50,7 +49,6 @@ import { ButtonComponent } from '../../shared/button/button.component';
     IonCardSubtitle,
     IonCardContent,
     IonIcon,
-    IonBadge,
     IonChip,
     ButtonComponent,
   ],

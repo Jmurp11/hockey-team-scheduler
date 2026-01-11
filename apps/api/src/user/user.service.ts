@@ -85,24 +85,43 @@ export class UserService {
     const stripeSubscriptionId = subscription.id;
     const totalSeats = subscription.items.data[0]?.quantity || 1;
 
+    console.log(
+      `[Webhook] Processing subscription.created for customer: ${stripeCustomerId}`,
+    );
+
     // Get customer email from Stripe
     const customer = (await this.stripe.customers.retrieve(
       stripeCustomerId,
     )) as Stripe.Customer;
     const email = customer.email ?? '';
 
-    const authUser = await this.createAuthUser(email);
-    if (!authUser) {
-      console.error('Failed to create auth user');
+    if (!email) {
+      console.error(
+        `[Webhook] No email found for Stripe customer: ${stripeCustomerId}`,
+      );
       return;
     }
+
+    console.log(`[Webhook] Creating user for email: ${email}`);
+
+    const authUser = await this.createAuthUser(email);
+    if (!authUser) {
+      console.error(`[Webhook] Failed to create auth user for email: ${email}`);
+      return;
+    }
+
+    console.log(`[Webhook] Auth user created with ID: ${authUser.id}`);
 
     const appUser = await this.createAppUser(email, authUser.id);
 
     if (!appUser) {
-      console.error('Failed to create app user');
+      console.error(
+        `[Webhook] Failed to create app user for auth user: ${authUser.id}`,
+      );
       return;
     }
+
+    console.log(`[Webhook] App user created with ID: ${appUser.id}`);
 
     const subscriptionRecord = await this.createSubscription({
       stripeCustomerId,
@@ -113,11 +132,21 @@ export class UserService {
     });
 
     if (!subscriptionRecord) {
-      console.error('Failed to create subscription record');
+      console.error(
+        `[Webhook] Failed to create subscription record for user: ${authUser.id}`,
+      );
       return;
     }
 
+    console.log(
+      `[Webhook] Subscription record created with ID: ${subscriptionRecord.id}`,
+    );
+
     await this.incrementSeatsInUse(subscriptionRecord.id);
+
+    console.log(
+      `[Webhook] Successfully completed subscription setup for: ${email}`,
+    );
   }
 
   async handleSubscriptionUpdated(event: Stripe.Event) {
@@ -166,11 +195,210 @@ export class UserService {
     }
   }
 
+  // ============ SUBSCRIPTION CHECKOUT ============
+
+  /**
+   * Price per seat in cents ($30/seat/year)
+   */
+  private readonly PRICE_PER_SEAT_CENTS = 3000;
+
+  /**
+   * Creates a Stripe Checkout Session for a seat-based subscription.
+   * Returns the checkout URL for redirecting the user to Stripe.
+   */
+  async createSubscriptionCheckoutSession(
+    seats: number,
+    email: string,
+    successUrl: string,
+    cancelUrl: string,
+  ): Promise<{ sessionId: string; url: string }> {
+    if (!this.stripe) {
+      throw new Error('Stripe is not configured');
+    }
+
+    if (seats < 1) {
+      throw new Error('At least 1 seat is required');
+    }
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'RinkLink Subscription',
+              description: `${seats} seat${seats > 1 ? 's' : ''} - Team scheduling, tournament discovery, and more`,
+            },
+            unit_amount: this.PRICE_PER_SEAT_CENTS,
+            recurring: {
+              interval: 'year',
+            },
+          },
+          quantity: seats,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
+      metadata: {
+        seats: seats.toString(),
+        type: 'subscription',
+      },
+      customer_email: email,
+      subscription_data: {
+        metadata: {
+          seats: seats.toString(),
+        },
+      },
+    });
+
+    return {
+      sessionId: session.id,
+      url: session.url || '',
+    };
+  }
+
+  /**
+   * Retrieves a Stripe Checkout Session by ID and creates user if payment successful.
+   * Used to verify payment status after redirect.
+   * Also ensures user is created (fallback if webhook failed/delayed).
+   */
+  async getSubscriptionCheckoutSession(sessionId: string): Promise<{
+    status: string;
+    customerEmail: string | null;
+    seats: number | null;
+  } | null> {
+    if (!this.stripe) {
+      throw new Error('Stripe is not configured');
+    }
+
+    try {
+      const session = await this.stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['subscription'],
+      });
+
+      const email = session.customer_email;
+      const seats = session.metadata?.seats
+        ? parseInt(session.metadata.seats, 10)
+        : null;
+
+      // If payment successful, ensure user exists (fallback for webhook)
+      if (session.payment_status === 'paid' && email) {
+        await this.ensureUserExists(email, session);
+      }
+
+      return {
+        status: session.payment_status,
+        customerEmail: email,
+        seats,
+      };
+    } catch (err) {
+      console.error('Error retrieving checkout session:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Ensures a user exists for the given email after successful payment.
+   * Creates auth user, app user, and subscription if they don't exist.
+   * This serves as a fallback in case the Stripe webhook failed or was delayed.
+   * All operations are idempotent and safe to call multiple times.
+   */
+  private async ensureUserExists(
+    email: string,
+    session: Stripe.Checkout.Session,
+  ): Promise<void> {
+    console.log(`[EnsureUser] Ensuring user setup complete for: ${email}`);
+
+    // Step 1: Ensure auth user exists (idempotent)
+    const authUser = await this.createAuthUser(email);
+    if (!authUser) {
+      console.error(`[EnsureUser] Failed to get/create auth user for: ${email}`);
+      return;
+    }
+    console.log(`[EnsureUser] Auth user ready: ${authUser.id}`);
+
+    // Step 2: Ensure app user exists (idempotent)
+    const appUser = await this.createAppUser(email, authUser.id);
+    if (!appUser) {
+      console.error(`[EnsureUser] Failed to get/create app user for: ${authUser.id}`);
+      return;
+    }
+    console.log(`[EnsureUser] App user ready: ${appUser.id}`);
+
+    // Step 3: Ensure subscription exists (idempotent)
+    const subscription = session.subscription as Stripe.Subscription | null;
+    const stripeCustomerId = session.customer as string;
+    const seats = session.metadata?.seats
+      ? parseInt(session.metadata.seats, 10)
+      : 1;
+
+    if (subscription && stripeCustomerId) {
+      // Check if subscription already exists and has seats counted
+      const { data: existingSub } = await supabase
+        .from('subscriptions')
+        .select('id, seats_in_use')
+        .eq('stripe_subscription_id', subscription.id)
+        .single();
+
+      if (existingSub) {
+        console.log(`[EnsureUser] Subscription already exists: ${existingSub.id}, seats_in_use: ${existingSub.seats_in_use}`);
+        // Subscription exists, user setup is complete
+      } else {
+        // Create subscription (idempotent, will return existing if race condition)
+        const subscriptionRecord = await this.createSubscription({
+          stripeCustomerId,
+          stripeSubscriptionId: subscription.id,
+          billingEmail: email,
+          ownerUserId: authUser.id,
+          totalSeats: seats,
+        });
+
+        if (subscriptionRecord) {
+          console.log(`[EnsureUser] Subscription ready: ${subscriptionRecord.id}`);
+          // Only increment seats if we just created the subscription (seats_in_use would be 0)
+          const { data: subCheck } = await supabase
+            .from('subscriptions')
+            .select('seats_in_use')
+            .eq('id', subscriptionRecord.id)
+            .single();
+
+          if (subCheck && subCheck.seats_in_use === 0) {
+            await this.incrementSeatsInUse(subscriptionRecord.id);
+            console.log(`[EnsureUser] Incremented seats for owner`);
+          }
+        }
+      }
+    }
+
+    console.log(`[EnsureUser] User setup complete for: ${email}`);
+  }
+
   // ============ SUBSCRIPTION METHODS ============
 
+  /**
+   * Creates or retrieves a subscription by Stripe subscription ID.
+   * If the subscription already exists, returns the existing subscription (idempotent).
+   * @param params - The subscription parameters
+   * @returns The subscription ID or null if creation/retrieval failed
+   */
   async createSubscription(
     params: CreateSubscriptionParams,
   ): Promise<{ id: string } | null> {
+    // First check if subscription already exists
+    const { data: existingSub, error: checkError } = await supabase
+      .from('subscriptions')
+      .select('id')
+      .eq('stripe_subscription_id', params.stripeSubscriptionId)
+      .single();
+
+    if (existingSub && !checkError) {
+      console.log(`[Subscription] Subscription already exists: ${existingSub.id}`);
+      return existingSub;
+    }
+
+    // Create new subscription
     const { data, error } = await supabase
       .from('subscriptions')
       .insert({
@@ -187,6 +415,19 @@ export class UserService {
       .single();
 
     if (error) {
+      // Handle race condition
+      if (error.code === '23505') {
+        console.log(`[Subscription] Subscription was created by another process`);
+        const { data: createdSub } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('stripe_subscription_id', params.stripeSubscriptionId)
+          .single();
+        if (createdSub) {
+          return createdSub;
+        }
+      }
+
       console.error('Error creating subscription:', error);
       return null;
     }
@@ -288,20 +529,89 @@ export class UserService {
 
   // ============ USER METHODS ============
 
+  /**
+   * Creates or retrieves an auth user by email.
+   * If the user already exists, returns the existing user (idempotent).
+   * @param email - The user's email address
+   * @returns The auth user or null if creation/retrieval failed
+   */
   async createAuthUser(email: string) {
+    // First, check if user already exists
+    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+
+    if (!listError && existingUsers?.users) {
+      const existingUser = existingUsers.users.find(u => u.email === email);
+      if (existingUser) {
+        console.log(`[Auth] User already exists for email: ${email}, id: ${existingUser.id}`);
+        return existingUser;
+      }
+    }
+
+    // Create new user
     const { data, error } = await supabase.auth.admin.createUser({
       email,
     });
 
     if (error) {
-      console.error('Error creating auth user:', error);
+      // Handle race condition - user might have been created between check and create
+      if (error.message?.includes('already been registered') || error.code === 'email_exists') {
+        console.log(`[Auth] User was created by another process for email: ${email}`);
+        // Retry fetching the user
+        const { data: retryUsers } = await supabase.auth.admin.listUsers();
+        const createdUser = retryUsers?.users?.find(u => u.email === email);
+        if (createdUser) {
+          return createdUser;
+        }
+      }
+
+      console.error('Error creating auth user:', {
+        message: error.message,
+        status: error.status,
+        code: error.code,
+        email,
+      });
       return null;
     }
 
     return data.user;
   }
 
+  /**
+   * Creates or retrieves an app user by email/userId.
+   * If the user already exists, returns the existing user (idempotent).
+   * @param email - The user's email address
+   * @param userId - The auth user ID
+   * @param name - Optional user name
+   * @returns The app user or null if creation/retrieval failed
+   */
   async createAppUser(email: string, userId: string, name?: string) {
+    // First check if app user already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('app_users')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (existingUser && !checkError) {
+      console.log(`[AppUser] User already exists for userId: ${userId}`);
+      return existingUser;
+    }
+
+    // Also check by email in case user_id mismatch (edge case)
+    if (checkError?.code === 'PGRST116') {
+      const { data: existingByEmail } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (existingByEmail) {
+        console.log(`[AppUser] User already exists for email: ${email}`);
+        return existingByEmail;
+      }
+    }
+
+    // Create new app user
     const { data, error } = await supabase
       .from('app_users')
       .insert({
@@ -313,6 +623,20 @@ export class UserService {
       .single();
 
     if (error) {
+      // Handle race condition - app user might have been created between check and create
+      if (error.code === '23505') {
+        // Unique constraint violation
+        console.log(`[AppUser] User was created by another process for email: ${email}`);
+        const { data: createdUser } = await supabase
+          .from('app_users')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (createdUser) {
+          return createdUser;
+        }
+      }
+
       console.error('Error creating app user:', error);
       return null;
     }
