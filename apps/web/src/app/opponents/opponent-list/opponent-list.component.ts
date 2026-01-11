@@ -6,12 +6,12 @@ import {
   EventEmitter,
   inject,
   Input,
-  OnInit,
   Output,
-  ViewContainerRef,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
+import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
   getOpponentCardContent,
   handleLeagues,
@@ -20,7 +20,7 @@ import {
   setSelect,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
-import { map } from 'rxjs';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { OpponentCardContentComponent } from './opponent-card-content/opponent-card-content.component';
 import { OpponentCardHeaderComponent } from './opponent-card-header/opponent-card-header.component';
@@ -35,9 +35,15 @@ import { ContactSchedulerDialogService } from '../../contact-scheduler/contact-s
     ButtonModule,
     OpponentCardHeaderComponent,
     OpponentCardContentComponent,
+    ProgressSpinnerModule,
   ],
   providers: [],
   template: `
+    @if (contactingScheduler()) {
+      <div class="loading-overlay">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
     @for (opponent of opponents; track opponent.team_name) {
       <app-card>
         <ng-template #header>
@@ -87,9 +93,33 @@ export class OpponentListComponent {
   @Output()
   contactSchedulerClicked = new EventEmitter<Ranking>();
 
-  contactScheduler(opponent: Ranking) {
-    console.log({ opponent });
-    this.contactSchedulerClicked.emit(opponent);
+  private openAiService = inject(OpenAiService);
+
+  private destroyRef = inject(DestroyRef);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+
+  contactingScheduler = signal(false);
+  
+  async contactScheduler(opponent: Ranking) {
+    const params = {
+      team: opponent.team_name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    this.contactingScheduler.set(true);
+
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openDialog(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
+      });
   }
 
   getCardContent(opponent: Ranking) {

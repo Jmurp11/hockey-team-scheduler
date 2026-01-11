@@ -89,9 +89,11 @@ import { ExportColumn, TableOptions } from '@hockey-team-scheduler/shared-utilit
         *ngTemplateOutlet="body; context: { $implicit: rowData }"
       ></ng-container
     ></ng-template>
-    <ng-template #emptymessage
-      ><ng-container *ngTemplateOutlet="emptymessage"></ng-container>
-    </ng-template>
+    @if (emptymessage) {
+      <ng-template pTemplate="emptymessage">
+        <ng-container *ngTemplateOutlet="emptymessage"></ng-container>
+      </ng-template>
+    }
   </p-table>`,
   styleUrls: ['./table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

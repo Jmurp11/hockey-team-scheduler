@@ -34,7 +34,10 @@ import { ScheduleCardHeaderComponent } from '../schedule-card-header/schedule-ca
             <app-schedule-card-header [game]="game" />
             <ion-card-content>
               <app-schedule-card-content [items]="handleGameDetails(game)" />
-              <app-schedule-card-footer [game]="game" />
+              <app-schedule-card-footer
+                [game]="game"
+                (contactSchedulerClicked)="onContactTeam($event)"
+              />
             </ion-card-content>
           </app-card>
         }

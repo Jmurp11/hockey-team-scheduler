@@ -452,7 +452,6 @@ export class AddGameComponent implements OnInit {
   }
 
   handleUpdate(data: any, input: any): Observable<Partial<Game>[]> {
-    console.log({ id: data.id });
     this.scheduleService.setDeleteRecord(data.id);
     return this.addGameService
       .updateGame({ id: data.id, ...input[0] } as Partial<Game>)

@@ -71,5 +71,20 @@ export function handleNullOpponent(game: any) {
     return null;
   }
 
-  return game.opponent[0] ? game.opponent[0].id : game.opponent;
+  const opponent = game.opponent[0];
+  if (!opponent) {
+    return game.opponent;
+  }
+
+  // Handle SelectOption format (has value property with id)
+  if (opponent.value && opponent.value.id) {
+    return opponent.value.id;
+  }
+
+  // Handle direct id property
+  if (opponent.id) {
+    return opponent.id;
+  }
+
+  return opponent;
 }

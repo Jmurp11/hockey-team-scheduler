@@ -1,0 +1,227 @@
+@use 'mixins/mixins' as *;
+
+.tournament-director-container {
+  @include flex(flex-start, center, column);
+  min-height: 97.5vh;
+  flex: 1;
+  width: 100vw;
+  overflow: auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.hero-section {
+  text-align: center;
+  max-width: 600px;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-500);
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+// Pricing card styles
+.pricing-card {
+  width: 100%;
+  max-width: 800px;
+}
+
+.pricing-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pricing-option {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--p-surface-border);
+  position: relative;
+
+  &.free {
+    background: var(--p-surface-ground);
+  }
+
+  &.featured {
+    background: linear-gradient(
+      135deg,
+      var(--secondary-50) 0%,
+      var(--secondary-100) 100%
+    );
+    border-color: var(--secondary-500);
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+
+    li {
+      padding: 0.5rem 0;
+      position: relative;
+      padding-left: 1.5rem;
+
+      &::before {
+        content: '\2713';
+        position: absolute;
+        left: 0;
+        color: var(--secondary-500);
+      }
+    }
+  }
+}
+
+.featured-badge {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  background: var(--secondary-500);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: var(--secondary-500);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: var(--secondary-700);
+  }
+}
+
+.btn-secondary {
+  background: var(--p-surface-200);
+  color: var(--p-text-color);
+  border: 1px solid var(--p-surface-border);
+
+  &:hover:not(:disabled) {
+    background: var(--p-surface-300);
+  }
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: var(--secondary-500);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-top: 1rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Stripe checkout styles
+.stripe-card {
+  width: 100%;
+  max-width: 600px;
+}
+
+.stripe-container {
+  min-height: 400px;
+
+  #stripe-pricing-table {
+    min-height: 350px;
+  }
+
+  .stripe-note {
+    text-align: center;
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+}
+
+// Success state styles
+.success-card {
+  width: 100%;
+  max-width: 500px;
+}
+
+.success-content {
+  text-align: center;
+  padding: 1rem;
+
+  .success-icon {
+    font-size: 4rem;
+    color: var(--p-green-500);
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-detail {
+    color: var(--p-text-muted-color);
+    margin-bottom: 1.5rem;
+  }
+
+  .success-actions {
+    @include flex(center, center, row);
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .btn-primary,
+    .btn-secondary {
+      max-width: 220px;
+      margin: 0;
+    }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+
+      .btn-primary,
+      .btn-secondary {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+  }
+}

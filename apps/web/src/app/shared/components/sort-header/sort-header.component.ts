@@ -8,7 +8,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { SelectOption, SortDirection } from '@hockey-team-scheduler/shared-utilities';
+import { SelectOption, SortDirection, TournamentFilterType } from '@hockey-team-scheduler/shared-utilities';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { SelectComponent } from '../select/select.component';
@@ -18,6 +18,7 @@ import { SelectParams } from '@hockey-team-scheduler/shared-utilities';
 import { IconSelectButtonComponent } from '../icon-select-button/icon-select-button.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InputComponent } from '../input/input.component';
+import { SelectButtonComponent } from '../select-button/select-button.component';
 import { combineLatest, startWith } from 'rxjs';
 
 @Component({
@@ -28,20 +29,31 @@ import { combineLatest, startWith } from 'rxjs';
     InputComponent,
     SelectComponent,
     IconSelectButtonComponent,
+    SelectButtonComponent,
   ],
   standalone: true,
   template: `
     <div class="sort-header">
-      <div class="sort-header__results">
-        Showing {{ resultsCount ?? 0 }} results
-      </div>
+      @if (showFeaturedFilter) {
+        <div class="sort-header__featured">
+          <app-select-button
+            [control]="getFormControl(form, 'featuredFilter')"
+            [options]="featuredFilterOptions"
+          />
+        </div>
+      }
+      @if (showResultsCount) {
+        <div class="sort-header__results">
+          Showing {{ resultsCount ?? 0 }} results
+        </div>
+      }
       @if (showSearch) {
-      <div class="sort-header__search">
-        <app-input
-          [control]="getFormControl(form, 'search')"
-          [label]="'Search Tournaments, Locations, etc.'"
-        />
-      </div>
+        <div class="sort-header__search">
+          <app-input
+            [control]="getFormControl(form, 'search')"
+            [label]="'Search Tournaments, Locations, etc.'"
+          />
+        </div>
       }
       <div class="sort-header__sort">
         <app-select
@@ -70,15 +82,27 @@ export class SortHeaderComponent implements OnInit {
 
   @Output() searchChanged = new EventEmitter<string | null>();
 
+  @Output() featuredFilterChanged = new EventEmitter<TournamentFilterType>();
+
   @Input() resultsCount: number | null = null;
 
   @Input() sortFields: SelectOption<string>[] = [];
 
   @Input() showSearch = false;
 
+  @Input() showResultsCount = true;
+
+  @Input() showFeaturedFilter = false;
+
   private destroyRef = inject(DestroyRef);
 
   sortOptions: SelectParams<SelectOption<string>>;
+
+  // Featured filter options for the select button
+  featuredFilterOptions: SelectOption<TournamentFilterType>[] = [
+    { label: 'All Tournaments', value: 'all' },
+    { label: 'Featured Only', value: 'featured' },
+  ];
 
   sortIconOptions: { icon: string; sort: SortDirection }[] = [
     { icon: 'pi pi-sort-amount-up', sort: 'asc' },
@@ -106,6 +130,7 @@ export class SortHeaderComponent implements OnInit {
         this.sortFields[0]
       ),
       sortDirection: new FormControl<SortDirection>('asc'),
+      featuredFilter: new FormControl<TournamentFilterType>('all'),
     });
 
     combineLatest([
@@ -125,6 +150,13 @@ export class SortHeaderComponent implements OnInit {
       .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((search) => {
         this.onSearchChanged({ search });
+      });
+
+    // Subscribe to featured filter changes
+    this.getFormControl(this.form, 'featuredFilter')
+      .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((filterType: TournamentFilterType) => {
+        this.featuredFilterChanged.emit(filterType);
       });
   }
 

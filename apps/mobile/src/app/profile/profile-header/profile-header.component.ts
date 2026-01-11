@@ -48,7 +48,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
 
         &__icon {
           font-size: 2rem;
-          color: white;
+          color: var(--primary-500);
           display: flex;
           align-items: center;
           justify-content: center;

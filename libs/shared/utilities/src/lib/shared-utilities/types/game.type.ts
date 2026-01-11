@@ -12,6 +12,8 @@ export interface Game {
   rink: string;
   opponent: number | SelectOption<any> | { team_name: string; id: number };
   user: string;
+  team: number;
+  association: number;
   isHome: boolean;
   tournamentName?: string;
 }

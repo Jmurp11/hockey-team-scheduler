@@ -1,5 +1,19 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiHeader,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   NearbyTeamsParams,
   NearbyTeamsQueryDto,
@@ -10,71 +24,99 @@ import {
 import { TeamsService } from './teams.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
-@ApiTags('teams')
+@ApiTags('Teams')
 @UseGuards(ApiKeyGuard)
+@ApiHeader({
+  name: 'x-api-key',
+  description: 'API Key needed to access the endpoints',
+  required: true,
+})
 @Controller('v1/teams')
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
-  @Get('team/:id')
-  @ApiResponse({
-    status: 200,
-    description: 'Get a team by ID.',
-    type: Team,
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Not Found.' })
-  @ApiHeader({
-    name: 'x-api-key',
-    description: 'API Key needed to access the endpoints',
-  })
-  @ApiParam({ name: 'id', required: true, description: 'The ID of the team' })
-  async getTeam(@Param('id') id: number): Promise<Team | null> {
-    return this.teamsService.getTeam(id);
-  }
-
   @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'Get all teams',
-    type: [Team],
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Not Found.' })
-  @ApiHeader({
-    name: 'x-api-key',
-    description: 'API Key needed to access the endpoints',
-  })
+  @ApiOperation({ summary: 'Get all teams', description: 'Retrieve teams with optional filtering' })
+  @ApiResponse({ status: 200, description: 'List of teams', type: [Team] })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getTeams(@Query() query: TeamsQueryDto): Promise<Team[]> {
-    return this.teamsService.getTeams(query);
+    try {
+      return await this.teamsService.getTeams(query);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch teams',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get('nearbyTeams')
-  @ApiResponse({
-    status: 200,
-    description: 'Get a nearby teams by association.',
-    type: Team,
+  @ApiOperation({
+    summary: 'Get nearby teams',
+    description: 'Find teams near a specified association with filtering options',
   })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Not Found.' })
-  @ApiHeader({
-    name: 'x-api-key',
-    description: 'API Key needed to access the endpoints',
-  })
+  @ApiResponse({ status: 200, description: 'List of nearby teams', type: [Team] })
+  @ApiResponse({ status: 400, description: 'Bad request - Missing required parameters' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 404, description: 'No teams found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getNearbyTeams(
     @Query() queryParams: NearbyTeamsQueryDto,
-  ): Promise<Partial<Team>[] | null> {
-    const params: NearbyTeamsParams = {
-      p_id: queryParams.p_id,
-      p_girls_only: queryParams.p_girls_only,
-      p_age: queryParams.p_age,
-      p_max_rating: queryParams.p_max_rating,
-      p_min_rating: queryParams.p_min_rating,
-      p_max_distance: queryParams.p_max_distance,
-    };
-    return this.teamsService.getNearbyTeams(params);
+  ): Promise<Partial<Team>[]> {
+    if (!queryParams.p_id) {
+      throw new HttpException(
+        'Association ID (p_id) is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      const params: NearbyTeamsParams = {
+        p_id: queryParams.p_id,
+        p_girls_only: queryParams.p_girls_only,
+        p_age: queryParams.p_age,
+        p_max_rating: queryParams.p_max_rating,
+        p_min_rating: queryParams.p_min_rating,
+        p_max_distance: queryParams.p_max_distance,
+      };
+
+      const teams = await this.teamsService.getNearbyTeams(params);
+
+      if (!teams || teams.length === 0) {
+        throw new HttpException('No nearby teams found', HttpStatus.NOT_FOUND);
+      }
+
+      return teams;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        'Failed to fetch nearby teams',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a team by ID' })
+  @ApiParam({ name: 'id', description: 'Team ID', type: Number })
+  @ApiResponse({ status: 200, description: 'Team details', type: Team })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 404, description: 'Team not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async getTeam(@Param('id') id: number): Promise<Team> {
+    try {
+      const team = await this.teamsService.getTeam(id);
+      if (!team) {
+        throw new HttpException('Team not found', HttpStatus.NOT_FOUND);
+      }
+      return team;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        'Failed to fetch team',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

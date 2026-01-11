@@ -26,8 +26,8 @@ export class UserService {
       .update({
         association: update.association,
         team: update.team,
-        is_paid: true,
         age: update.age,
+        phone: update.phone,
         name: update.name,
       })
       .eq('user_id', update.id)
@@ -76,9 +76,36 @@ export class UserService {
     return this.supabaseClient!.auth.resetPasswordForEmail(email);
   }
 
+  async logout() {
+    try {
+      const { error } = await this.supabaseClient!.auth.signOut();
+      // Only log non-session-missing errors, as session missing is expected
+      // when the user's session has already expired
+      if (error && error.message !== 'Auth session missing!') {
+        console.error('Error logging out:', error);
+      }
+    } catch (error) {
+      // Silently handle errors during logout - we still want to clear local state
+      console.warn('Logout error (continuing with local cleanup):', error);
+    }
+
+    // Always clear the session and current user in auth service
+    this.authService.session.set(null);
+    this.authService.currentUser.set(null);
+    return { success: true };
+  }
+
   getAge(team: string) {
     const ageGroupRegex = /\b(\d{1,2}U)\b/;
     const match = team.match(ageGroupRegex);
     return match ? match[1] : null;
+  }
+
+  updateAssociationMember(user: UpdateUser) {
+    return this.supabaseClient!.from('association_members').upsert({
+      user_id: user.id,
+      association: user.association,
+      role: 'MANAGER'
+    });
   }
 }

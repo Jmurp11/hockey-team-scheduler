@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { PrimeNG } from 'primeng/config';
-import { SupabaseService } from '@hockey-team-scheduler/shared-data-access';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import { SupabaseService, AuthService } from '@hockey-team-scheduler/shared-data-access';
 
 @Component({
   selector: 'app-root',
@@ -32,7 +31,7 @@ export class App implements OnInit {
           ? this.authService.setSession(session)
           : this.authService.setSession(null);
         if (event === 'SIGNED_OUT') {
-          this.router.navigate(['/landing']);
+          this.router.navigate(['/']);
         }
       });
   }

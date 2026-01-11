@@ -5,6 +5,7 @@ import {
   DestroyRef,
   inject,
   OnInit,
+  signal,
   ViewContainerRef,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -12,7 +13,7 @@ import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { filter, merge, Observable, switchMap, take } from 'rxjs';
+import { BehaviorSubject, Observable, of, switchMap, take, tap } from 'rxjs';
 import {
   AuthService,
   OpenAiService,
@@ -30,7 +31,10 @@ import {
   TableOptions,
   UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
-import { ScheduleActionsComponent } from './schedule-actions/schedule-actions.component';
+import {
+  ScheduleActionsComponent,
+  TeamSelectionEvent,
+} from './schedule-actions/schedule-actions.component';
 import { AddGameDialogService } from './add-game/add-game-dialog.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
@@ -50,9 +54,17 @@ import { ContactSchedulerDialogService } from '../contact-scheduler/contact-sche
     ProgressSpinner,
   ],
   template: ` <div class="container">
-    <app-schedule-actions class="actions-container" />
+    @if (contactingScheduler()) {
+      <div class="loading-overlay">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
+    <app-schedule-actions
+      class="actions-container"
+      (teamSelectionChange)="onTeamSelectionChange($event)"
+    />
     @if (tableData$ | async; as tableData) {
-      @if (tableData === null) {
+      @if (loading()) {
         <div class="loading-spinner">
           <p-progressSpinner></p-progressSpinner>
         </div>
@@ -109,6 +121,10 @@ import { ContactSchedulerDialogService } from '../contact-scheduler/contact-sche
           </app-card>
         </div>
       }
+    } @else {
+      <div class="loading-spinner">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
     }
   </div>`,
   styleUrls: ['./schedule.component.scss'],
@@ -123,6 +139,14 @@ export class ScheduleComponent implements OnInit {
   private contactSchedulerService = inject(ContactSchedulerDialogService);
   private openAiService = inject(OpenAiService);
   private destroyRef = inject(DestroyRef);
+
+  // Team selection for reactive games loading
+  private currentUser = this.authService.currentUser;
+  private teamSelection$ = new BehaviorSubject<TeamSelectionEvent | null>(null);
+
+  // Loading state
+  loading = signal(true);
+  contactingScheduler = signal(false);
 
   exportColumns: ExportColumn[];
 
@@ -180,10 +204,44 @@ export class ScheduleComponent implements OnInit {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
     this.contactSchedulerService.setViewContainerRef(this.viewContainerRef);
 
-    this.tableData$ = this.user$.pipe(
-      filter((user) => !!user && !!user.user_id),
-      switchMap((user) => this.scheduleService.gamesFull(user!.user_id)),
+    const user = this.currentUser();
+
+    // Set up reactive games based on team selection
+    this.tableData$ = this.teamSelection$.pipe(
+      tap(() => this.loading.set(true)),
+      switchMap((selection) => {
+        return this.dynamicTableData(selection).pipe(
+          tap(() => this.loading.set(false))
+        );
+      }),
     );
+
+    // Initialize with user's own schedule
+    if (user?.user_id) {
+      this.teamSelection$.next({ type: 'user', id: user.user_id });
+    }
+  }
+
+  onTeamSelectionChange(event: TeamSelectionEvent): void {
+    this.teamSelection$.next(event);
+  }
+
+  dynamicTableData(selection: TeamSelectionEvent | null): Observable<Game[]> {
+    if (!selection) {
+      // Default: show current user's games
+      const userId = this.currentUser()?.user_id;
+      return userId ? this.scheduleService.gamesFull(userId) : of([]);
+    }
+
+    switch (selection.type) {
+      case 'association':
+        return this.scheduleService.gamesFullByAssociation(selection.id);
+      case 'team':
+        return this.scheduleService.gamesFullByTeam(selection.id);
+      case 'user':
+      default:
+        return this.scheduleService.gamesFull(selection.id);
+    }
   }
 
   getRowClass(rowData: any) {
@@ -225,7 +283,7 @@ export class ScheduleComponent implements OnInit {
             .deleteGame(rowData.id)
             .pipe(take(1))
             .subscribe((response) => {
-              if (!response) {
+              if (response.message === 'Game deleted successfully') {
                 this.toastService.presentToast({
                   severity: 'success',
                   summary: 'Game Deleted',
@@ -252,19 +310,19 @@ export class ScheduleComponent implements OnInit {
       location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
-    console.log('contactScheduler params:', params);
+    this.contactingScheduler.set(true);
 
-    // TODO: get scheduler contact info
-    // TODO: if no contact info, show message and offer user to add it if they have it
-    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
-    // TODO: Let users confirm the initial message
-    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
     return this.openAiService
       .contactScheduler(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((response: any) => {
-        console.log('contactScheduler response:', response);
-        this.contactSchedulerService.openDialog(response[0]);
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openDialog(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
       });
   }
 }

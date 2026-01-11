@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { UserService } from '@hockey-team-scheduler/shared-data-access';
+import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
 import {
-  LoadingService,
   NavigationService,
 } from '@hockey-team-scheduler/shared-ui';
 import { getFormControl, initLoginForm } from '@hockey-team-scheduler/shared-utilities';
@@ -21,6 +20,7 @@ import { ButtonComponent } from '../../shared/button/button.component';
 import { CardComponent } from '../../shared/card/card.component';
 import { InputComponent } from '../../shared/input/input.component';
 import { PasswordInputComponent } from '../../shared/password-input/password-input.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -73,9 +73,9 @@ import { PasswordInputComponent } from '../../shared/password-input/password-inp
                   type="submit"
                   expand="block"
                   color="secondary"
-                  [disabled]="loginForm.invalid || loadingService.isLoading()"
+                  [disabled]="loginForm.invalid || isLoading()"
                 >
-                  {{ loadingService.isLoading() ? 'Signing in...' : 'Sign In' }}
+                  {{ isLoading() ? 'Signing in...' : 'Sign In' }}
                 </app-button>
               </div>
             </form>
@@ -177,22 +177,41 @@ import { PasswordInputComponent } from '../../shared/password-input/password-inp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-  protected loadingService = inject(LoadingService);
   private userService = inject(UserService);
+  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
   navigation = inject(NavigationService);
 
   getFormControl = getFormControl;
+  isLoading = signal<boolean>(false);
 
   loginForm: FormGroup = initLoginForm();
 
   async onSubmit() {
-    const data = await this.userService.login(
-      this.loginForm.get('email')?.value,
-      this.loginForm.get('password')?.value,
-    );
+    if (this.isLoading()) {
+      return;
+    }
 
-    if (data) {
-      this.navigation.navigateToLink('/auth/callback');
+    this.isLoading.set(true);
+
+    try {
+      const data = await this.userService.login(
+        this.loginForm.get('email')?.value,
+        this.loginForm.get('password')?.value,
+      );
+
+      if (data?.session) {
+        // Set the session in AuthService before navigating
+        this.authService.setSession(data.session);
+        this.navigation.navigateToLink('/auth/callback');
+      } else {
+        this.isLoading.set(false);
+        this.toastService.presentErrorToast('Login failed. Please try again.');
+      }
+    } catch (error: unknown) {
+      this.isLoading.set(false);
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
+      this.toastService.presentErrorToast(errorMessage);
     }
   }
 }

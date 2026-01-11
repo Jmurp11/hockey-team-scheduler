@@ -11,7 +11,7 @@ import {
     ReactiveFormsModule,
     Validators,
 } from '@angular/forms';
-import { AssociationService, AuthService, TeamsService, UserService } from '@hockey-team-scheduler/shared-data-access';
+import { AssociationsService, AuthService, TeamsService, UserService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService, NavigationService } from '@hockey-team-scheduler/shared-ui';
 import { confirmPasswordValidator, getFormControl } from '@hockey-team-scheduler/shared-utilities';
 import {
@@ -191,7 +191,7 @@ import { SelectComponent } from '../../shared/select/select.component';
 })
 export class RegisterComponent implements OnInit {
   protected loadingService = inject(LoadingService);
-  associationsService = inject(AssociationService);
+  associationsService = inject(AssociationsService);
   authService = inject(AuthService);
   teamsService = inject(TeamsService);
   userService = inject(UserService);

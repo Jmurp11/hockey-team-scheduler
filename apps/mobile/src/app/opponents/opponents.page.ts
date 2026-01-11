@@ -2,16 +2,18 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
   ViewContainerRef,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
-  AssociationService,
+  AssociationsService,
   AuthService,
+  OpenAiService,
   TeamsService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -56,6 +58,8 @@ import { OpponentsFilterComponent } from './opponents-filter/opponents-filter.co
 import { OpponentsListComponent } from './opponents-list/opponents-list.component';
 import { AddGameModalService } from '../schedule/add-game/add-game-modal.service';
 import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-wrapper.component';
+import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
+import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/contact-scheduler-lazy-wrapper.component';
 
 @Component({
   selector: 'app-opponents',
@@ -76,6 +80,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
     SelectComponent,
     IonSelectOption,
     AddGameLazyWrapperComponent,
+    ContactSchedulerLazyWrapperComponent,
   ],
   template: `
     <ion-header>
@@ -137,6 +142,12 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
           </ng-template>
         </app-accordion>
 
+        @if (contactingScheduler()) {
+          <div class="loading-overlay">
+            <app-loading name="circular"></app-loading>
+          </div>
+        }
+
         @if (isLoading()) {
           <div class="loading-container">
             <app-loading name="circular"></app-loading>
@@ -151,6 +162,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
               <app-opponents-list
                 [opponents]="nearbyTeams"
                 (opponentSelected)="onOpponentSelected($event)"
+                (contactSchedulerClicked)="onContactSchedulerClicked($event)"
               />
             </div>
           }
@@ -159,6 +171,7 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
     </ion-content>
 
     <app-add-game-lazy-wrapper />
+    <app-contact-scheduler-lazy-wrapper />
   `,
   styles: [
     `
@@ -173,6 +186,18 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
         display: flex;
         flex-direction: column;
         height: 100%;
+        position: relative;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        @include flex(center, center, row);
+        z-index: 9999;
       }
 
       .loading-container {
@@ -209,15 +234,19 @@ import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-
 })
 export class OpponentsPage implements OnInit {
   private addGameModalService = inject(AddGameModalService);
+  private openAiService = inject(OpenAiService);
+  private contactSchedulerService = inject(ContactSchedulerDialogService);
+  private destroyRef = inject(DestroyRef);
 
   nearbyTeams$!: Observable<Ranking[]>;
-  associationService = inject(AssociationService);
+  AssociationsService = inject(AssociationsService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   isCollapsed$ = new BehaviorSubject<boolean>(false);
   isLoading = signal<boolean>(false);
+  contactingScheduler = signal<boolean>(false);
   showBackButton = signal<boolean>(false);
 
   sortFields = [
@@ -252,7 +281,7 @@ export class OpponentsPage implements OnInit {
   );
 
   associations$: Observable<SelectItem[]> =
-    this.associationService.getAssociations();
+    this.AssociationsService.getAssociations();
 
   ngOnInit(): void {
     // Check if we came from the schedule page
@@ -318,5 +347,27 @@ export class OpponentsPage implements OnInit {
 
   onOpponentSelected(opponent: SelectOption<Ranking>) {
     this.addGameModalService.openModal({ opponent: { ...opponent } }, false);
+  }
+
+  onContactSchedulerClicked(opponent: Ranking) {
+    const params = {
+      team: opponent.team_name,
+      location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
+    };
+
+    this.contactingScheduler.set(true);
+
+    return this.openAiService
+      .contactScheduler(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openModal(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
+      });
   }
 }

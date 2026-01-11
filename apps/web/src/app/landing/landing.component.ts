@@ -73,6 +73,10 @@ export class LandingComponent implements OnInit {
       routerLink: '/pricing',
     },
     {
+      label: 'Tournaments',
+      routerLink: '/tournaments',
+    },
+    {
       label: 'Contact',
       routerLink: '/contact',
     },

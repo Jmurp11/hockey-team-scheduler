@@ -1,8 +1,196 @@
-@use "mixins/mixins" as *;
+@use 'mixins/mixins' as *;
 
-.main-content {
-  height: 97.5vh;
+.pricing-container {
+  @include flex(center, center, column);
+  min-height: 97.5vh;
   flex: 1;
   width: 100vw;
   overflow: auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.hero-section {
+  text-align: center;
+  max-width: 600px;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-500);
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+// Pricing card
+.pricing-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.pricing-option {
+  padding: 0.5rem;
+  text-align: center;
+}
+
+// Price display
+.price-display {
+  margin-bottom: 1.5rem;
+
+  .price {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+  }
+
+  .price-detail {
+    display: block;
+    font-size: 1rem;
+    color: var(--p-text-muted-color);
+    margin-top: 0.25rem;
+  }
+}
+
+// Seat selector
+.seat-selector {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--p-surface-100);
+  border-radius: 8px;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+    margin-bottom: 0.75rem;
+  }
+
+  .seat-controls {
+    @include flex(center, center, row);
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .seat-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--secondary-500);
+    background: transparent;
+    color: var(--secondary-500);
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    @include flex(center, center, row);
+
+    &:hover:not(:disabled) {
+      background: var(--secondary-500);
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  .seat-count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--p-text-color);
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .total-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--secondary-500);
+    margin: 0;
+  }
+}
+
+// Features list
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  text-align: left;
+
+  li {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--p-text-color);
+    font-size: 0.95rem;
+
+    &::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--secondary-500);
+      font-weight: bold;
+    }
+  }
+}
+
+// Email form
+.email-form {
+  margin-bottom: 1rem;
+}
+
+// Button styles
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  @include flex(center, center, row);
+  gap: 0.5rem;
+  background: var(--secondary-500);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: var(--secondary-700);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Footer section
+.pricing-footer {
+  text-align: center;
+  margin-top: 1rem;
+
+  .guarantee {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-info {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+
+    a {
+      color: var(--secondary-500);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }

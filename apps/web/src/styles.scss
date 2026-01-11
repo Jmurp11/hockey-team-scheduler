@@ -2,6 +2,19 @@
 @import 'primeicons/primeicons.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// Screen reader only - visually hidden but accessible to screen readers
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 html,
 body {
   height: 100%;
@@ -165,6 +178,23 @@ body {
 
   --p-button-text-secondary-hover-background: var(--secondary-100) !important;
   --p-button-text-secondary-color: var(--secondary-500) !important;
+
+  --p-tabs-tab-active-border-color: var(--secondary-500) !important;
+  --p-tabs-tab-active-color: var(--secondary-500) !important;
+  --p-dialog-color: var(--primary-500) !important;
+
+  --p-textarea-hover-border-color: var(--secondary-500) !important;
+  --p-textarea-focus-border-color: var(--secondary-500) !important;
+
+  --p-tag-info-background: var(--primary-500) !important;
+
+  --p-multiselect-option-selected-color: var(--secondary-700) !important;
+  --p-multiselect-option-focus-background: var(--secondary-100) !important;
+  --p-multiselect-option-selected-background: var(--secondary-100) !important;
+  --p-multiselect-option-selected-focus-color: var(--secondary-700) !important;
+  --p-multiselect-option-selected-focus-background: var(
+    --secondary-200
+  ) !important;
 }
 
 /* PrimeNG Toast Font Styling - Direct CSS approach */
@@ -176,6 +206,9 @@ body {
   font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
 }
 
+.p-dialog {
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif;
+}
 .p-toast .p-toast-message .p-toast-message-content .p-toast-summary {
   font-weight: 600 !important;
   font-size: 1rem !important;

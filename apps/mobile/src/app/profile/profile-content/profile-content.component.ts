@@ -171,6 +171,12 @@ export class ProfileContentComponent implements OnInit {
   ngOnInit(): void {
     this.profileUpdateForm = initProfileForm(this.card);
 
+    // For ion-select, we need to use just the value (id) not the SelectOption object
+    // because ion-select compares values directly
+    if (this.card.team?.value) {
+      this.profileUpdateForm.get('team')?.setValue(this.card.team.value);
+    }
+
     this.teams$ = this.teamsService.getTeams({
       association: this.card.association.value,
     });
@@ -182,6 +188,10 @@ export class ProfileContentComponent implements OnInit {
 
   cancel() {
     resetProfileForm(this.profileUpdateForm, this.card);
+    // Reset team to just the value for ion-select
+    if (this.card.team?.value) {
+      this.profileUpdateForm.get('team')?.setValue(this.card.team.value);
+    }
   }
 
   submit() {

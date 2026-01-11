@@ -23,6 +23,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pricing/success',
+        loadComponent: () =>
+          import(
+            './landing/pricing/pricing-success/pricing-success.component'
+          ).then((m) => m.PricingSuccessComponent),
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./auth/login/login.component').then((m) => m.LoginComponent),
@@ -56,10 +63,72 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'developer/signup',
+        loadComponent: () =>
+          import('./developer/signup/developer-signup.component').then(
+            (m) => m.DeveloperSignupComponent,
+          ),
+      },
+      {
+        path: 'developer/login',
+        loadComponent: () =>
+          import('./developer/auth/developer-login.component').then(
+            (m) => m.DeveloperLoginComponent,
+          ),
+      },
+      {
+        path: 'developer/auth',
+        loadComponent: () =>
+          import('./developer/auth/developer-auth-callback.component').then(
+            (m) => m.DeveloperAuthCallbackComponent,
+          ),
+      },
+      {
+        path: 'developer/dashboard',
+        canActivate: [
+          () =>
+            import('./developer/guards/developer-auth.guard').then(
+              (m) => m.developerAuthGuard,
+            ),
+        ],
+        loadComponent: () =>
+          import('./developer/dashboard/developer-dashboard.component').then(
+            (m) => m.DeveloperDashboardComponent,
+          ),
+      },
+      {
+        path: 'tournaments',
+        loadComponent: () =>
+          import(
+            './landing/tournaments/tournaments-public.component'
+          ).then((m) => m.TournamentsPublicComponent),
+      },
+      {
+        path: 'tournament-director',
+        loadComponent: () =>
+          import(
+            './landing/tournament-director/tournament-director.component'
+          ).then((m) => m.TournamentDirectorComponent),
+      },
+      {
+        path: 'tournament-director/success',
+        loadComponent: () =>
+          import(
+            './landing/tournament-director/tournament-director-success/tournament-director-success.component'
+          ).then((m) => m.TournamentDirectorSuccessComponent),
+      },
+      {
         path: 'callback',
         loadComponent: () =>
           import('./auth/callback/callback.component').then(
             (m) => m.CallbackComponent,
+          ),
+      },
+      {
+        path: 'auth/invite-accept',
+        loadComponent: () =>
+          import('./auth/invite-accept/invite-accept.component').then(
+            (m) => m.InviteAcceptComponent,
           ),
       },
     ],
@@ -74,8 +143,15 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'schedule',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
       },
       {
         path: 'opponents',
@@ -104,6 +180,13 @@ export const routes: Routes = [
           import('./profile/profile.component').then((m) => m.ProfileComponent),
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./association-admin/association-admin.component').then(
+            (m) => m.AssociationAdminComponent,
+          ),
+      },
+      {
         path: 'complete-profile',
         loadComponent: () =>
           import('./auth/register/register.component').then(
@@ -117,18 +200,18 @@ export const routes: Routes = [
             (m) => m.UpdatePasswordComponent,
           ),
       },
-      {
-        path: 'inbox',
-        loadComponent: () =>
-          import('./conversations/conversations.component').then(
-            (m) => m.ConversationsComponent,
-          ),
-      },
-      {
-        path: 'chat/:id',
-        loadComponent: () =>
-          import('./chat/chat.component').then((m) => m.ChatComponent),
-      },
+      // {
+      //   path: 'inbox',
+      //   loadComponent: () =>
+      //     import('./conversations/conversations.component').then(
+      //       (m) => m.ConversationsComponent,
+      //     ),
+      // },
+      // {
+      //   path: 'chat/:id',
+      //   loadComponent: () =>
+      //     import('./chat/chat.component').then((m) => m.ChatComponent),
+      // },
     ],
   },
 ];

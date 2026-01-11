@@ -18,6 +18,17 @@ export class GamesService {
   }
 
   async findAll(query: GamesQueryDto): Promise<Game[]> {
+    // If associationId is provided, get all games for all teams in the association
+    if (query.associationId) {
+      return this.findByAssociation(query.associationId.toString(), query.openGamesOnly);
+    }
+
+    // If teamId is provided, get all games for users on that team
+    if (query.teamId) {
+      return this.findByTeam(query.teamId.toString(), query.openGamesOnly);
+    }
+
+    // Default: filter by user
     const queryCopy = { user: query.user } as any;
     if (query.openGamesOnly) {
       queryCopy.opponent = null;
@@ -33,6 +44,46 @@ export class GamesService {
     }
 
     return data;
+  }
+
+  private async findByTeam(teamId: string, openGamesOnly?: boolean): Promise<Game[]> {
+    let gamesQuery = supabase
+      .from('gamesfull')
+      .select('*')
+      .eq('team', parseInt(teamId, 10));
+
+    if (openGamesOnly) {
+      gamesQuery = gamesQuery.is('opponent', null);
+    }
+
+    const { data, error } = await gamesQuery;
+
+    if (error) {
+      console.error('Error fetching games by team:', error);
+      throw new Error('Could not fetch games by team');
+    }
+
+    return data || [];
+  }
+
+  private async findByAssociation(associationId: string, openGamesOnly?: boolean): Promise<Game[]> {
+    let gamesQuery = supabase
+      .from('gamesfull')
+      .select('*')
+      .eq('association', parseInt(associationId, 10));
+
+    if (openGamesOnly) {
+      gamesQuery = gamesQuery.is('opponent', null);
+    }
+
+    const { data, error } = await gamesQuery;
+
+    if (error) {
+      console.error('Error fetching games by association:', error);
+      throw new Error('Could not fetch games by association');
+    }
+
+    return data || [];
   }
 
   async findOne(id: string): Promise<Game | null> {

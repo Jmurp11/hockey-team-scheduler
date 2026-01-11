@@ -7,6 +7,8 @@
   max-width: 600px;
   border-radius: 12px;
   margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .login-header {
@@ -60,5 +62,33 @@
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+// Loading overlay styles
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
+  z-index: 100;
+  @include flex(center, center, column);
+  border-radius: 12px;
+}
+
+.loading-content {
+  @include flex(center, center, column);
+  gap: 1rem;
+
+  .loading-text {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--surface-600);
+  }
+
+  ::ng-deep .p-progress-spinner-circle {
+    stroke: var(--secondary-500) !important;
   }
 }

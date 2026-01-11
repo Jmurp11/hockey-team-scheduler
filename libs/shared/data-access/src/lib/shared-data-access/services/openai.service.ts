@@ -20,13 +20,13 @@ export class OpenAiService {
   private config = inject(APP_CONFIG);
 
   contactScheduler(params: SchedulerProps) {
-    return this.http.post(`${this.config.apiUrl}/open-ai/contact-scheduler`, 
+    return this.http.post(`${this.config.apiUrl}/ai/contact-scheduler`, 
       params,
     );
   }
 
   findTournaments(params: TournamentProps) {
-    return this.http.post(`${this.config.apiUrl}/open-ai/find-tournaments`, 
+    return this.http.post(`${this.config.apiUrl}/ai/find-tournaments`, 
       params,
     );
   }

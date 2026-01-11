@@ -6,12 +6,14 @@ import {
   Game,
   handleNullOpponent,
 } from '@hockey-team-scheduler/shared-utilities';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AddGameService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
 
   private config = inject(APP_CONFIG);
 
@@ -20,11 +22,14 @@ export class AddGameService {
   }
 
   addGame(games: any[]) {
+    const currentUser = this.authService.currentUser();
     const input = games.map((game) => ({
       ...game,
       opponent: handleNullOpponent(game),
+      team: game.team ?? currentUser?.team_id,
+      association: game.association ?? currentUser?.association_id,
     }));
-    return this.http.post(`${this.config.apiUrl}/games/add-games`, input);
+    return this.http.post(`${this.config.apiUrl}/games`, input);
   }
 
   updateGame(game: any) {

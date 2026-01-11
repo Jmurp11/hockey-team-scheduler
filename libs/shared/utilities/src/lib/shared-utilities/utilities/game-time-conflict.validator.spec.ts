@@ -16,7 +16,9 @@ describe('gameTimeConflictValidator', () => {
     country: 'Test Country',
     game_type: 'league',
     isHome: true,
-    user: 1
+    user: 'test-user-1',
+    team: 1,
+    association: 1
   });
 
   describe('when no existing games', () => {

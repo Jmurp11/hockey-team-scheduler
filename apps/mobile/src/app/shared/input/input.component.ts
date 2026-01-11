@@ -106,12 +106,6 @@ export class InputComponent implements ControlValueAccessor {
     // Support both FormControl and ControlValueAccessor patterns
     if (this.formControl) {
       this.formControl.markAsTouched();
-      console.log(
-        'FormControl marked as touched:',
-        this.formControl.touched,
-        'Invalid:',
-        this.formControl.invalid,
-      );
     }
     this.onTouched();
   }
