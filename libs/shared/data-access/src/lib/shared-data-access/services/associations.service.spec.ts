@@ -2,10 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
-import { AssociationService } from './associations.service';
+import { AssociationsService } from './associations.service';
 
-describe('AssociationService', () => {
-  let service: AssociationService;
+describe('AssociationsService', () => {
+  let service: AssociationsService;
   let httpClient: jest.Mocked<HttpClient>;
   let appConfig: any;
 
@@ -17,13 +17,13 @@ describe('AssociationService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        AssociationService,
+        AssociationsService,
         { provide: HttpClient, useValue: httpClientSpy },
         { provide: APP_CONFIG, useValue: appConfig },
       ],
     });
 
-    service = TestBed.inject(AssociationService);
+    service = TestBed.inject(AssociationsService);
     httpClient = TestBed.inject(HttpClient) as jest.Mocked<HttpClient>;
   });
 

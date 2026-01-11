@@ -38,12 +38,48 @@ export class ScheduleService {
     return this.http.get<Game[]>(`${this.config.apiUrl}/games?user=${userId}`);
   }
 
+  gamesByTeam(teamId: string): Observable<Game[]> {
+    return this.http.get<Game[]>(`${this.config.apiUrl}/games?teamId=${teamId}`);
+  }
+
+  gamesByAssociation(associationId: string): Observable<Game[]> {
+    return this.http.get<Game[]>(`${this.config.apiUrl}/games?associationId=${associationId}`);
+  }
+
   gamesFull(userId: string): Observable<Game[]> {
     const initial$ = this.games(userId).pipe(
       map((games) => ({ type: 'INIT', games: this.transformGames(games) })),
     );
 
     const realtime$ = this.realtimeGames$(userId);
+
+    return merge(initial$, realtime$).pipe(
+      scan((initial: Game[], payload: any) => {
+        return this.handlePayload(initial, payload);
+      }, []),
+    );
+  }
+
+  gamesFullByTeam(teamId: string): Observable<Game[]> {
+    const initial$ = this.gamesByTeam(teamId).pipe(
+      map((games) => ({ type: 'INIT', games: this.transformGames(games) })),
+    );
+
+    const realtime$ = this.realtimeGamesByTeam$(teamId);
+
+    return merge(initial$, realtime$).pipe(
+      scan((initial: Game[], payload: any) => {
+        return this.handlePayload(initial, payload);
+      }, []),
+    );
+  }
+
+  gamesFullByAssociation(associationId: string): Observable<Game[]> {
+    const initial$ = this.gamesByAssociation(associationId).pipe(
+      map((games) => ({ type: 'INIT', games: this.transformGames(games) })),
+    );
+
+    const realtime$ = this.realtimeGamesByAssociation$(associationId);
 
     return merge(initial$, realtime$).pipe(
       scan((initial: Game[], payload: any) => {
@@ -64,20 +100,128 @@ export class ScheduleService {
         return;
       }
       const channel: RealtimeChannel = supabase
-        ?.channel(`gamesfull:${userId}`)
+        ?.channel(`gamesfull:user:${userId}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'gamesfull',
-            // filter: `"user"=eq.${userId}`,
           },
           (payload) => {
-            observer.next({
-              type: payload.eventType,
-              record: payload.new ?? payload.old,
-            });
+            const record = (payload.new ?? payload.old) as any;
+            
+            // For DELETE events, payload.old may only contain the id (unless REPLICA IDENTITY FULL is set)
+            // So we can't filter by user - just pass through DELETE events
+            if (payload.eventType === 'DELETE') {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+              return;
+            }
+            
+            // Filter client-side for user's games (INSERT/UPDATE)
+            if (record && String(record.user) === String(userId)) {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+            }
+          },
+        )
+        .subscribe();
+
+      // teardown logic
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
+  }
+
+  realtimeGamesByTeam$(teamId: string): Observable<RealtimeEvent> {
+    return new Observable<RealtimeEvent>((observer) => {
+      const supabase = this.supabaseService.getSupabaseClient();
+      if (!supabase) {
+        observer.error('Supabase client not initialized');
+        return;
+      }
+      const channel: RealtimeChannel = supabase
+        ?.channel(`gamesfull:team:${teamId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'gamesfull',
+          },
+          (payload) => {
+            const record = (payload.new ?? payload.old) as any;
+            
+            // For DELETE events, payload.old may only contain the id (unless REPLICA IDENTITY FULL is set)
+            // So we can't filter by team - just pass through DELETE events
+            if (payload.eventType === 'DELETE') {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+              return;
+            }
+            
+            // Filter client-side for team's games (INSERT/UPDATE)
+            if (record && String(record.team) === String(teamId)) {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+            }
+          },
+        )
+        .subscribe();
+
+      // teardown logic
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
+  }
+
+  realtimeGamesByAssociation$(associationId: string): Observable<RealtimeEvent> {
+    return new Observable<RealtimeEvent>((observer) => {
+      const supabase = this.supabaseService.getSupabaseClient();
+      if (!supabase) {
+        observer.error('Supabase client not initialized');
+        return;
+      }
+      const channel: RealtimeChannel = supabase
+        ?.channel(`gamesfull:association:${associationId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'gamesfull',
+          },
+          (payload) => {
+            const record = (payload.new ?? payload.old) as any;
+            
+            // For DELETE events, payload.old may only contain the id (unless REPLICA IDENTITY FULL is set)
+            // So we can't filter by association - just pass through DELETE events
+            if (payload.eventType === 'DELETE') {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+              return;
+            }
+            
+            // Filter client-side for association's games (INSERT/UPDATE)
+            if (record && String(record.association) === String(associationId)) {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+            }
           },
         )
         .subscribe();
@@ -92,22 +236,13 @@ export class ScheduleService {
     let opponent;
     if (!game.opponent) {
       opponent = setSelect('', null);
-      console.log('No opponent provided, setting to empty.');
     } else {
       opponent = setSelect(
         game.opponent[0]?.id ? game.opponent[0].name : game.tournamentName,
-        game.opponent[0]?.id, // Use just the ID, not the whole object
+        game.opponent[0]?.id,
       );
     }
 
-    console.log('Formatted data:', {
-      ...game,
-      opponent: opponent,
-      date: createDateTimeLocalString(game.date.toString(), game.originalTime),
-      isHome: game.isHome ? 'home' : 'away',
-      state: setSelect(game.state, game.state),
-      country: setSelect(game.country, game.country),
-    });
     return {
       ...game,
       opponent: opponent,
@@ -126,8 +261,17 @@ export class ScheduleService {
       case 'INSERT':
         return [...state, this.transformGame(payload.record)];
 
+      case 'UPDATE':
+        return state.map((game) =>
+          game.id === payload.record.id
+            ? this.transformGame(payload.record)
+            : game
+        );
+
       case 'DELETE':
-        return this.handleDelete(state);
+        const deletedId = payload.record?.id ?? this.deletedRecord();
+        this.setDeleteRecord(null);
+        return state.filter((g) => String(g.id) !== String(deletedId));
 
       default:
         return state;

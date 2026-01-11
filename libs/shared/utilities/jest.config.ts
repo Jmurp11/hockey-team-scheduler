@@ -1,6 +1,7 @@
 export default {
   displayName: 'shared-utilities',
   preset: '../../../jest.preset.js',
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../../coverage/libs/shared/utilities',
   transform: {

@@ -10,36 +10,15 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import {
-  AssociationService,
-  AuthService,
-  OpenAiService,
-  TeamsService,
-} from '@hockey-team-scheduler/shared-data-access';
-import {
-  OpponentSearchParams,
-  Ranking,
-  SelectOption,
-  setSelect,
-  sort,
-  SortDirection,
-  Team,
-  UserProfile,
-} from '@hockey-team-scheduler/shared-utilities';
+import { AssociationsService } from '@hockey-team-scheduler/shared-data-access';
+import { AuthService } from '@hockey-team-scheduler/shared-data-access';
+import { OpenAiService } from '@hockey-team-scheduler/shared-data-access';
+import { TeamsService } from '@hockey-team-scheduler/shared-data-access';
+import { OpponentSearchParams, Ranking, SelectOption, setSelect, sort, SortDirection, UserProfile } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  shareReplay,
-  startWith,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { AddGameDialogService } from '../schedule/add-game/add-game-dialog.service';
 import { SortHeaderComponent } from '../shared/components/sort-header/sort-header.component';
 import { OpponentListComponent } from './opponent-list/opponent-list.component';
@@ -59,6 +38,11 @@ import { ContactSchedulerDialogService } from '../contact-scheduler/contact-sche
     ProgressSpinnerModule,
   ],
   template: ` <div class="container">
+    @if (contactingScheduler()) {
+      <div class="loading-overlay">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
     <app-opponents
       (selectedInputs)="onSearchParamsChanged($event)"
       [associations$]="associations$"
@@ -102,11 +86,12 @@ export class OpponentsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   nearbyTeams$: Observable<Ranking[]>;
-  associationService = inject(AssociationService);
+  AssociationsService = inject(AssociationsService);
   teamsService = inject(TeamsService);
   authService = inject(AuthService);
 
   isLoading = signal<boolean>(false);
+  contactingScheduler = signal<boolean>(false);
 
   sortFields = [
     setSelect('Distance', 'distance'),
@@ -139,7 +124,7 @@ export class OpponentsComponent implements OnInit {
   );
 
   associations$: Observable<SelectItem[]> =
-    this.associationService.getAssociations();
+    this.AssociationsService.getAssociations();
 
   ngOnInit(): void {
     this.addGameDialogService.setViewContainerRef(this.viewContainerRef);
@@ -195,19 +180,19 @@ export class OpponentsComponent implements OnInit {
       location: `${opponent.city}, ${opponent.state}, ${opponent.country}`,
     };
 
-    console.log('contactScheduler params:', params);
+    this.contactingScheduler.set(true);
 
-    // TODO: get scheduler contact info
-    // TODO: if no contact info, show message and offer user to add it if they have it
-    // TODO: if has contact info , bring up modal, give users the option of selecting open game slots to offer or offer all open games slots.
-    // TODO: Let users confirm the initial message
-    // TODO: once confirmed send initial message to scheduler using start-conversation endpoint
     return this.openAiService
       .contactScheduler(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((response: any) => {
-        console.log('contactScheduler response:', response);
-        this.contactSchedulerService.openDialog(response[0]);
+      .subscribe({
+        next: (response: any) => {
+          this.contactingScheduler.set(false);
+          this.contactSchedulerService.openDialog(response[0]);
+        },
+        error: () => {
+          this.contactingScheduler.set(false);
+        },
       });
   }
 }

@@ -13,8 +13,9 @@ export const appRoutes: Route[] = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'home',
-        loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
         path: 'schedule',
@@ -53,8 +54,15 @@ export const appRoutes: Route[] = [
           import('./profile/profile.page').then((m) => m.ProfilePage),
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./association-admin/association-admin.page').then(
+            (m) => m.AssociationAdminPage,
+          ),
+      },
+      {
         path: '',
-        redirectTo: 'home',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],

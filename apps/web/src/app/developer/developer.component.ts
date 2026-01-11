@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
 import { CardComponent } from '../shared/components/card/card.component';
 import { ButtonModule } from 'primeng/button';
+import { SeoService } from '../shared/services/seo.service';
 
 @Component({
   selector: 'app-developer',
@@ -43,7 +44,7 @@ import { ButtonModule } from 'primeng/button';
         height: 100%;
         @include flex(space-evenly, center, column);
         overflow-y: auto;
-        
+
         @media (max-width: 768px) {
           height: 100%;
           width: 100%;
@@ -96,8 +97,39 @@ import { ButtonModule } from 'primeng/button';
   imports: [CommonModule, CardComponent, ButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeveloperComponent {
+export class DeveloperComponent implements OnInit {
   private router = inject(Router);
+  private seoService = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seoService.updateTags({
+      title: 'Developer API - RinkLink.ai Hockey Data API',
+      description:
+        'Access youth hockey data via RinkLink.ai API. Get association data, rankings, leagues, and rink information. Pay-per-request pricing with comprehensive documentation.',
+      url: 'https://rinklink.ai/developer',
+      keywords:
+        'hockey API, youth hockey data, sports API, hockey statistics API, tournament API, team data API',
+    });
+
+    // Add API Product structured data
+    this.seoService.addStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: 'RinkLink.ai API',
+      description:
+        'Youth hockey data API with pay-per-request pricing. Access associations, rankings, leagues, and rink data.',
+      brand: {
+        '@type': 'Brand',
+        name: 'RinkLink.ai',
+      },
+      offers: {
+        '@type': 'Offer',
+        price: '0.05',
+        priceCurrency: 'USD',
+        description: 'Per API request',
+      },
+    });
+  }
 
   cards = [
     {
@@ -107,7 +139,7 @@ export class DeveloperComponent {
       button: {
         text: 'Get API Keys',
         action: () => {
-          this.router.navigate(['/pricing']);
+          this.router.navigate(['/developer/signup']);
         },
       },
     },

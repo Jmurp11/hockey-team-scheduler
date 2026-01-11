@@ -106,7 +106,7 @@ describe('App', () => {
       authStateCallback('SIGNED_OUT', null);
 
       expect(mockAuthService.setSession).toHaveBeenCalledWith(null);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/landing']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should set session to null when session is undefined', () => {

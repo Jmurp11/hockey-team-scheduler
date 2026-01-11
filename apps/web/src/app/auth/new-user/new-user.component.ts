@@ -3,12 +3,14 @@ import {
     ChangeDetectionStrategy,
     Component,
     inject,
+    OnInit,
     signal,
 } from '@angular/core';
 import {
     FormGroup,
     ReactiveFormsModule,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { UserService } from '@hockey-team-scheduler/shared-data-access';
 import { getFormControl, initMagicLinkForm } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
@@ -40,11 +42,13 @@ import { AuthContainerComponent } from '../auth-container/auth-container.compone
       </app-card>
       } @else {
       <app-card class="card">
-        <ng-template #title>Welcome to RinkLink.ai</ng-template>
-        <ng-template #subtitle
-          >Thank you for subscribing! Click the button below to have a login
-          link sent to your email</ng-template
-        >
+        <ng-template #title>{{ isInvitedUser() ? 'Complete Your Registration' : 'Welcome to RinkLink.ai' }}</ng-template>
+        <ng-template #subtitle>
+          {{ isInvitedUser() 
+            ? 'Your invitation has been accepted! Request a magic link below to complete your profile setup.' 
+            : 'Thank you for subscribing! Click the button below to have a login link sent to your email' 
+          }}
+        </ng-template>
         <ng-template #content>
           <form [formGroup]="newUserForm">
             <app-input
@@ -53,7 +57,8 @@ import { AuthContainerComponent } from '../auth-container/auth-container.compone
             />
             <div class="form-actions">
               <p-button
-                [disabled]="newUserForm.invalid"
+                [disabled]="newUserForm.invalid || loading()"
+                [loading]="loading()"
                 label="Get Login Link"
                 styleClass="w-full"
                 (click)="magicLink()"
@@ -68,20 +73,50 @@ import { AuthContainerComponent } from '../auth-container/auth-container.compone
   styleUrls: ['./new-user.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NewUserComponent {
+export class NewUserComponent implements OnInit {
   private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
 
   emailSent = signal(false);
+  isInvitedUser = signal(false);
+  loading = signal(false);
 
   newUserForm: FormGroup = initMagicLinkForm();
 
   getFormControl = getFormControl;
 
+  ngOnInit() {
+    // Check for invited user flow
+    const invited = this.route.snapshot.queryParams['invited'];
+    const email = this.route.snapshot.queryParams['email'];
+    
+    // Also check sessionStorage for email (set during invite acceptance)
+    const storedEmail = sessionStorage.getItem('invitedEmail');
+    
+    if (invited === 'true') {
+      this.isInvitedUser.set(true);
+    }
+    
+    // Pre-fill email from query param or sessionStorage
+    const emailToUse = email || storedEmail;
+    if (emailToUse) {
+      this.newUserForm.get('email')?.setValue(emailToUse);
+      // Clear stored email after using it
+      if (storedEmail) {
+        sessionStorage.removeItem('invitedEmail');
+      }
+    }
+  }
+
   async magicLink() {
+    this.loading.set(true);
+    
     const { error } = await this.userService.loginWithMagicLink(
       this.newUserForm.get('email')?.value
     );
 
+    this.loading.set(false);
+    
     if (!error) {
       this.emailSent.set(true);
     }

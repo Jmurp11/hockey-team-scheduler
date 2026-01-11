@@ -19,7 +19,7 @@ import { AutoCompleteComponent } from '../../shared/components/auto-complete/aut
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordComponent } from '../../shared/components/password/password.component';
-import { AssociationService } from '@hockey-team-scheduler/shared-data-access';
+import { AssociationsService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 
 import { NavigationService } from '@hockey-team-scheduler/shared-ui';
@@ -51,7 +51,7 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
   providers: [
     LoadingService,
     NavigationService,
-    AssociationService,
+    AssociationsService,
     TeamsService,
     SupabaseService,
     UserService,
@@ -81,6 +81,11 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
               <app-input
                 [control]="getFormControl(registerForm, 'name')"
                 label="Name"
+              />
+
+              <app-input
+                [control]="getFormControl(registerForm, 'phone')"
+                label="Phone Number"
               />
 
               <app-auto-complete
@@ -128,7 +133,7 @@ import { confirmPasswordValidator } from '@hockey-team-scheduler/shared-utilitie
 export class RegisterComponent implements OnInit {
   protected loadingService = inject(LoadingService);
 
-  associationsService = inject(AssociationService);
+  associationsService = inject(AssociationsService);
 
   authService = inject(AuthService);
 
@@ -157,6 +162,7 @@ export class RegisterComponent implements OnInit {
   }
 
   initForm() {
+    const phoneRegex = /^\d{10}$/;
     return new FormGroup(
       {
         email: new FormControl(
@@ -173,6 +179,13 @@ export class RegisterComponent implements OnInit {
         }),
         name: new FormControl(null, {
           validators: [Validators.required],
+        }),
+        phone: new FormControl(null, {
+          validators: [
+            Validators.required,
+            Validators.minLength(10),
+            Validators.pattern(phoneRegex),
+          ],
         }),
         association: new FormControl(null, {
           validators: [Validators.required],

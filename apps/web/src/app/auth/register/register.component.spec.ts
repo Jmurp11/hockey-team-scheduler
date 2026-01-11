@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { APP_CONFIG, AssociationService } from '@hockey-team-scheduler/shared-data-access';
+import { APP_CONFIG, AssociationsService } from '@hockey-team-scheduler/shared-data-access';
 import { of } from 'rxjs';
 
 import { RegisterComponent } from './register.component';
@@ -8,10 +8,10 @@ import { RegisterComponent } from './register.component';
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
-  let mockAssociationService: jest.Mocked<AssociationService>;
+  let mockAssociationsService: jest.Mocked<AssociationsService>;
 
   beforeEach(async () => {
-    mockAssociationService = {
+    mockAssociationsService = {
       getAssociations: jest.fn().mockReturnValue(of([])),
       associations: jest.fn().mockReturnValue(of([])),
     } as any;
@@ -28,7 +28,7 @@ describe('RegisterComponent', () => {
       providers: [
         { provide: APP_CONFIG, useValue: { supabaseUrl: 'https://test.supabase.co', supabaseAnonKey: 'test-key', apiUrl: 'https://test-api.com' } },
         { provide: HttpClient, useValue: mockHttpClient },
-        { provide: AssociationService, useValue: mockAssociationService },
+        { provide: AssociationsService, useValue: mockAssociationsService },
       ],
     }).compileComponents();
 

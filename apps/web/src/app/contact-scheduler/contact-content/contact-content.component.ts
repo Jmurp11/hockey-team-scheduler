@@ -1,17 +1,7 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {
-  getFormControl,
-  Manager,
-  toTitleCase,
-} from '@hockey-team-scheduler/shared-utilities';
-import { AvatarModule } from 'primeng/avatar';
+import { getFormControl, Manager, toTitleCase } from '@hockey-team-scheduler/shared-utilities';
 import { IconFieldComponent } from '../../shared/components/icon-field/icon-field.component';
 import { ToastService } from '../../shared/services/toast.service';
 
@@ -20,7 +10,6 @@ import { ToastService } from '../../shared/services/toast.service';
   standalone: true,
   imports: [
     CommonModule,
-    AvatarModule,
     ReactiveFormsModule,
     IconFieldComponent,
   ],

@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AssociationsModule } from './associations/associations.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { DeveloperPortalModule } from './developer-portal/developer-portal.module';
 import { GamesModule } from './games/games.module';
 import { LeaguesModule } from './leagues/leagues.module';
 import { OpenAiModule } from './open-ai/open-ai.module';
@@ -11,9 +13,14 @@ import { TournamentsModule } from './tournaments/tournaments.module';
 import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { RinkModule } from './rinks/rink.module';
+import { EmailModule } from './email/email.module';
+
 @Module({
   imports: [
     AssociationsModule,
+    DashboardModule,
+    DeveloperPortalModule,
+    EmailModule,
     GamesModule,
     LeaguesModule,
     OpenAiModule,
