@@ -14,6 +14,7 @@ export interface Tournament {
   ages?: string[] | null;
   levels?: string[] | null;
   featured?: boolean;
+  stripe_session_id?: string;
 }
 
 /**
@@ -53,4 +54,47 @@ export interface CreateConversationDto {
 export interface MessageDto {
   phone: string;
   body: string;
+}
+
+/**
+ * Request DTO for creating a Stripe Checkout Session for featured tournament.
+ */
+export interface CreateFeaturedCheckoutDto {
+  tournament: CreateTournamentDto;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+/**
+ * Response from creating a Stripe Checkout Session.
+ */
+export interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+/**
+ * Request DTO for verifying Stripe payment.
+ */
+export interface VerifyPaymentDto {
+  sessionId: string;
+}
+
+/**
+ * Request DTO for creating a subscription checkout session.
+ */
+export interface CreateSubscriptionCheckoutDto {
+  email: string;
+  seats: number;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+/**
+ * Response from subscription checkout session status.
+ */
+export interface SubscriptionCheckoutStatus {
+  status: string;
+  customerEmail: string | null;
+  seats: number | null;
 }

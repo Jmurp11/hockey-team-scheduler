@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AppStoreBadgesComponent } from '../../shared/components/app-store-badges/app-store-badges.component';
 import { GetStartedComponent } from '../get-started.component.ts/get-started.component';
 
 @Component({
   selector: 'app-summary',
   standalone: true,
-  imports: [CommonModule, GetStartedComponent],
+  imports: [CommonModule, GetStartedComponent, AppStoreBadgesComponent],
   template: `
     <article class="summary-container">
       <h1 class="summary-container__content">

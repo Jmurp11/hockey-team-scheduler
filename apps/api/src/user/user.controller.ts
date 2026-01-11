@@ -485,4 +485,123 @@ export class UserController {
       });
     }
   }
+
+  // ============ SUBSCRIPTION CHECKOUT ============
+
+  @Post('subscriptions/checkout')
+  @ApiOperation({
+    summary: 'Create subscription checkout session',
+    description:
+      'Creates a Stripe Checkout Session for a subscription plan and returns the URL for redirect.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        seats: { type: 'number', minimum: 1 },
+        email: { type: 'string', format: 'email' },
+        successUrl: { type: 'string' },
+        cancelUrl: { type: 'string' },
+      },
+      required: ['seats', 'email', 'successUrl', 'cancelUrl'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Checkout session created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string' },
+        url: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid seats or missing parameters' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async createSubscriptionCheckout(
+    @Body()
+    body: {
+      seats: number;
+      email: string;
+      successUrl: string;
+      cancelUrl: string;
+    },
+    @Res() res: Response,
+  ) {
+    try {
+      const { seats, email, successUrl, cancelUrl } = body;
+
+      if (!seats || !email || !successUrl || !cancelUrl) {
+        (res as any).status(400).json({
+          message: 'Missing required parameters: seats, email, successUrl, cancelUrl',
+        });
+        return;
+      }
+
+      if (seats < 1) {
+        (res as any).status(400).json({
+          message: 'At least 1 seat is required',
+        });
+        return;
+      }
+
+      const result = await this.userService.createSubscriptionCheckoutSession(
+        seats,
+        email,
+        successUrl,
+        cancelUrl,
+      );
+
+      (res as any).status(201).json(result);
+    } catch (error: any) {
+      console.error('Error creating subscription checkout:', error);
+      (res as any).status(500).json({
+        message: 'Error creating checkout session',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('subscriptions/checkout/:sessionId')
+  @ApiOperation({
+    summary: 'Get checkout session status',
+    description: 'Retrieves the status of a Stripe Checkout Session.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Session status retrieved',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string' },
+        customerEmail: { type: 'string' },
+        plan: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Session not found' })
+  async getCheckoutSessionStatus(
+    @Param('sessionId') sessionId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const session =
+        await this.userService.getSubscriptionCheckoutSession(sessionId);
+
+      if (!session) {
+        (res as any).status(404).json({
+          message: 'Session not found',
+        });
+        return;
+      }
+
+      (res as any).status(200).json(session);
+    } catch (error: any) {
+      (res as any).status(500).json({
+        message: 'Error retrieving session status',
+        error: error.message,
+      });
+    }
+  }
 }

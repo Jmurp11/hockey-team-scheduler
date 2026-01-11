@@ -1,0 +1,240 @@
+@use 'mixins/mixins' as *;
+
+.signup-container {
+  @include flex(center, center, column);
+  min-height: 97.5vh;
+  flex: 1;
+  width: 100vw;
+  overflow: auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.hero-section {
+  text-align: center;
+  max-width: 600px;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-500);
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+// Signup card
+.signup-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.signup-option {
+  padding: 0.5rem;
+  text-align: center;
+}
+
+// Price display
+.price-display {
+  margin-bottom: 1.5rem;
+
+  .price {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+  }
+
+  .price-detail {
+    display: block;
+    font-size: 1rem;
+    color: var(--p-text-muted-color);
+    margin-top: 0.25rem;
+  }
+}
+
+// Features list
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  text-align: left;
+
+  li {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--p-text-color);
+    font-size: 0.95rem;
+
+    &::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--secondary-500);
+      font-weight: bold;
+    }
+  }
+}
+
+// Email form
+.email-form {
+  margin-bottom: 1rem;
+}
+
+// Button styles
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  @include flex(center, center, row);
+  gap: 0.5rem;
+  background: var(--secondary-500);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: var(--secondary-700);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid var(--secondary-500);
+  @include flex(center, center, row);
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--secondary-500);
+
+  &:hover:not(:disabled) {
+    background: var(--secondary-50);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Existing account link
+.existing-account {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--surface-border);
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+  }
+
+  a {
+    color: var(--secondary-500);
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Footer section
+.signup-footer {
+  text-align: center;
+  margin-top: 1rem;
+
+  .guarantee {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+    @include flex(center, center, row);
+    gap: 0.5rem;
+
+    i {
+      color: var(--green-500);
+    }
+  }
+}
+
+// Success card styles
+.success-card {
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--green-100);
+    @include flex(center, center, row);
+    margin: 0 auto 1.5rem;
+
+    i {
+      font-size: 3rem;
+      color: var(--green-500);
+    }
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    color: var(--primary-700);
+    margin-bottom: 1rem;
+  }
+
+  .success-message {
+    color: var(--p-text-muted-color);
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
+
+  .success-actions {
+    @include flex(center, center, row);
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+
+    button {
+      min-width: 180px;
+    }
+  }
+
+  .security-note {
+    background: var(--surface-ground);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+    @include flex(center, center, row);
+    gap: 0.5rem;
+
+    i {
+      color: var(--primary-500);
+    }
+  }
+}

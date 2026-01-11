@@ -23,6 +23,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pricing/success',
+        loadComponent: () =>
+          import(
+            './landing/pricing/pricing-success/pricing-success.component'
+          ).then((m) => m.PricingSuccessComponent),
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./auth/login/login.component').then((m) => m.LoginComponent),
@@ -53,6 +60,40 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./developer/developer.component').then(
             (m) => m.DeveloperComponent,
+          ),
+      },
+      {
+        path: 'developer/signup',
+        loadComponent: () =>
+          import('./developer/signup/developer-signup.component').then(
+            (m) => m.DeveloperSignupComponent,
+          ),
+      },
+      {
+        path: 'developer/login',
+        loadComponent: () =>
+          import('./developer/auth/developer-login.component').then(
+            (m) => m.DeveloperLoginComponent,
+          ),
+      },
+      {
+        path: 'developer/auth',
+        loadComponent: () =>
+          import('./developer/auth/developer-auth-callback.component').then(
+            (m) => m.DeveloperAuthCallbackComponent,
+          ),
+      },
+      {
+        path: 'developer/dashboard',
+        canActivate: [
+          () =>
+            import('./developer/guards/developer-auth.guard').then(
+              (m) => m.developerAuthGuard,
+            ),
+        ],
+        loadComponent: () =>
+          import('./developer/dashboard/developer-dashboard.component').then(
+            (m) => m.DeveloperDashboardComponent,
           ),
       },
       {

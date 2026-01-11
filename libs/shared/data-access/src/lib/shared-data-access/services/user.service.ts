@@ -77,12 +77,19 @@ export class UserService {
   }
 
   async logout() {
-    const { error } = await this.supabaseClient!.auth.signOut();
-    if (error) {
-      console.error('Error logging out:', error);
-      throw error;
+    try {
+      const { error } = await this.supabaseClient!.auth.signOut();
+      // Only log non-session-missing errors, as session missing is expected
+      // when the user's session has already expired
+      if (error && error.message !== 'Auth session missing!') {
+        console.error('Error logging out:', error);
+      }
+    } catch (error) {
+      // Silently handle errors during logout - we still want to clear local state
+      console.warn('Logout error (continuing with local cleanup):', error);
     }
-    // Clear the session and current user in auth service
+
+    // Always clear the session and current user in auth service
     this.authService.session.set(null);
     this.authService.currentUser.set(null);
     return { success: true };

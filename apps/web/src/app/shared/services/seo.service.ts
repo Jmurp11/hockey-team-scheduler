@@ -10,6 +10,8 @@ export interface SEOConfig {
   type?: string;
   author?: string;
   twitterCard?: 'summary' | 'summary_large_image' | 'app' | 'player';
+  robots?: string; // e.g., 'index, follow' or 'noindex, nofollow'
+  canonical?: string; // Override canonical URL if different from url
 }
 
 @Injectable({
@@ -63,6 +65,11 @@ export class SeoService {
       this.metaService.updateTag({ name: 'author', content: seoConfig.author });
     }
 
+    // Update robots meta tag
+    if (seoConfig.robots) {
+      this.metaService.updateTag({ name: 'robots', content: seoConfig.robots });
+    }
+
     // Update Open Graph meta tags
     this.updateOpenGraphTags(seoConfig);
 
@@ -70,8 +77,9 @@ export class SeoService {
     this.updateTwitterCardTags(seoConfig);
 
     // Update canonical URL
-    if (seoConfig.url) {
-      this.updateCanonicalUrl(seoConfig.url);
+    const canonicalUrl = seoConfig.canonical || seoConfig.url;
+    if (canonicalUrl) {
+      this.updateCanonicalUrl(canonicalUrl);
     }
   }
 
@@ -230,6 +238,99 @@ export class SeoService {
       },
       description:
         'AI-powered youth hockey scheduling and tournament management platform. Automate opponent scheduling, discover tournaments, and manage your team efficiently.',
+    };
+  }
+
+  /**
+   * Generates BreadcrumbList structured data
+   * @param breadcrumbs Array of breadcrumb items with name and url
+   */
+  getBreadcrumbListSchema(
+    breadcrumbs: Array<{ name: string; url: string }>,
+  ): Record<string, unknown> {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: crumb.name,
+        item: crumb.url,
+      })),
+    };
+  }
+
+  /**
+   * Generates FAQPage structured data
+   * @param faqs Array of FAQ items with question and answer
+   */
+  getFAQPageSchema(
+    faqs: Array<{ question: string; answer: string }>,
+  ): Record<string, unknown> {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    };
+  }
+
+  /**
+   * Generates ItemList structured data for tournament listings
+   * @param items Array of items with name, url, and optional description
+   */
+  getItemListSchema(
+    items: Array<{ name: string; url: string; description?: string }>,
+    listName?: string,
+  ): Record<string, unknown> {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: listName || 'List',
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: item.url,
+        description: item.description,
+      })),
+    };
+  }
+
+  /**
+   * Generates Event structured data for tournaments
+   * @param eventData Tournament event data
+   */
+  getSportsEventSchema(eventData: {
+    name: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    location: string;
+    url?: string;
+    image?: string;
+  }): Record<string, unknown> {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'SportsEvent',
+      name: eventData.name,
+      description: eventData.description,
+      startDate: eventData.startDate,
+      endDate: eventData.endDate,
+      location: {
+        '@type': 'Place',
+        name: eventData.location,
+      },
+      url: eventData.url,
+      image: eventData.image,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
     };
   }
 }

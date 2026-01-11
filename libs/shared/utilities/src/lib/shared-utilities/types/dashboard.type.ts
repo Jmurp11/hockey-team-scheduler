@@ -34,4 +34,5 @@ export interface UpcomingTournament {
   startDate: string;
   endDate: string;
   rink: string | null;
+  featured?: boolean;
 }

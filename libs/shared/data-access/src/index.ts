@@ -17,3 +17,5 @@ export * from './lib/shared-data-access/services/tournaments.service';
 export * from './lib/shared-data-access/services/auth.service';
 export * from './lib/shared-data-access/services/user.service';
 export * from './lib/shared-data-access/services/rinks.service';
+export * from './lib/shared-data-access/services/subscription.service';
+export * from './lib/shared-data-access/services/developer-portal.service';

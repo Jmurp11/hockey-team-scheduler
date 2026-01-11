@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AssociationsModule } from './associations/associations.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DeveloperPortalModule } from './developer-portal/developer-portal.module';
 import { GamesModule } from './games/games.module';
 import { LeaguesModule } from './leagues/leagues.module';
 import { OpenAiModule } from './open-ai/open-ai.module';
@@ -18,6 +19,7 @@ import { EmailModule } from './email/email.module';
   imports: [
     AssociationsModule,
     DashboardModule,
+    DeveloperPortalModule,
     EmailModule,
     GamesModule,
     LeaguesModule,
