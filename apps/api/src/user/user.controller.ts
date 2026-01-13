@@ -58,6 +58,21 @@ class CreateAssociationDto {
   subscriptionId?: string;
 }
 
+/**
+ * DTO for completing user registration after subscription/invite.
+ * This is the primary registration completion workflow.
+ */
+class CompleteRegistrationDto {
+  userId: string;
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  associationId: number;
+  teamId: number;
+  age?: string;
+}
+
 @ApiTags('Users')
 @Controller('v1/users')
 export class UserController {
@@ -165,6 +180,102 @@ export class UserController {
 
       (res as any).status(500).json({
         message: 'Error registering user',
+        error: error.message,
+      });
+    }
+  }
+
+  // ============ COMPLETE REGISTRATION ============
+
+  @Post('complete-registration')
+  @ApiOperation({
+    summary: 'Complete user registration',
+    description: `
+      Completes user registration after subscription or invitation.
+      This is the primary workflow called after the user fills out the registration form.
+
+      Creates/updates:
+      1. Updates app_users with profile data (name, phone, association, team)
+      2. Updates auth user with password
+      3. Creates manager record (idempotent - prevents duplicates)
+      4. Creates association_members record if subscription has > 1 seat (idempotent)
+
+      For multi-seat subscriptions:
+      - User is assigned ADMIN role in association_members
+      - Subscription is linked to the selected association
+
+      All operations are idempotent and safe to retry.
+    `,
+  })
+  @ApiBody({ type: CompleteRegistrationDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Registration completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        isMultiSeat: { type: 'boolean', description: 'Whether the subscription has multiple seats' },
+        appUser: { type: 'object', description: 'Updated app_users record' },
+        manager: { type: 'object', description: 'Manager record' },
+        associationMember: { type: 'object', nullable: true, description: 'Association member record (if multi-seat)' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request or validation error' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async completeRegistration(
+    @Body() body: CompleteRegistrationDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.userService.completeRegistration({
+        userId: body.userId,
+        email: body.email,
+        password: body.password,
+        name: body.name,
+        phone: body.phone,
+        associationId: body.associationId,
+        teamId: body.teamId,
+        age: body.age,
+      });
+
+      (res as any).status(200).json({
+        success: true,
+        message: 'Registration completed successfully',
+        isMultiSeat: result.isMultiSeat,
+        appUser: result.appUser,
+        manager: result.manager,
+        associationMember: result.associationMember,
+      });
+    } catch (error: any) {
+      console.error('Error completing registration:', error);
+
+      // Handle specific error types
+      if (error.message === 'User not found. Please contact support.') {
+        (res as any).status(404).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      if (
+        error.message === 'Invalid association selected' ||
+        error.message === 'Invalid team selected'
+      ) {
+        (res as any).status(400).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error completing registration',
         error: error.message,
       });
     }

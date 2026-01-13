@@ -66,7 +66,7 @@ describe('AuthService', () => {
 
       expect(service.session()).toEqual(mockSession);
       expect(service.currentUser()).toEqual(mockUserProfile);
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('app_user_profiles');
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profile_details');
       expect(mockSupabaseClient.eq).toHaveBeenCalledWith('user_id', 'user-123');
     });
 
@@ -109,7 +109,7 @@ describe('AuthService', () => {
       await service.setCurrentUser('user-456');
 
       expect(service.currentUser()).toEqual(mockUserProfile);
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('app_user_profiles');
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profile_details');
       expect(mockSupabaseClient.select).toHaveBeenCalledWith('*');
       expect(mockSupabaseClient.eq).toHaveBeenCalledWith('user_id', 'user-456');
     });

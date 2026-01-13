@@ -200,6 +200,7 @@ export class RegisterComponent implements OnInit {
 
   onAssociationChange(): Observable<SelectItem[]> {
     const associationControl = this.registerForm.get('association');
+    const teamControl = this.registerForm.get('team');
     if (!associationControl) {
       return new Observable<SelectItem[]>();
     }
@@ -207,6 +208,11 @@ export class RegisterComponent implements OnInit {
     return associationControl.valueChanges.pipe(
       startWith(associationControl.value),
       switchMap((association) => {
+        // Reset team selection when association changes
+        if (teamControl && teamControl.value) {
+          teamControl.setValue(null);
+        }
+
         if (!association) {
           return new Observable<SelectItem[]>((observer) => {
             observer.next([]);
@@ -219,18 +225,81 @@ export class RegisterComponent implements OnInit {
     );
   }
 
+  /**
+   * Submits the registration form and completes user profile setup.
+   *
+   * This calls the complete-registration API endpoint which:
+   * 1. Updates app_users with profile data
+   * 2. Updates auth user with password
+   * 3. Creates manager record (idempotent)
+   * 4. Creates association_members for multi-seat subscriptions (idempotent)
+   *
+   * All operations are idempotent and safe to retry.
+   */
   async submit() {
-    const submission = {
-      ...this.registerForm.value,
-      association: this.registerForm.get('association')?.value?.value,
-      team: this.registerForm.get('team')?.value?.value,
-      age: this.userService.getAge(this.registerForm.get('team')?.value?.label),
-      id: this.authService.session()?.user?.id,
-    };
+    const userId = this.authService.session()?.user?.id;
+    const email = this.registerForm.get('email')?.value;
+    const password = this.registerForm.get('password')?.value;
+    const name = this.registerForm.get('name')?.value;
+    const phone = this.registerForm.get('phone')?.value;
+    const associationValue = this.registerForm.get('association')?.value;
+    const teamValue = this.registerForm.get('team')?.value;
+    const associationId = associationValue?.value;
+    const teamId = teamValue?.value;
+    const teamLabel = teamValue?.label;
+    const age = this.userService.getAge(teamLabel);
 
-    await this.userService.updateUserProfile(submission);
+    // Debug logging
+    console.log('[Register] Form values:', {
+      associationValue,
+      teamValue,
+      associationId,
+      teamId,
+      teamLabel,
+    });
 
-    this.navigation.navigateToLink('/app/schedule');
+    if (!userId) {
+      console.error('No user session found');
+      return;
+    }
+
+    if (!teamId) {
+      console.error('[Register] teamId is missing. Team value:', teamValue);
+      return;
+    }
+
+    this.loadingService.setLoading(true);
+
+    try {
+      // Call the complete registration API endpoint
+      const result = await this.userService.completeRegistration({
+        userId,
+        email,
+        password,
+        name,
+        phone,
+        associationId,
+        teamId,
+        age: age || undefined,
+      });
+
+      if (result.success) {
+        console.log('Registration completed successfully:', {
+          isMultiSeat: result.isMultiSeat,
+          hasAssociationMember: !!result.associationMember,
+        });
+
+        // Navigate to the main app
+        this.navigation.navigateToLink('/app/schedule');
+      } else {
+        console.error('Registration failed:', result.message);
+      }
+    } catch (error: any) {
+      console.error('Error completing registration:', error);
+      // TODO: Show error message to user via toast/notification
+    } finally {
+      this.loadingService.setLoading(false);
+    }
   }
 
   getPasswordErrors() {

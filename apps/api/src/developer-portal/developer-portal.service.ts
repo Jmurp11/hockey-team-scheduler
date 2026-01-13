@@ -184,7 +184,7 @@ export class DeveloperPortalService {
     }
 
     // Check if user already exists
-    let apiUser = await this.findApiUserByEmail(email);
+    const apiUser = await this.findApiUserByEmail(email);
 
     if (apiUser) {
       // Reactivate existing user
@@ -620,188 +620,33 @@ export class DeveloperPortalService {
 
   // ============ EMAIL METHODS ============
 
+  /**
+   * Sends a welcome email with API key using the unified email template.
+   */
   private async sendWelcomeEmail(email: string, apiKey: string): Promise<void> {
     const appUrl = process.env.APP_URL || 'http://localhost:4200';
     const dashboardUrl = `${appUrl}/developer/dashboard`;
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              margin: 0;
-              padding: 0;
-              background-color: #f5f5f5;
-            }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header {
-              background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-              color: white;
-              padding: 30px 20px;
-              text-align: center;
-              border-radius: 8px 8px 0 0;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 0 0 8px 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .api-key-box {
-              background: #f7fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 8px;
-              padding: 16px;
-              font-family: monospace;
-              word-break: break-all;
-              margin: 20px 0;
-            }
-            .warning {
-              background: #fef3c7;
-              border-left: 4px solid #f59e0b;
-              padding: 12px;
-              margin: 20px 0;
-            }
-            .button {
-              display: inline-block;
-              background: #3182ce;
-              color: white !important;
-              padding: 14px 28px;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to RinkLink.ai API</h1>
-            </div>
-            <div class="content">
-              <h2>Your API Key</h2>
-              <p>Thank you for subscribing to the RinkLink.ai Developer API. Here is your API key:</p>
-
-              <div class="api-key-box">
-                ${apiKey}
-              </div>
-
-              <div class="warning">
-                <strong>Important:</strong> This is the only time your full API key will be shown.
-                Please store it securely. If you lose it, you'll need to generate a new one from your dashboard.
-              </div>
-
-              <h3>Quick Start</h3>
-              <p>Include your API key in the <code>x-api-key</code> header of your requests:</p>
-              <pre style="background: #f7fafc; padding: 12px; border-radius: 4px; overflow-x: auto;">
-curl -H "x-api-key: ${apiKey}" \\
-  https://api.rinklink.ai/v1/tournaments</pre>
-
-              <p style="text-align: center; margin-top: 30px;">
-                <a href="${dashboardUrl}" class="button">Go to Dashboard</a>
-              </p>
-
-              <h3>Pricing</h3>
-              <p>You are billed $0.05 per API request. View your usage and estimated costs in your dashboard.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
     try {
-      await (this.emailService as any).transporter.sendMail({
-        from: `"RinkLink.ai Developer" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      await this.emailService.sendWelcomeEmail({
         to: email,
-        subject: 'Welcome to RinkLink.ai API - Your API Key',
-        html,
+        apiKey,
+        dashboardUrl,
       });
     } catch (error) {
       console.error('Error sending welcome email:', error);
     }
   }
 
+  /**
+   * Sends a magic link email for authentication using the unified email template.
+   */
   private async sendMagicLinkEmail(email: string, magicLinkUrl: string): Promise<void> {
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              margin: 0;
-              padding: 0;
-              background-color: #f5f5f5;
-            }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header {
-              background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-              color: white;
-              padding: 30px 20px;
-              text-align: center;
-              border-radius: 8px 8px 0 0;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 0 0 8px 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .button {
-              display: inline-block;
-              background: #3182ce;
-              color: white !important;
-              padding: 14px 28px;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Developer Portal Login</h1>
-            </div>
-            <div class="content">
-              <h2>Sign In to Your Account</h2>
-              <p>Click the button below to sign in to your RinkLink.ai Developer Portal:</p>
-
-              <p style="text-align: center;">
-                <a href="${magicLinkUrl}" class="button">Sign In</a>
-              </p>
-
-              <p style="color: #718096; font-size: 14px;">
-                This link will expire in 15 minutes. If you didn't request this login link,
-                you can safely ignore this email.
-              </p>
-
-              <p style="color: #718096; font-size: 12px; word-break: break-all;">
-                Or copy this link: ${magicLinkUrl}
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
     try {
-      await (this.emailService as any).transporter.sendMail({
-        from: `"RinkLink.ai Developer" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      await this.emailService.sendMagicLinkEmail({
         to: email,
-        subject: 'Sign in to RinkLink.ai Developer Portal',
-        html,
+        magicLinkUrl,
+        expiryMinutes: this.MAGIC_LINK_EXPIRY_MINUTES,
       });
     } catch (error) {
       console.error('Error sending magic link email:', error);

@@ -34,6 +34,32 @@ interface InvitedUserParams {
   invitationToken: string;
 }
 
+/**
+ * Parameters for completing user registration after subscription/invite.
+ * This is the primary registration completion workflow.
+ */
+interface CompleteRegistrationParams {
+  userId: string;        // Auth user ID
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  associationId: number;
+  teamId: number;
+  age?: string;
+}
+
+/**
+ * Result of the complete registration workflow
+ */
+interface CompleteRegistrationResult {
+  success: boolean;
+  appUser: any;
+  manager: any;
+  associationMember: any | null; // Only created for multi-seat subscriptions
+  isMultiSeat: boolean;
+}
+
 type SubscriptionStatus = 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'CANCELED';
 type MemberRole = 'ADMIN' | 'MANAGER';
 type MemberStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'REMOVED';
@@ -712,8 +738,324 @@ export class UserService {
     return { userId: authUser.id, appUser };
   }
 
+  // ============ COMPLETE REGISTRATION WORKFLOW ============
+
+  /**
+   * Completes user registration after subscription or invitation.
+   * This is the primary workflow called from the RegisterComponent.
+   *
+   * Creates:
+   * 1. Updates app_users with profile data
+   * 2. Creates manager record (idempotent - prevents duplicates)
+   * 3. Creates association_members record if subscription has > 1 seat (idempotent)
+   *
+   * All operations are idempotent and safe to retry.
+   */
+  async completeRegistration(params: CompleteRegistrationParams): Promise<CompleteRegistrationResult> {
+    const { userId, email, password, name, phone, associationId, teamId, age } = params;
+
+    console.log(`[CompleteRegistration] Starting for user: ${userId}, email: ${email}`);
+    console.log(`[CompleteRegistration] Params received:`, {
+      userId,
+      email,
+      name,
+      phone,
+      associationId,
+      teamId,
+      age,
+      teamIdType: typeof teamId,
+    });
+
+    // Step 1: Validate user exists in app_users
+    const { data: existingAppUser, error: userCheckError } = await supabase
+      .from('app_users')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (userCheckError && userCheckError.code !== 'PGRST116') {
+      console.error('[CompleteRegistration] Error checking user:', userCheckError);
+      throw new Error('Failed to validate user');
+    }
+
+    if (!existingAppUser) {
+      throw new Error('User not found. Please contact support.');
+    }
+
+    // Step 2: Validate association exists
+    const { data: association, error: assocError } = await supabase
+      .from('associations')
+      .select('id, name')
+      .eq('id', associationId)
+      .single();
+
+    if (assocError || !association) {
+      throw new Error('Invalid association selected');
+    }
+
+    // Step 3: Validate team exists and belongs to the association
+    if (teamId === undefined || teamId === null) {
+      console.error('[CompleteRegistration] teamId is missing:', teamId);
+      throw new Error('Team selection is required');
+    }
+
+    const { data: team, error: teamError } = await supabase
+      .from('rankings')
+      .select('id, team_name, association')
+      .eq('id', teamId)
+      .single();
+
+    if (teamError) {
+      console.error('[CompleteRegistration] Team query error:', teamError);
+      throw new Error(`Invalid team selected (id: ${teamId})`);
+    }
+
+    if (!team) {
+      console.error('[CompleteRegistration] Team not found for id:', teamId);
+      throw new Error(`Team not found (id: ${teamId})`);
+    }
+
+    // Step 4: Update auth user with password
+    const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+      userId,
+      {
+        password,
+        user_metadata: { displayName: name },
+      }
+    );
+
+    if (authUpdateError) {
+      console.error('[CompleteRegistration] Error updating auth user:', authUpdateError);
+      throw new Error('Failed to update user credentials');
+    }
+
+    // Step 5: Update app_users with profile data
+    const { data: updatedAppUser, error: updateError } = await supabase
+      .from('app_users')
+      .update({
+        name,
+        phone,
+        association: associationId,
+        team: teamId,
+        age: age || null,
+      })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('[CompleteRegistration] Error updating app user:', updateError);
+      throw new Error('Failed to update user profile');
+    }
+
+    console.log(`[CompleteRegistration] Updated app_user for: ${userId}`);
+
+    // Step 6: Create manager record (idempotent)
+    const manager = await this.createOrGetManager({
+      userId,
+      name,
+      email,
+      phone,
+      teamName: team.team_name,
+    });
+
+    console.log(`[CompleteRegistration] Manager record ready: ${manager?.id}`);
+
+    // Step 7: Check if subscription has multiple seats
+    // Find subscription by owner_user_id or via association
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('id, total_seats, seats_in_use, owner_user_id')
+      .eq('owner_user_id', userId)
+      .eq('status', 'ACTIVE')
+      .single();
+
+    let associationMember: any = null;
+    const isMultiSeat = subscription && subscription.total_seats > 1;
+
+    // Step 8: Create association_members for multi-seat subscriptions
+    if (isMultiSeat) {
+      console.log(`[CompleteRegistration] Multi-seat subscription detected (${subscription.total_seats} seats)`);
+
+      // Create ADMIN membership for subscription owner
+      associationMember = await this.createOrGetAssociationMember(
+        userId,
+        associationId.toString(),
+        'ADMIN',
+        'ACTIVE',
+      );
+
+      // Link subscription to association if not already linked
+      await supabase
+        .from('subscriptions')
+        .update({ association: associationId })
+        .eq('id', subscription.id)
+        .is('association', null);
+
+      console.log(`[CompleteRegistration] Association member record ready: ${associationMember?.id}`);
+    } else {
+      // For single-seat subscriptions or invited users, check if they already have a membership
+      const { data: existingMembership } = await supabase
+        .from('association_members')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('association', associationId)
+        .single();
+
+      if (existingMembership) {
+        associationMember = existingMembership;
+        console.log(`[CompleteRegistration] Existing association membership found: ${associationMember?.id}`);
+      }
+    }
+
+    console.log(`[CompleteRegistration] Completed successfully for user: ${userId}`);
+
+    return {
+      success: true,
+      appUser: updatedAppUser,
+      manager,
+      associationMember,
+      isMultiSeat: isMultiSeat || false,
+    };
+  }
+
+  /**
+   * Creates a manager record or returns existing one (idempotent).
+   * Prevents duplicate manager entries for the same user.
+   */
+  async createOrGetManager(params: {
+    userId: string;
+    name: string;
+    email: string;
+    phone: string;
+    teamName: string;
+  }): Promise<any> {
+    const { userId, name, email, phone, teamName } = params;
+
+    // Check if manager already exists for this user
+    const { data: existingManager, error: checkError } = await supabase
+      .from('managers')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (existingManager && !checkError) {
+      console.log(`[Manager] Manager already exists for user: ${userId}`);
+      // Update existing manager with latest info
+      const { data: updatedManager, error: updateError } = await supabase
+        .from('managers')
+        .update({
+          name,
+          email,
+          phone,
+          team: teamName,
+        })
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('[Manager] Error updating manager:', updateError);
+        return existingManager; // Return existing if update fails
+      }
+
+      return updatedManager;
+    }
+
+    // Create new manager
+    const { data: newManager, error: insertError } = await supabase
+      .from('managers')
+      .insert({
+        user_id: userId,
+        name,
+        email,
+        phone,
+        team: teamName,
+        sourceUrl: 'registration',
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      // Handle race condition - manager might have been created between check and insert
+      if (insertError.code === '23505') {
+        console.log(`[Manager] Manager was created by another process for user: ${userId}`);
+        const { data: createdManager } = await supabase
+          .from('managers')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        return createdManager;
+      }
+
+      console.error('[Manager] Error creating manager:', insertError);
+      throw new Error('Failed to create manager record');
+    }
+
+    return newManager;
+  }
+
   // ============ ASSOCIATION METHODS ============
 
+  /**
+   * Creates an association member record or returns existing one (idempotent).
+   * Prevents duplicate association member entries.
+   */
+  async createOrGetAssociationMember(
+    userId: string,
+    associationId: string,
+    role: MemberRole,
+    status: MemberStatus,
+  ): Promise<any> {
+    // Check if membership already exists
+    const { data: existingMember, error: checkError } = await supabase
+      .from('association_members')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('association', associationId)
+      .single();
+
+    if (existingMember && !checkError) {
+      console.log(`[AssociationMember] Membership already exists for user: ${userId}, association: ${associationId}`);
+      return existingMember;
+    }
+
+    // Create new membership
+    const { data: newMember, error: insertError } = await supabase
+      .from('association_members')
+      .insert({
+        user_id: userId,
+        association: associationId,
+        role,
+        status,
+        joined_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      // Handle race condition
+      if (insertError.code === '23505') {
+        console.log(`[AssociationMember] Membership was created by another process`);
+        const { data: createdMember } = await supabase
+          .from('association_members')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('association', associationId)
+          .single();
+        return createdMember;
+      }
+
+      console.error('[AssociationMember] Error creating membership:', insertError);
+      throw new Error('Failed to create association membership');
+    }
+
+    return newMember;
+  }
+
+  /**
+   * Creates an association member record (legacy method - use createOrGetAssociationMember for idempotency)
+   */
   async createAssociationMember(
     userId: string,
     associationId: string,
