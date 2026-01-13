@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   async setCurrentUser(id: string) {
-    const { data, error } = await this.supabaseClient!.from('app_user_profiles')
+    const { data, error } = await this.supabaseClient!.from('user_profile_details')
       .select('*')
       .eq('user_id', id)
       .single();
