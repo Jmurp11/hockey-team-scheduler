@@ -7,11 +7,18 @@ import {
 } from '@hockey-team-scheduler/shared-utilities';
 import { Observable, map } from 'rxjs';
 import { APP_CONFIG, AppConfig } from '../config/app-config';
+import { SupabaseService } from './supabase.service';
+
+type RealtimeEvent = 
+  | { type: 'INSERT'; record: any }
+  | { type: 'UPDATE'; record: any }
+  | { type: 'DELETE'; record: any };
 
 @Injectable({ providedIn: 'root' })
 export class AssociationAdminService {
   private http = inject(HttpClient);
   private config: AppConfig = inject(APP_CONFIG);
+  private supabaseService = inject(SupabaseService);
 
   /**
    * Get association admin data including members, invitations, and subscription info
@@ -93,5 +100,87 @@ export class AssociationAdminService {
       `${this.config.apiUrl}/users/invitations/${invitationId}/cancel`,
       {}
     );
+  }
+
+  /**
+   * Subscribe to real-time changes for association members
+   */
+  realtimeMembers$(associationId: string): Observable<RealtimeEvent> {
+    return new Observable<RealtimeEvent>((observer) => {
+      const supabase = this.supabaseService.getSupabaseClient();
+      if (!supabase) {
+        observer.error('Supabase client not initialized');
+        return;
+      }
+
+      const channel = supabase
+        .channel(`association:${associationId}:members`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'association_members',
+          },
+          (payload) => {
+            const record = (payload.new ?? payload.old) as any;
+            
+            // Filter for this association's members
+            if (String(record.association) === String(associationId)) {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+            }
+          },
+        )
+        .subscribe();
+
+      // Cleanup
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
+  }
+
+  /**
+   * Subscribe to real-time changes for association invitations
+   */
+  realtimeInvitations$(associationId: string): Observable<RealtimeEvent> {
+    return new Observable<RealtimeEvent>((observer) => {
+      const supabase = this.supabaseService.getSupabaseClient();
+      if (!supabase) {
+        observer.error('Supabase client not initialized');
+        return;
+      }
+
+      const channel = supabase
+        .channel(`association:${associationId}:invitations`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'invitations',
+          },
+          (payload) => {
+            const record = (payload.new ?? payload.old) as any;
+            
+            // Filter for this association's invitations
+            if (String(record.association) === String(associationId)) {
+              observer.next({
+                type: payload.eventType,
+                record: record,
+              });
+            }
+          },
+        )
+        .subscribe();
+
+      // Cleanup
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
   }
 }
