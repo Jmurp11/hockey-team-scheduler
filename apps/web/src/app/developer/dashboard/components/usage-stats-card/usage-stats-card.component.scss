@@ -1,0 +1,50 @@
+@use 'mixins/mixins' as *;
+
+:host {
+  ::ng-deep {
+    .card-header {
+      @include flex(flex-start, center, row);
+      gap: 0.75rem;
+
+      i {
+        font-size: 1.25rem;
+        color: var(--primary-500);
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 1.125rem;
+      }
+    }
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+
+  .stat {
+    text-align: center;
+
+    .stat-value {
+      display: block;
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary-500);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-color-secondary);
+    }
+  }
+}
+
+.last-request {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+  text-align: center;
+}

@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+  <app-developer-dashboard-header
+    [user]="user()"
+    (logout)="logout()"
+    (viewDocs)="navigateToDocs()"
+  />
+
+  @if (loading()) {
+    <div class="loading">
+      <p-progressSpinner strokeWidth="4" />
+      <p>Loading dashboard...</p>
+    </div>
+  } @else {
+    <div class="dashboard-grid">
+      <!-- API Key Card -->
+      <app-api-key-card
+        #apiKeyCard
+        [apiKey]="apiKey()"
+        [rotatingKey]="rotatingKey()"
+        (rotateKey)="confirmRotateKey()"
+        (clearNewKey)="loadDashboard()"
+        (copyKey)="copyKeyToClipboard($event)"
+      />
+
+      <!-- Usage Stats Card -->
+      <app-usage-stats-card [usage]="usage()" />
+
+      <!-- Subscription Card -->
+      <app-subscription-card
+        [user]="user()"
+        [canceling]="canceling()"
+        (cancelSubscription)="confirmCancelSubscription()"
+      />
+
+      <!-- Quick Start Card -->
+      <app-quick-start-card [apiBaseUrl]="apiBaseUrl" />
+    </div>
+  }
+</div>
+<p-toast />
+<p-confirmDialog />
