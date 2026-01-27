@@ -75,6 +75,7 @@ import {
             <ng-template #content>
               <app-strength-of-schedule
                 [strengthOfSchedule]="dashboardData()!.strengthOfSchedule"
+                [teamRating]="dashboardData()!.rating"
               />
             </ng-template>
           </app-card>

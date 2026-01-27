@@ -134,11 +134,10 @@ import { TagModule } from 'primeng/tag';
         <!-- Add to Schedule button for authenticated users -->
         @if (showAuthenticatedFeatures) {
           <p-button
-            label="Add to Schedule"
+            label="Add"
             icon="pi pi-plus"
             iconPos="right"
             [outlined]="true"
-            severity="secondary"
             (click)="onAddToSchedule($event)"
           />
         }

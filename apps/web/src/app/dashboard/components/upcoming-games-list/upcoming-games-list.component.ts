@@ -165,7 +165,7 @@ import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
         }
 
         .action-link {
-          color: var(--primary-600);
+          color: var(--secondary-600);
           text-decoration: none;
           font-weight: 500;
 

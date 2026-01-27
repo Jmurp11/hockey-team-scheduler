@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  getSubscriptionStatusSeverity,
+  getSubscriptionDateLabel,
+  mapToIonicColor,
+} from '@hockey-team-scheduler/shared-utilities';
 import { IonBadge, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { person } from 'ionicons/icons';
@@ -32,7 +37,7 @@ import { AvatarComponent } from '../../shared/avatar/avatar.component';
           </div>
           @if (subscriptionEndDate) {
             <div class="admin-header__subscription-item">
-              <span class="admin-header__label">{{ subscriptionStatus === 'ACTIVE' ? 'Renews' : 'Ends' }}</span>
+              <span class="admin-header__label">{{ dateLabel }}</span>
               <span class="admin-header__value">{{ subscriptionEndDate | date:'mediumDate' }}</span>
             </div>
           }
@@ -144,17 +149,11 @@ export class AssociationAdminHeaderComponent {
     addIcons({ person });
   }
 
+  get dateLabel(): string {
+    return getSubscriptionDateLabel(this.subscriptionStatus);
+  }
+
   getStatusColor(status: string): string {
-    switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'PENDING':
-        return 'primary';
-      case 'EXPIRED':
-      case 'CANCELED':
-        return 'danger';
-      default:
-        return 'medium';
-    }
+    return mapToIonicColor(getSubscriptionStatusSeverity(status));
   }
 }

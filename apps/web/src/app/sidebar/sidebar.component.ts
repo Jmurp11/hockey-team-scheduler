@@ -6,7 +6,12 @@ import {
   inject,
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, UserService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  UserService,
+  UserAccessService,
+} from '@hockey-team-scheduler/shared-data-access';
+import { UserCapability } from '@hockey-team-scheduler/shared-utilities';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 
@@ -14,7 +19,10 @@ interface MenuItem {
   label: string;
   icon: string;
   routerLink?: string;
+  externalLink?: string;
   adminOnly?: boolean;
+  /** Required capability for this menu item to be visible */
+  requiredCapability?: UserCapability;
   action?: () => void;
 }
 
@@ -41,10 +49,7 @@ interface MenuItem {
               <i class="{{ item.icon }}"></i>{{ item.label }}
             </a>
           } @else if (item.action) {
-            <a
-              class="navigation__link"
-              (click)="item.action()"
-            >
+            <a class="navigation__link" (click)="item.action()">
               <i class="{{ item.icon }}"></i>{{ item.label }}
             </a>
           }
@@ -58,6 +63,7 @@ interface MenuItem {
 export class SidebarComponent {
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private userAccessService = inject(UserAccessService);
   private router = inject(Router);
 
   sidebarVisible = true;
@@ -75,6 +81,11 @@ export class SidebarComponent {
       label: 'Schedule',
       icon: 'pi pi-fw pi-calendar',
       routerLink: '/app/schedule',
+    },
+    {
+      label: 'RinkLinkGPT',
+      icon: 'bi bi-robot',
+      routerLink: '/app/rinklink-gpt',
     },
     {
       label: 'Opponents',
@@ -98,6 +109,12 @@ export class SidebarComponent {
       adminOnly: true,
     },
     {
+      label: 'Developer',
+      icon: 'pi pi-fw pi-code',
+      routerLink: '/developer/dashboard',
+      requiredCapability: UserCapability.DEVELOPER_ACCESS,
+    },
+    {
       label: 'Logout',
       icon: 'pi pi-fw pi-sign-out',
       action: () => this.logout(),
@@ -107,8 +124,22 @@ export class SidebarComponent {
   visibleMenuItems = computed(() => {
     const user = this.authService.currentUser();
     const isAdmin = user?.role === 'ADMIN';
+    const capabilities = this.userAccessService.capabilities();
 
-    return this.allMenuItems.filter((item) => !item.adminOnly || isAdmin);
+    return this.allMenuItems.filter((item) => {
+      // Filter out admin-only items if not admin
+      if (item.adminOnly && !isAdmin) {
+        return false;
+      }
+      // Filter out items requiring a capability the user doesn't have
+      if (
+        item.requiredCapability &&
+        !capabilities.includes(item.requiredCapability)
+      ) {
+        return false;
+      }
+      return true;
+    });
   });
 
   async logout() {

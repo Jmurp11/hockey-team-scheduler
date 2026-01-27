@@ -19,10 +19,13 @@ export * from './lib/shared-utilities/types/table-options.type';
 export * from './lib/shared-utilities/types/team.type';
 export * from './lib/shared-utilities/types/tournament.type';
 export * from './lib/shared-utilities/types/user.type';
+export * from './lib/shared-utilities/types/user-access.type';
 export * from './lib/shared-utilities/types/select-option.type';
 export * from './lib/shared-utilities/types/opponent-search-params.type';
 export * from './lib/shared-utilities/types/ranking.type';
 export * from './lib/shared-utilities/types/manager.type';
+export * from './lib/shared-utilities/types/rinklink-gpt.type';
+export * from './lib/shared-utilities/types/agent-context.type';
 // Export all utilities
 export * from './lib/shared-utilities/utilities/add-game.utility';
 export * from './lib/shared-utilities/utilities/auth.utility';
@@ -41,6 +44,9 @@ export * from './lib/shared-utilities/utilities/sort.utility';
 export * from './lib/shared-utilities/utilities/string.utility';
 export * from './lib/shared-utilities/utilities/time.utility';
 export * from './lib/shared-utilities/utilities/tournament.utility';
+export * from './lib/shared-utilities/utilities/rinklink-gpt.utility';
+export * from './lib/shared-utilities/utilities/association-admin.utility';
+export * from './lib/shared-utilities/utilities/dashboard.utility';
 
 // Export all constants
 export * from './lib/shared-utilities/constants/add-game.constants';
