@@ -51,11 +51,11 @@ export class FeaturesComponent {
       {
         icon: 'pi pi-fw pi-microchip-ai',
         iconLabel: 'AI icon',
-        title: 'AI-Powered Game Scheduling',
+        title: 'RinkLinkGPT - Your AI Scheduling Assistant',
         description:
-          'Let our intelligent assistant handle the hassle—automatically contacting opponents, negotiating game times, and adding confirmed games to your calendar.',
-        image: 'ai-chat.png',
-        alt: 'Screenshot of AI-powered chat interface for automated hockey game scheduling and opponent communication',
+          'RinkLinkGPT is an AI agent that schedules games with your direction, contacts opponents and sends emails, discovers nearby restaurants, and finds teams and tournaments, then adds confirmed games to your calendar.',
+        image: 'rinklink-gpt.png',
+        alt: 'Screenshot of AI-powered game editing interface for automated hockey game scheduling',
       },
       {
         icon: 'pi pi-fw pi-map-marker',

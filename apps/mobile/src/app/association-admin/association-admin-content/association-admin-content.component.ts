@@ -10,6 +10,7 @@ import {
 import {
   AssociationInvitation,
   AssociationMember,
+  getPendingInvitationsCount,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonBadge,
@@ -115,7 +116,7 @@ export class AssociationAdminContentComponent {
   }
 
   get pendingInvitationsCount(): number {
-    return this.invitations.filter((i) => i.status === 'pending').length;
+    return getPendingInvitationsCount(this.invitations);
   }
 
   onSegmentChange(event: any): void {

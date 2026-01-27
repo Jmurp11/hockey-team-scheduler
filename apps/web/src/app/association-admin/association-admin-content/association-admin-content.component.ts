@@ -11,6 +11,7 @@ import {
 import {
   AssociationInvitation,
   AssociationMember,
+  getPendingInvitationsCount,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
@@ -142,7 +143,7 @@ export class AssociationAdminContentComponent {
   activeTab = signal(0);
 
   get pendingInvitationsCount(): number {
-    return this.invitations.filter((i) => i.status === 'pending').length;
+    return getPendingInvitationsCount(this.invitations);
   }
 
   onTabChange(value: string | number | undefined): void {

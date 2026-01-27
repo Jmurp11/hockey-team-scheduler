@@ -15,8 +15,8 @@ import packageInfo from '../../../../../../../package.json';
     @if (!isMobile) {
       <div class="footer__content">
         <div class="footer__policies">
-          <div>Terms of Service</div>
-          <div>Privacy Policy</div>
+          <a routerLink="/terms-of-service">Terms of Service</a>
+          <a routerLink="/privacy-policy">Privacy Policy</a>
         </div>
         <div>&#64;{{ date }} RINKLINKAI LLC All Rights Reserved</div>
         <div class="footer__socials">

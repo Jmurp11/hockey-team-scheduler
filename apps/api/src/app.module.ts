@@ -7,6 +7,7 @@ import { DeveloperPortalModule } from './developer-portal/developer-portal.modul
 import { GamesModule } from './games/games.module';
 import { LeaguesModule } from './leagues/leagues.module';
 import { OpenAiModule } from './open-ai/open-ai.module';
+import { RinkLinkGptModule } from './rinklink-gpt/rinklink-gpt.module';
 import { TeamsModule } from './teams/teams.module';
 import { UserModule } from './user/user.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
@@ -24,6 +25,7 @@ import { EmailModule } from './email/email.module';
     GamesModule,
     LeaguesModule,
     OpenAiModule,
+    RinkLinkGptModule,
     MessageModule,
     TeamsModule,
     TournamentsModule,

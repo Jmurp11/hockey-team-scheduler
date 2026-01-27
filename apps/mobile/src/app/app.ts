@@ -24,6 +24,7 @@ import { addIcons } from 'ionicons';
 import {
   barChart,
   calendar,
+  chatbubbleEllipses,
   chatbubbles,
   cog,
   home,
@@ -31,6 +32,7 @@ import {
   people,
   person,
   search,
+  sparkles,
   trophy,
 } from 'ionicons/icons';
 
@@ -83,6 +85,11 @@ export class App {
       icon: 'calendar',
     },
     {
+      title: 'RinkLinkGPT',
+      url: '/app/rinklink-gpt',
+      icon: 'sparkles',
+    }, 
+    {
       title: 'Opponents',
       url: '/app/opponents',
       icon: 'search',
@@ -105,6 +112,8 @@ export class App {
     },
   ];
 
+  public isLoggedIn = computed(() => !!this.authService.currentUser()?.user_id);
+
   public menuItems = computed(() => {
     const user = this.authService.currentUser();
     const isAdmin = user?.role === 'ADMIN';
@@ -116,11 +125,13 @@ export class App {
     addIcons({
       barChart,
       calendar,
+      chatbubbleEllipses,
       people,
       trophy,
       chatbubbles,
       person,
       search,
+      sparkles,
       cog,
       logOutOutline,
     });

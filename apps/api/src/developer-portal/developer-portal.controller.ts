@@ -32,24 +32,16 @@ class CreateCheckoutDto {
   cancelUrl: string;
 }
 
-class MagicLinkDto {
-  email: string;
-}
-
-class VerifyMagicLinkDto {
-  token: string;
-}
-
 /**
  * Developer Portal Controller
  *
  * Provides REST endpoints for the Developer Portal:
- * - Public: Checkout, magic link request
+ * - Public: Checkout
  * - Protected: Dashboard, API key rotation, subscription management
  *
  * AUTHENTICATION:
  * - Public endpoints: No auth required
- * - Protected endpoints: Bearer token (from magic link verification)
+ * - Protected endpoints: Bearer token (Supabase Auth)
  * - Webhook: Stripe signature verification
  */
 @ApiTags('Developer Portal')
@@ -138,93 +130,6 @@ export class DeveloperPortalController {
     } catch (error: any) {
       return res.status(HttpStatus.NOT_FOUND).json({
         error: 'Session not found',
-      });
-    }
-  }
-
-  /**
-   * Sends a magic link email for developer authentication.
-   */
-  @Post('auth/magic-link')
-  @ApiOperation({
-    summary: 'Request magic link',
-    description: 'Sends a magic link email for passwordless authentication. Only works for existing API users.',
-  })
-  @ApiBody({ type: MagicLinkDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Magic link sent (if account exists)',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        message: { type: 'string' },
-      },
-    },
-  })
-  async requestMagicLink(
-    @Body() body: MagicLinkDto,
-    @Res() res: Response,
-  ) {
-    try {
-      const { email } = body;
-
-      if (!email) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          error: 'Email is required',
-        });
-      }
-
-      const result = await this.developerPortalService.sendMagicLink(email);
-      return res.status(HttpStatus.OK).json(result);
-    } catch (error: any) {
-      // Don't reveal errors - always return success to prevent email enumeration
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'If an account exists with this email, a login link has been sent.',
-      });
-    }
-  }
-
-  /**
-   * Verifies a magic link token and returns a session JWT.
-   */
-  @Post('auth/verify')
-  @ApiOperation({
-    summary: 'Verify magic link',
-    description: 'Verifies a magic link token and returns a session JWT for authenticated requests.',
-  })
-  @ApiBody({ type: VerifyMagicLinkDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Authentication successful',
-    schema: {
-      type: 'object',
-      properties: {
-        token: { type: 'string' },
-        expiresAt: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Invalid or expired token' })
-  async verifyMagicLink(
-    @Body() body: VerifyMagicLinkDto,
-    @Res() res: Response,
-  ) {
-    try {
-      const { token } = body;
-
-      if (!token) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          error: 'Token is required',
-        });
-      }
-
-      const result = await this.developerPortalService.verifyMagicLink(token);
-      return res.status(HttpStatus.OK).json(result);
-    } catch (error: any) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
-        error: error.message || 'Invalid or expired token',
       });
     }
   }

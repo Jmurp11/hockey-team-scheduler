@@ -1,13 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { Observable, tap, BehaviorSubject, from, switchMap } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
+import { SupabaseService } from './supabase.service';
 import {
   CreateDeveloperCheckoutDto,
   DeveloperCheckoutResponse,
   DeveloperCheckoutStatus,
-  DeveloperMagicLinkDto,
-  DeveloperAuthToken,
   DeveloperDashboard,
   ApiKeyRotationResponse,
   SubscriptionCancelResponse,
@@ -19,35 +18,56 @@ import {
  *
  * Handles all client-side operations for the Developer Portal including:
  * - Stripe checkout for API subscription
- * - Magic link authentication
- * - Session management (token storage/retrieval)
+ * - Session management using Supabase Auth
  * - Dashboard data fetching
  * - API key rotation
  * - Subscription management
  *
  * SESSION MANAGEMENT:
- * - Tokens are stored in localStorage
- * - Token presence indicates authenticated state
- * - Tokens expire after 7 days
+ * Uses Supabase Auth exclusively for authentication.
+ * Users log in via the unified login flow and access developer features
+ * if they have an active api_users record.
  */
 @Injectable({ providedIn: 'root' })
 export class DeveloperPortalService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);
-
-  private readonly TOKEN_KEY = 'developer_token';
-  private readonly TOKEN_EXPIRY_KEY = 'developer_token_expiry';
+  private supabaseService = inject(SupabaseService);
 
   // Authentication state
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   // Dashboard data signal for reactive updates
   dashboard = signal<DeveloperDashboard | null>(null);
 
   constructor() {
-    // Check token validity on service initialization
-    this.checkTokenValidity();
+    // Check authentication on service initialization
+    this.checkAuthenticationState();
+    // Clean up any legacy tokens from previous auth system
+    this.cleanupLegacyTokens();
+  }
+
+  /**
+   * Checks authentication state using Supabase session.
+   */
+  private async checkAuthenticationState(): Promise<void> {
+    const client = this.supabaseService.getSupabaseClient();
+    if (client) {
+      const {
+        data: { session },
+      } = await client.auth.getSession();
+      this.isAuthenticatedSubject.next(!!session);
+    }
+  }
+
+  /**
+   * Cleans up legacy JWT tokens from localStorage.
+   * These were used by the deprecated magic link authentication.
+   */
+  private cleanupLegacyTokens(): void {
+    localStorage.removeItem('developer_token');
+    localStorage.removeItem('developer_token_expiry');
   }
 
   // ============ CHECKOUT ============
@@ -74,118 +94,93 @@ export class DeveloperPortalService {
   // ============ AUTHENTICATION ============
 
   /**
-   * Requests a magic link for authentication.
-   */
-  requestMagicLink(dto: DeveloperMagicLinkDto): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(
-      `${this.config.apiUrl}/developers/auth/magic-link`,
-      dto
-    );
-  }
-
-  /**
-   * Verifies a magic link token and stores the session token.
-   */
-  verifyMagicLink(token: string): Observable<DeveloperAuthToken> {
-    return this.http
-      .post<DeveloperAuthToken>(`${this.config.apiUrl}/developers/auth/verify`, { token })
-      .pipe(
-        tap((response) => {
-          this.setToken(response.token, response.expiresAt);
-        })
-      );
-  }
-
-  /**
-   * Checks if user is authenticated.
+   * Checks if user is authenticated via Supabase session.
    */
   isAuthenticated(): boolean {
-    return this.hasValidToken();
+    return this.isAuthenticatedSubject.getValue();
   }
 
   /**
-   * Gets the stored authentication token.
+   * Async check for authentication status.
+   * Validates with Supabase and updates the subject.
    */
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+  async checkAuthenticated(): Promise<boolean> {
+    const client = this.supabaseService.getSupabaseClient();
+    if (!client) return false;
+
+    const {
+      data: { session },
+    } = await client.auth.getSession();
+    const isAuth = !!session;
+    this.isAuthenticatedSubject.next(isAuth);
+    return isAuth;
   }
 
   /**
-   * Logs out the user by clearing the stored token.
+   * Gets the Supabase authentication token for API requests.
+   */
+  async getAuthToken(): Promise<string | null> {
+    const client = this.supabaseService.getSupabaseClient();
+    if (!client) return null;
+
+    const {
+      data: { session },
+    } = await client.auth.getSession();
+    return session?.access_token || null;
+  }
+
+  /**
+   * Clears developer portal state.
+   * Note: Supabase logout is handled by UserService.logout()
    */
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     this.isAuthenticatedSubject.next(false);
     this.dashboard.set(null);
-  }
-
-  /**
-   * Stores the authentication token.
-   */
-  private setToken(token: string, expiresAt: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
-    localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiresAt);
-    this.isAuthenticatedSubject.next(true);
-  }
-
-  /**
-   * Checks if a valid token exists.
-   */
-  private hasValidToken(): boolean {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
-
-    if (!token || !expiry) {
-      return false;
-    }
-
-    // Check if token has expired
-    const expiryDate = new Date(expiry);
-    if (expiryDate <= new Date()) {
-      this.logout();
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Validates token on service init.
-   */
-  private checkTokenValidity(): void {
-    if (!this.hasValidToken()) {
-      this.logout();
-    }
   }
 
   // ============ DASHBOARD ============
 
   /**
    * Fetches dashboard data for the authenticated developer.
+   * Uses Supabase Auth token or falls back to legacy token.
    */
   getDashboard(): Observable<DeveloperDashboard> {
-    return this.http
-      .get<DeveloperDashboard>(`${this.config.apiUrl}/developers/dashboard`, {
-        headers: this.getAuthHeaders(),
+    return from(this.getAuthToken()).pipe(
+      switchMap((token) => {
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+        return this.http.get<DeveloperDashboard>(
+          `${this.config.apiUrl}/developers/dashboard`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }),
+      tap((data) => {
+        this.dashboard.set(data);
       })
-      .pipe(
-        tap((data) => {
-          this.dashboard.set(data);
-        })
-      );
+    );
   }
 
   // ============ API KEY MANAGEMENT ============
 
   /**
    * Rotates the API key. The new key is only shown once.
+   * Uses Supabase Auth token or falls back to legacy token.
    */
   rotateApiKey(): Observable<ApiKeyRotationResponse> {
-    return this.http.post<ApiKeyRotationResponse>(
-      `${this.config.apiUrl}/developers/api-key/rotate`,
-      {},
-      { headers: this.getAuthHeaders() }
+    return from(this.getAuthToken()).pipe(
+      switchMap((token) => {
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+        return this.http.post<ApiKeyRotationResponse>(
+          `${this.config.apiUrl}/developers/api-key/rotate`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      })
     );
   }
 
@@ -195,9 +190,16 @@ export class DeveloperPortalService {
    * Gets the current subscription status.
    */
   getSubscriptionStatus(): Observable<{ status: ApiSubscriptionStatus }> {
-    return this.http.get<{ status: ApiSubscriptionStatus }>(
-      `${this.config.apiUrl}/developers/subscription/status`,
-      { headers: this.getAuthHeaders() }
+    return from(this.getAuthToken()).pipe(
+      switchMap((token) => {
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+        return this.http.get<{ status: ApiSubscriptionStatus }>(
+          `${this.config.apiUrl}/developers/subscription/status`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      })
     );
   }
 
@@ -205,20 +207,18 @@ export class DeveloperPortalService {
    * Cancels the subscription.
    */
   cancelSubscription(): Observable<SubscriptionCancelResponse> {
-    return this.http.post<SubscriptionCancelResponse>(
-      `${this.config.apiUrl}/developers/subscription/cancel`,
-      {},
-      { headers: this.getAuthHeaders() }
+    return from(this.getAuthToken()).pipe(
+      switchMap((token) => {
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+        return this.http.post<SubscriptionCancelResponse>(
+          `${this.config.apiUrl}/developers/subscription/cancel`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      })
     );
   }
 
-  // ============ HELPERS ============
-
-  /**
-   * Gets authorization headers for authenticated requests.
-   */
-  private getAuthHeaders(): { [key: string]: string } {
-    const token = this.getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
 }

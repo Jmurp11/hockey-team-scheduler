@@ -10,10 +10,11 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import Stripe from 'stripe';
 
 import { UserService } from './user.service';
+import { UserAccessService } from './user-access.service';
 
 // ============ DTOs ============
 
@@ -76,7 +77,10 @@ class CompleteRegistrationDto {
 @ApiTags('Users')
 @Controller('v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userAccessService: UserAccessService,
+  ) {}
 
   // ============ STRIPE WEBHOOK ============
 
@@ -711,6 +715,134 @@ export class UserController {
     } catch (error: any) {
       (res as any).status(500).json({
         message: 'Error retrieving session status',
+        error: error.message,
+      });
+    }
+  }
+
+  // ============ USER ACCESS (Unified Auth) ============
+
+  @Get('me/access')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get current user access info',
+    description: `
+      Returns comprehensive access information for the authenticated user.
+      Used for post-login routing and determining UI state.
+
+      User types:
+      - app_only: User has app access only (redirect to /app)
+      - api_only: User has developer portal access only (redirect to /developer)
+      - both: User has both app and developer access (redirect to /app, show developer in sidenav)
+      - none: User exists in auth but has no access (redirect to login or onboarding)
+
+      Requires a valid Supabase Auth JWT in the Authorization header.
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User access information',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        access: {
+          type: 'object',
+          properties: {
+            authUserId: { type: 'string', format: 'uuid' },
+            email: { type: 'string', format: 'email' },
+            isAppUser: { type: 'boolean' },
+            isApiUser: { type: 'boolean' },
+            userType: { type: 'string', enum: ['app_only', 'api_only', 'both', 'none'] },
+            defaultRedirect: { type: 'string' },
+            appUserId: { type: 'number', nullable: true },
+            apiUserId: { type: 'number', nullable: true },
+            isAppProfileComplete: { type: 'boolean', nullable: true },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or missing auth token' })
+  async getCurrentUserAccess(
+    @Headers('authorization') authHeader: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Extract token from Authorization header
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token) {
+        (res as any).status(401).json({
+          success: false,
+          message: 'Missing authorization token',
+        });
+        return;
+      }
+
+      // Validate token and get user ID
+      const authUserId = await this.userAccessService.validateSupabaseToken(token);
+
+      if (!authUserId) {
+        (res as any).status(401).json({
+          success: false,
+          message: 'Invalid or expired token',
+        });
+        return;
+      }
+
+      // Get user access info
+      const access = await this.userAccessService.getUserAccess(authUserId);
+
+      (res as any).status(200).json({
+        success: true,
+        access,
+      });
+    } catch (error: any) {
+      console.error('Error getting user access:', error);
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error retrieving user access',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('user-access/:authUserId')
+  @ApiOperation({
+    summary: 'Get user access info by auth user ID',
+    description: 'Returns access information for a specific user. Requires service role access.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User access information',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserAccessById(
+    @Param('authUserId') authUserId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const access = await this.userAccessService.getUserAccess(authUserId);
+
+      (res as any).status(200).json({
+        success: true,
+        access,
+      });
+    } catch (error: any) {
+      console.error('Error getting user access:', error);
+
+      if (error.message === 'User not found') {
+        (res as any).status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+        return;
+      }
+
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error retrieving user access',
         error: error.message,
       });
     }

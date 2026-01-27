@@ -6,7 +6,13 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { AssociationMember } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AssociationMember,
+  getMemberStatusSeverity,
+  getMemberRoleChangeMessage,
+  getMemberRemovalMessage,
+  mapToIonicColor,
+} from '@hockey-team-scheduler/shared-utilities';
 import {
   AlertController,
   IonBadge,
@@ -55,6 +61,7 @@ import { personRemove, shieldCheckmark } from 'ionicons/icons';
                 (ionChange)="onToggleAdmin(member, $event)"
                 labelPlacement="stacked"
                 class="admin-toggle"
+                color="secondary"
               >
                 Admin
               </ion-toggle>
@@ -126,29 +133,18 @@ export class MembersListComponent {
   }
 
   getStatusColor(status: string): string {
-    switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'PENDING':
-        return 'primary';
-      case 'INACTIVE':
-        return 'warning';
-      case 'REMOVED':
-        return 'danger';
-      default:
-        return 'medium';
-    }
+    return mapToIonicColor(getMemberStatusSeverity(status));
   }
 
   async onToggleAdmin(member: AssociationMember, event: any) {
     const toggle = event.target;
     const newRole = event.detail.checked ? 'ADMIN' : 'MANAGER';
-    const action = event.detail.checked ? 'promote' : 'demote';
-    const roleLabel = event.detail.checked ? 'an admin' : 'a regular member';
+    const isPromoting = event.detail.checked;
+    const { message } = getMemberRoleChangeMessage(member, isPromoting);
 
     const alert = await this.alertController.create({
       header: 'Confirm Role Change',
-      message: `Are you sure you want to ${action} ${member.user_name || member.user_email} to ${roleLabel}?`,
+      message,
       buttons: [
         {
           text: 'Cancel',
@@ -175,7 +171,7 @@ export class MembersListComponent {
   async onRemove(member: AssociationMember) {
     const alert = await this.alertController.create({
       header: 'Confirm Removal',
-      message: `Are you sure you want to remove ${member.user_name || member.user_email} from the association?`,
+      message: getMemberRemovalMessage(member),
       buttons: [
         {
           text: 'Cancel',

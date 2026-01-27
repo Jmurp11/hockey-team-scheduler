@@ -19,3 +19,8 @@ export * from './lib/shared-data-access/services/user.service';
 export * from './lib/shared-data-access/services/rinks.service';
 export * from './lib/shared-data-access/services/subscription.service';
 export * from './lib/shared-data-access/services/developer-portal.service';
+export * from './lib/shared-data-access/services/user-access.service';
+export * from './lib/shared-data-access/services/rinklink-gpt.service';
+export * from './lib/shared-data-access/services/health-check.service';
+export * from './lib/shared-data-access/services/agent-context.service';
+export * from './lib/shared-data-access/services/ai-email-panel-state.service';

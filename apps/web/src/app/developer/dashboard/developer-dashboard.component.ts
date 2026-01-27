@@ -9,7 +9,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { DeveloperPortalService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  DeveloperPortalService,
+  UserService,
+  UserAccessService,
+} from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
 import {
   ApiKeyDisplay,
@@ -35,7 +39,10 @@ import { SeoService } from '../../shared/services/seo.service';
  * - Usage statistics
  * - Subscription management (cancel)
  *
- * Protected by DeveloperAuthGuard - requires magic link authentication.
+ * Protected by developerGuard - uses unified Supabase Auth.
+ * Users can be:
+ * - API-only users (redirected here after login)
+ * - Both app and API users (access via sidenav "Developer" link)
  */
 @Component({
   selector: 'app-developer-dashboard',
@@ -60,6 +67,14 @@ import { SeoService } from '../../shared/services/seo.service';
           }
         </div>
         <div class="header-actions">
+          @if (showBackToApp()) {
+            <p-button
+              label="Back to App"
+              icon="pi pi-arrow-left"
+              variant="outlined"
+              (onClick)="navigateToApp()"
+            />
+          }
           <p-button
             label="View Docs"
             icon="pi pi-book"
@@ -476,6 +491,8 @@ import { SeoService } from '../../shared/services/seo.service';
 export class DeveloperDashboardComponent implements OnInit {
   protected loadingService = inject(LoadingService);
   private developerPortalService = inject(DeveloperPortalService);
+  private userService = inject(UserService);
+  private userAccessService = inject(UserAccessService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private router = inject(Router);
@@ -483,6 +500,9 @@ export class DeveloperDashboardComponent implements OnInit {
   private seoService = inject(SeoService);
 
   apiBaseUrl = environment.apiUrl;
+
+  // Computed: Show "Back to App" for users with both access
+  showBackToApp = this.userAccessService.hasBothAccess;
 
   loading = signal(true);
   rotatingKey = signal(false);
@@ -522,9 +542,8 @@ export class DeveloperDashboardComponent implements OnInit {
           console.error('Dashboard error:', err);
           this.loading.set(false);
           if (err.status === 401) {
-            // Session expired
-            this.developerPortalService.logout();
-            this.router.navigate(['/developer/login']);
+            // Session expired - use unified logout
+            this.logout();
           } else {
             this.messageService.add({
               severity: 'error',
@@ -629,9 +648,19 @@ export class DeveloperDashboardComponent implements OnInit {
       });
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    // Clear developer portal state
     this.developerPortalService.logout();
-    this.router.navigate(['/developer']);
+
+    // Full logout using unified auth
+    await this.userService.logout();
+
+    // Redirect to login
+    this.router.navigate(['/login']);
+  }
+
+  navigateToApp(): void {
+    this.router.navigate(['/app']);
   }
 
   navigateToDocs(): void {

@@ -177,7 +177,7 @@ import { sortTournamentsWithFeaturedFirst, UpcomingTournament } from '@hockey-te
         }
 
         .action-link {
-          color: var(--primary-600);
+          color: var(--secondary-600);
           text-decoration: none;
           font-weight: 500;
 
