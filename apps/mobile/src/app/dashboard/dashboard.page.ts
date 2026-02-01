@@ -44,6 +44,7 @@ import { GoalDifferentialCardComponent } from './components/goal-differential-ca
 import { StrengthOfScheduleCardComponent } from './components/strength-of-schedule-card/strength-of-schedule-card.component';
 import { UpcomingGamesCardComponent } from './components/upcoming-games-card/upcoming-games-card.component';
 import { UpcomingTournamentsCardComponent } from './components/upcoming-tournaments-card/upcoming-tournaments-card.component';
+import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/toolbar-actions.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -66,6 +67,7 @@ import { UpcomingTournamentsCardComponent } from './components/upcoming-tourname
     GameSlotsCardComponent,
     UpcomingGamesCardComponent,
     UpcomingTournamentsCardComponent,
+    ToolbarActionsComponent,
   ],
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],

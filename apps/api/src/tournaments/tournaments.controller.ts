@@ -19,7 +19,12 @@ import {
 } from '@nestjs/swagger';
 
 import { TournamentsService } from './tournaments.service';
-import { Tournament, TournamentProps } from '../types';
+import {
+  Tournament,
+  TournamentProps,
+  EvaluateTournamentFitRequestDto,
+  EvaluateTournamentFitResponseDto,
+} from '../types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import {
   CreateFeaturedCheckoutDto,
@@ -336,6 +341,53 @@ export class TournamentsController {
       }
       throw new HttpException(
         'Failed to fetch tournament',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Evaluates tournament fit for a team based on their rating, schedule, and location.
+   * Returns tournaments sorted by fit score with recommendations.
+   * The agent advises; the user decides.
+   */
+  @Post('evaluate-fit')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({
+    name: 'x-api-key',
+    description: 'API Key needed to access the endpoints',
+    required: true,
+  })
+  @ApiOperation({
+    summary: 'Evaluate tournament fit for a team',
+    description:
+      'Analyzes nearby tournaments and evaluates how well each fits the team\'s rating, schedule, and travel constraints. Returns tournaments with fit labels (Good Fit, Tight Schedule, Travel Heavy) and plain-English explanations.',
+  })
+  @ApiBody({ type: EvaluateTournamentFitRequestDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Tournament fit evaluations with recommendations',
+    type: EvaluateTournamentFitResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async evaluateTournamentFit(
+    @Body() dto: EvaluateTournamentFitRequestDto,
+  ): Promise<EvaluateTournamentFitResponseDto> {
+    if (!dto.teamId || !dto.userId || !dto.associationId) {
+      throw new HttpException(
+        'teamId, userId, and associationId are required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      return await this.tournamentsService.evaluateTournamentFit(dto);
+    } catch (error) {
+      console.error('Error evaluating tournament fit:', error);
+      throw new HttpException(
+        error.message || 'Failed to evaluate tournament fit',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

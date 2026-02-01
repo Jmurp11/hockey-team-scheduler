@@ -72,7 +72,7 @@ import { ToastService } from '../shared/toast/toast.service';
           <ion-toolbar>
             @if (aiPanelOpen()) {
               <ion-buttons slot="start">
-                <ion-button (click)="closeAiPanel()">
+                <ion-button color="secondary" (click)="closeAiPanel()">
                   <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
                 </ion-button>
               </ion-buttons>
@@ -81,7 +81,7 @@ import { ToastService } from '../shared/toast/toast.service';
               <ion-title>Manager Details</ion-title>
             }
             <ion-buttons slot="end">
-              <ion-button (click)="cancel()">Close</ion-button>
+              <ion-button color="secondary" (click)="cancel()">Close</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -101,6 +101,7 @@ import { ToastService } from '../shared/toast/toast.service';
                       [expand]="'block'"
                       [color]="'primary'"
                       [fill]="'outline'"
+                      [disabled]="!manager?.email"
                       (onClick)="openAiPanel()"
                     >
                       <i class="bi bi-robot" style="margin-right: 8px;"></i>
@@ -113,6 +114,7 @@ import { ToastService } from '../shared/toast/toast.service';
                 <app-ai-email-panel
                   [contact]="getContactFromManager()"
                   [userId]="userId()!"
+                  [sourceTeamName]="userTeamName() ?? undefined"
                   (emailSent)="onEmailSent()"
                   (openFullChat)="onOpenFullChat($event)"
                   (cancel)="closeAiPanel()"
@@ -174,6 +176,7 @@ export class ContactSchedulerComponent implements OnInit {
 
   // State
   userId = signal<string | null>(null);
+  userTeamName = signal<string | null>(null);
   aiPanelOpen = signal(false);
 
   constructor() {
@@ -265,6 +268,9 @@ export class ContactSchedulerComponent implements OnInit {
         filter((user): user is UserProfile => !!user?.user_id),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((user) => this.userId.set(user.user_id));
+      .subscribe((user) => {
+        this.userId.set(user.user_id);
+        this.userTeamName.set(user.team_name || null);
+      });
   }
 }

@@ -9,7 +9,10 @@ import {
 import {
   formatTournamentLocation,
   Tournament,
+  TournamentFitEvaluation,
+  TournamentWithFit,
 } from '@hockey-team-scheduler/shared-utilities';
+import { TournamentFitBadgeComponent } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 
@@ -23,7 +26,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-tournament-public-card',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TagModule],
+  imports: [CommonModule, ButtonModule, TagModule, TournamentFitBadgeComponent],
   template: `
     <div
       class="tournament-card"
@@ -48,13 +51,22 @@ import { TagModule } from 'primeng/tag';
       <div class="card-header">
         <div class="header-row">
           <h3 class="tournament-name">{{ tournament.name }}</h3>
-          <!-- Distance indicator for authenticated users -->
-          @if (showAuthenticatedFeatures && tournament.distance !== undefined) {
-            <div class="distance-badge">
-              <i class="pi pi-compass"></i>
-              <span>{{ formatDistance(tournament.distance) }}</span>
-            </div>
-          }
+          <div class="header-badges">
+            <!-- Fit badge for authenticated users with fit data -->
+            @if (showAuthenticatedFeatures && tournamentFit) {
+              <app-tournament-fit-badge
+                [fit]="tournamentFit"
+                [showTooltip]="true"
+              />
+            }
+            <!-- Distance indicator for authenticated users -->
+            @if (showAuthenticatedFeatures && tournament.distance !== undefined) {
+              <div class="distance-badge">
+                <i class="pi pi-compass"></i>
+                <span>{{ formatDistance(tournament.distance) }}</span>
+              </div>
+            }
+          </div>
         </div>
         <div class="tournament-meta">
           <div class="meta-item">
@@ -73,6 +85,14 @@ import { TagModule } from 'primeng/tag';
 
       <!-- Card Content -->
       <div class="card-content">
+        <!-- Fit explanation for authenticated users -->
+        @if (showAuthenticatedFeatures && tournamentFit) {
+          <p class="fit-explanation">
+            <i class="pi pi-info-circle"></i>
+            {{ tournamentFit.explanation }}
+          </p>
+        }
+
         @if (tournament.description) {
           <p class="description" [class.expanded]="isExpanded">
             {{ tournament.description }}
@@ -118,7 +138,7 @@ import { TagModule } from 'primeng/tag';
             label="Register"
             icon="pi pi-trophy"
             iconPos="right"
-            [outlined]="!tournament.featured"
+            
             (click)="onRegister($event)"
           />
         } @else {
@@ -148,13 +168,21 @@ import { TagModule } from 'primeng/tag';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TournamentPublicCardComponent {
-  @Input({ required: true }) tournament!: Tournament;
+  @Input({ required: true }) tournament!: TournamentWithFit;
 
   /**
-   * When true, shows authenticated-only features like distance and "Add to Schedule" button.
+   * When true, shows authenticated-only features like distance, fit badges, and "Add to Schedule" button.
    * Used when the card is rendered in /app/tournaments for logged-in users.
    */
   @Input() showAuthenticatedFeatures = false;
+
+  /**
+   * Gets the tournament fit evaluation if available.
+   * The fit data may come from the TournamentWithFit interface.
+   */
+  get tournamentFit(): TournamentFitEvaluation | undefined {
+    return (this.tournament as TournamentWithFit).fit;
+  }
 
   @Output() registerClick = new EventEmitter<Tournament>();
   @Output() contactClick = new EventEmitter<Tournament>();

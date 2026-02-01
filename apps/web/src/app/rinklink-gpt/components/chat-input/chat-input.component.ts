@@ -30,15 +30,15 @@ import { handleChatInputEnterKey } from '@hockey-team-scheduler/shared-utilities
           (keydown.enter)="onEnterKey($event)"
           [disabled]="disabled()"
         ></textarea>
-        <button
-          pButton
+        <p-button
           icon="pi pi-send"
-          class="p-button-rounded chat-input__send-button"
+          [rounded]="true"
+          styleClass="chat-input__send-button"
           (click)="send.emit()"
           [disabled]="!canSend()"
           pTooltip="Send message"
           tooltipPosition="top"
-        ></button>
+        />
       </div>
       <p class="chat-input__disclaimer">
         RinkLinkGPT uses AI to help with scheduling. Always verify important details.

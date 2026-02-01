@@ -60,6 +60,7 @@ import { AddGameModalService } from '../schedule/add-game/add-game-modal.service
 import { AddGameLazyWrapperComponent } from '../schedule/add-game/add-game-lazy-wrapper.component';
 import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
 import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/contact-scheduler-lazy-wrapper.component';
+import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/toolbar-actions.component';
 
 @Component({
   selector: 'app-opponents',
@@ -81,6 +82,7 @@ import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/conta
     IonSelectOption,
     AddGameLazyWrapperComponent,
     ContactSchedulerLazyWrapperComponent,
+    ToolbarActionsComponent,
   ],
   template: `
     <ion-header>
@@ -93,6 +95,9 @@ import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/conta
           }
         </ion-buttons>
         <ion-title>Find Opponents</ion-title>
+        <ion-buttons slot="end">
+          <app-toolbar-actions />
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 

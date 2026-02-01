@@ -111,6 +111,8 @@ export class AiEmailPanelComponent implements OnInit {
   userId = input.required<string>();
   /** Workflow to use - defaults to 'email-manager' for contact card invocation */
   workflow = input<AgentWorkflow>('email-manager');
+  /** The user's own team name, used as the "from" in display messages */
+  sourceTeamName = input<string>();
 
   // Outputs
   emailSent = output<void>();
@@ -135,6 +137,7 @@ export class AiEmailPanelComponent implements OnInit {
       contact: this.contact(),
       relatedEntity: this.relatedEntity(),
       workflow: this.workflow(),
+      sourceTeamName: this.sourceTeamName(),
     });
   }
 

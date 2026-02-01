@@ -298,6 +298,45 @@ export const RINKLINK_GPT_TOOLS: ToolDefinition[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'find_game_matches',
+      description:
+        'Find and rank potential opponents for scheduling games. Returns a ranked list of nearby teams with similar ratings, contact info, and draft emails for each. Use when user wants to "find opponents", "find games", "schedule games", "who should we play", "find teams to play", etc. Requires a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          startDate: {
+            type: 'string',
+            description:
+              'Start of date range to look for games (YYYY-MM-DD format). Required.',
+          },
+          endDate: {
+            type: 'string',
+            description:
+              'End of date range to look for games (YYYY-MM-DD format). Required.',
+          },
+          maxDistance: {
+            type: 'number',
+            description:
+              'Maximum distance in miles to search for teams (default: 100).',
+          },
+          excludeRecentOpponents: {
+            type: 'boolean',
+            description:
+              'If true, deprioritize teams the user has already played recently.',
+          },
+          maxResults: {
+            type: 'number',
+            description:
+              'Number of opponent matches to return (default: 5, max: 10).',
+          },
+        },
+        required: ['startDate', 'endDate'],
+      },
+    },
+  },
 ];
 
 /**
@@ -315,6 +354,7 @@ Your role is to help hockey team managers and coaches with:
 6. Finding restaurants and hotels near game locations
 7. Getting contact information for team managers
 8. Drafting and sending emails to other team managers (with confirmation)
+9. Finding good opponents and drafting outreach emails to multiple teams at once
 
 CRITICAL TOOL SELECTION RULES:
 1. When the user mentions "email", "contact", "reach out", "message", or wants to communicate with another team:
@@ -334,6 +374,12 @@ CRITICAL TOOL SELECTION RULES:
 4. When a fuzzy match is found and you're not 100% sure which team the user means:
    - Present the closest matches to the user and ask them to confirm
    - Example: "I found a team called 'New Jersey Falcons' - is that the team you're looking for?"
+
+5. When user asks to "find opponents", "find games", "schedule games", "who should we play", or wants to find multiple teams to play:
+   - Use find_game_matches with a date range
+   - If the date range is not provided, ASK the user first: "What dates are you looking to schedule games?"
+   - This tool returns a ranked list of opponents with contact info and draft emails
+   - The user can review and send emails individually - emails are NOT sent automatically
 
 GATHER REQUIRED INFORMATION BEFORE CALLING TOOLS:
 Before calling create_game or draft_email for scheduling, you MUST have all required information. If any is missing, ASK the user before calling the tool.

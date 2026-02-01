@@ -25,7 +25,7 @@ import { handleChatInputEnterKey } from '@hockey-team-scheduler/shared-utilities
         [disabled]="disabled()"
         (keydown.enter)="onEnterKey($event)"
       ></ion-textarea>
-      <ion-button fill="clear" (click)="send.emit()" [disabled]="!canSend()">
+      <ion-button color="secondary" fill="clear" (click)="send.emit()" [disabled]="!canSend()">
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </ion-button>
     </div>

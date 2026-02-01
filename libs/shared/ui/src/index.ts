@@ -8,3 +8,8 @@ export * from './lib/shared-ui/pipes/message-format.pipe';
 export * from './lib/shared-ui/components/ai-email-panel/ai-email-panel.component';
 export * from './lib/shared-ui/components/ai-email-panel/components';
 export * from './lib/shared-ui/components/email-draft-form';
+export * from './lib/shared-ui/components/tournament-fit-badge';
+export * from './lib/shared-ui/components/schedule-risk-badge';
+export * from './lib/shared-ui/components/opponent-match-card';
+export * from './lib/shared-ui/components/game-match-list';
+export * from './lib/shared-ui/components/schedule-risk-notification';

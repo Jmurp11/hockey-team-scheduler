@@ -15,6 +15,7 @@ import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { RinkModule } from './rinks/rink.module';
 import { EmailModule } from './email/email.module';
+import { GameMatchingModule } from './game-matching/game-matching.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { EmailModule } from './email/email.module';
     DashboardModule,
     DeveloperPortalModule,
     EmailModule,
+    GameMatchingModule,
     GamesModule,
     LeaguesModule,
     OpenAiModule,

@@ -68,6 +68,7 @@ import { ButtonModule } from 'primeng/button';
                 <p-button
                   label="Use AI to Send Email"
                   icon="bi bi-robot"
+                  [disabled]="!manager.email"
                   (click)="openAiPanel()"
                 />
               </div>
@@ -78,6 +79,7 @@ import { ButtonModule } from 'primeng/button';
               <lib-ai-email-panel
                 [contact]="getContactFromManager()"
                 [userId]="userId()!"
+                [sourceTeamName]="userTeamName() ?? undefined"
                 (emailSent)="onEmailSent()"
                 (openFullChat)="onOpenFullChat($event)"
                 (cancel)="closeAiPanel()"
@@ -163,6 +165,7 @@ export class ContactSchedulerComponent implements OnInit {
 
   // State
   userId = signal<string | null>(null);
+  userTeamName = signal<string | null>(null);
   aiPanelOpen = signal(false);
 
   ngOnInit(): void {
@@ -249,6 +252,9 @@ export class ContactSchedulerComponent implements OnInit {
         filter((user): user is UserProfile => !!user?.user_id),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((user) => this.userId.set(user.user_id));
+      .subscribe((user) => {
+        this.userId.set(user.user_id);
+        this.userTeamName.set(user.team_name || null);
+      });
   }
 }

@@ -60,7 +60,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
           <ion-toolbar>
             <ion-title>Invite New Member</ion-title>
             <ion-buttons slot="end">
-              <ion-button (click)="cancel()">Close</ion-button>
+              <ion-button color="secondary" (click)="cancel()">Close</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -92,7 +92,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
             <div class="button-group">
               <ion-button
                 expand="block"
-                color="medium"
+                color="secondary"
                 fill="outline"
                 (click)="cancel()"
               >
@@ -100,6 +100,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
               </ion-button>
               <ion-button
                 expand="block"
+                color="secondary"
                 [disabled]="inviteForm.invalid || sending()"
                 (click)="submit()"
               >

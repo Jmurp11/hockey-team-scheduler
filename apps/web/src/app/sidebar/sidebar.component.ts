@@ -115,6 +115,11 @@ export class SidebarComponent {
       requiredCapability: UserCapability.DEVELOPER_ACCESS,
     },
     {
+      label: 'Bug Report',
+      icon: 'pi pi-fw pi-flag',
+      routerLink: '/app/bug-report',
+    },
+    {
       label: 'Logout',
       icon: 'pi pi-fw pi-sign-out',
       action: () => this.logout(),

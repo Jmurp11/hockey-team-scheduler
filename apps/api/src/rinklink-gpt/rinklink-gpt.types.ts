@@ -24,10 +24,10 @@ export class ChatMessage {
 export class PendingAction {
   @ApiProperty({
     description: 'Type of action to be performed',
-    enum: ['create_game', 'add_tournament_to_schedule', 'send_email'],
+    enum: ['create_game', 'add_tournament_to_schedule', 'send_email', 'game_match_results'],
     example: 'create_game',
   })
-  type: 'create_game' | 'add_tournament_to_schedule' | 'send_email';
+  type: 'create_game' | 'add_tournament_to_schedule' | 'send_email' | 'game_match_results';
 
   @ApiProperty({
     description: 'Human-readable description of the action',

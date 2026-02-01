@@ -105,7 +105,7 @@ import {
 
       <div class="email-draft-form__actions">
         <ion-button
-          color="success"
+          color="secondary"
           [size]="compact() ? 'small' : 'default'"
           (click)="onConfirm()"
           [disabled]="disabled()"
@@ -114,7 +114,7 @@ import {
           Send Email
         </ion-button>
         <ion-button
-          color="medium"
+          color="secondary"
           fill="outline"
           [size]="compact() ? 'small' : 'default'"
           (click)="decline.emit()"

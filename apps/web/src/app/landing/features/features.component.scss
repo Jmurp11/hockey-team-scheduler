@@ -1,64 +1,97 @@
 @use 'mixins/mixins' as *;
 
-h2 {
-  color: var(--primary-500);
-}
+.features {
+  text-align: center;
+  padding: 3rem 0;
 
-p {
-  text-align: left;
-}
+  h2 {
+    font-size: 2rem;
+    color: var(--primary-500);
+    margin-bottom: 2.5rem;
+  }
 
-.features-container {
-  @include flex(center, center, column);
-  width: 100%;
-
-  &__cards {
+  &__list {
     @include flex(center, center, column);
-    flex-wrap: wrap;
-    gap: 2rem;
+    gap: 4rem;
+  }
+}
 
-    @media (max-width: 1024px) {
-      gap: 0.5rem;
+.feature-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  text-align: left;
+
+  &--reversed {
+    direction: rtl;
+
+    > * {
+      direction: ltr;
     }
   }
 
-  &__card {
-    font-size: 14px;
-    width: 100%;
-    height: 680px;
-    max-height: 680px;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
+  &__heading {
+    @include flex(flex-start, center, row);
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 
-    ::ng-deep .p-card-body {
-      max-height: 680px !important;
+    i {
+      font-size: 1.5rem;
+      color: var(--secondary-500);
     }
-    @media (max-width: 1024px) {
-      width: 100%;
-      height: 390px;
-      max-height: 390px !important;
-      margin-bottom: 0.5rem;
-      ::ng-deep .p-card-body {
-        max-height: 390px !important;
+
+    h3 {
+      font-size: 1.25rem;
+      margin: 0;
+      color: var(--primary-500)
+    }
+  }
+
+  &__text {
+    p {
+      color: var(--p-text-muted-color);
+      line-height: 1.6;
+      margin: 0 0 1rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        position: relative;
+        padding-left: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--p-text-color);
+        font-size: 0.95rem;
+
+        &::before {
+          content: '\2713';
+          position: absolute;
+          left: 0;
+          color: var(--primary-500);
+          font-weight: 700;
+        }
       }
     }
   }
 
-  &__card-image {
-    width: 100%;
-    background-repeat: no;
-    background-position: center;
-    background-size: cover;
-    padding-bottom: 0.5rem;
+  &__image {
+    img {
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
   }
-}
 
-.title_row {
-  @include flex(space-between, center, row);
-  font-size: 1.25rem;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
 
-  @media (max-width: 1024px) {
-    font-size: 0.975rem;
+    &--reversed {
+      direction: ltr;
+    }
   }
 }

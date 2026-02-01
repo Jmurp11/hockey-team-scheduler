@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { NearbyTeamsParams, setSelect } from '@hockey-team-scheduler/shared-utilities';
+import { GameMatchResults, NearbyTeamsParams, setSelect } from '@hockey-team-scheduler/shared-utilities';
 import { SelectItem } from 'primeng/api';
 import { map, Observable } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
@@ -8,6 +8,15 @@ import { APP_CONFIG } from '../config/app-config';
 export interface TeamsParams {
   association?: number;
   age?: string;
+}
+
+export interface FindMatchesRequest {
+  userId: string;
+  startDate: string;
+  endDate: string;
+  maxDistance?: number;
+  excludeRecentOpponents?: boolean;
+  maxResults?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +55,13 @@ export class TeamsService {
       map((teams) =>
         (teams as any[]).map((team) => setSelect(team.name, team.id))
       )
+    );
+  }
+
+  findMatches(request: FindMatchesRequest): Observable<GameMatchResults> {
+    return this.http.post<GameMatchResults>(
+      `${this.config.apiUrl}/teams/find-matches`,
+      request,
     );
   }
 }

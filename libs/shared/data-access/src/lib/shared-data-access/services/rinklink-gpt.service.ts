@@ -15,7 +15,7 @@ export interface ChatMessage {
  * Pending action that requires user confirmation before execution.
  */
 export interface PendingAction {
-  type: 'create_game' | 'add_tournament_to_schedule' | 'send_email';
+  type: 'create_game' | 'add_tournament_to_schedule' | 'send_email' | 'game_match_results';
   description: string;
   data: Record<string, unknown>;
 }
