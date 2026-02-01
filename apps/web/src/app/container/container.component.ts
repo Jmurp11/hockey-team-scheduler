@@ -1,16 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, ViewContainerRef } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '@hockey-team-scheduler/shared-data-access';
-import { LoadingService, NavigationService } from '@hockey-team-scheduler/shared-ui';
+import { AuthService, ScheduleRiskService, ScheduleService } from '@hockey-team-scheduler/shared-data-access';
+import { LoadingService, NavigationService, ScheduleRiskNotificationComponent } from '@hockey-team-scheduler/shared-ui';
+import { switchMap, of } from 'rxjs';
 import { BlockUIModule } from 'primeng/blockui';
+import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { FooterComponent } from '../shared/components/footer/footer.component';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { SidebarService } from '../sidebar/sidebar.service';
+import { GameMatchingDialogService } from '../game-matching/game-matching-dialog.service';
 
 @Component({
   selector: 'app-container',
@@ -22,9 +27,12 @@ import { SidebarService } from '../sidebar/sidebar.service';
     BlockUIModule,
     ProgressSpinnerModule,
     RippleModule,
+    ButtonModule,
+    TooltipModule,
     SidebarComponent,
     HeaderComponent,
     FooterComponent,
+    ScheduleRiskNotificationComponent,
   ],
   providers: [],
   template: ` <div class="container">
@@ -58,12 +66,26 @@ import { SidebarService } from '../sidebar/sidebar.service';
             }
           </ng-template>
           <ng-template #end>
-            <div class="header__name">
-              {{
-                authService.currentUser()?.display_name ||
-                  authService.session()?.user?.email ||
-                  'User' | uppercase
-              }}
+            <div class="header__end-content">
+              @if (authService.currentUser()?.team_id) {
+                <p-button
+                  icon="bi bi-robot"
+                  [text]="true"
+                  [rounded]="true"
+                  class="header__icon-btn"
+                  (click)="gameMatchingDialogService.openDialog()"
+                  pTooltip="Find Opponents"
+                  tooltipPosition="bottom"
+                />
+              }
+              <app-schedule-risk-notification />
+              <div class="header__name">
+                {{
+                  authService.currentUser()?.display_name ||
+                    authService.session()?.user?.email ||
+                    'User' | uppercase
+                }}
+              </div>
             </div>
           </ng-template>
         </app-header>
@@ -93,6 +115,19 @@ export class ContainerComponent implements OnInit {
   authService = inject(AuthService);
   navigation = inject(NavigationService);
   sidebarService = inject(SidebarService);
+  gameMatchingDialogService = inject(GameMatchingDialogService);
+  private viewContainerRef = inject(ViewContainerRef);
+  private scheduleService = inject(ScheduleService);
+  private scheduleRiskService = inject(ScheduleRiskService);
+  private destroyRef = inject(DestroyRef);
+
+  private riskEvaluation$ = toObservable(this.authService.currentUser).pipe(
+    switchMap((user) => {
+      if (!user?.user_id) return of([]);
+      return this.scheduleService.gamesFull(user.user_id);
+    }),
+    takeUntilDestroyed(this.destroyRef),
+  );
 
   isMobile = false;
   hideTitle = false;
@@ -104,6 +139,10 @@ export class ContainerComponent implements OnInit {
 
   ngOnInit() {
     this.checkScreenSize();
+    this.gameMatchingDialogService.setViewContainerRef(this.viewContainerRef);
+    this.riskEvaluation$.subscribe((games) => {
+      this.scheduleRiskService.evaluate(games);
+    });
   }
 
   private checkScreenSize() {

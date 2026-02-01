@@ -14,6 +14,7 @@ import { openOutline } from 'ionicons/icons';
   template: `
     <div class="ai-panel-footer">
       <ion-button
+        color="secondary"
         fill="clear"
         size="small"
         (click)="openFullChat.emit()"

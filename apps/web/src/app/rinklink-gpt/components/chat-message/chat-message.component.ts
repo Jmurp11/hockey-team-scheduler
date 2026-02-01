@@ -7,12 +7,17 @@ import {
 } from '@angular/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
-import { MessageFormatPipe } from '@hockey-team-scheduler/shared-ui';
+import {
+  MessageFormatPipe,
+  GameMatchListComponent,
+} from '@hockey-team-scheduler/shared-ui';
 import { PendingAction } from '@hockey-team-scheduler/shared-data-access';
 import {
   DisplayMessage,
+  GameMatchResults,
   shouldShowEmailPreview,
   shouldShowStandardConfirmation,
+  shouldShowGameMatchResults,
 } from '@hockey-team-scheduler/shared-utilities';
 import { EmailPreviewComponent } from '../email-preview/email-preview.component';
 
@@ -25,6 +30,7 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
     ButtonModule,
     MessageFormatPipe,
     EmailPreviewComponent,
+    GameMatchListComponent,
   ],
   template: `
     <div
@@ -63,6 +69,15 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
             [disabled]="disabled()"
             (confirm)="confirm.emit($event)"
             (decline)="decline.emit()"
+          />
+        }
+
+        <!-- Game Match Results for find_game_matches actions -->
+        @if (showGameMatchResults()) {
+          <lib-game-match-list
+            [results]="getGameMatchResults()"
+            [disabled]="disabled()"
+            (sendEmail)="confirm.emit($event)"
           />
         }
 
@@ -206,5 +221,13 @@ export class ChatMessageComponent {
 
   showStandardConfirmation(): boolean {
     return shouldShowStandardConfirmation(this.message());
+  }
+
+  showGameMatchResults(): boolean {
+    return shouldShowGameMatchResults(this.message());
+  }
+
+  getGameMatchResults(): GameMatchResults {
+    return this.message().pendingAction!.data as unknown as GameMatchResults;
   }
 }

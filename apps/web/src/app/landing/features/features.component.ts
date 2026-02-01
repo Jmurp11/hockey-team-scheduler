@@ -1,88 +1,118 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CardComponent } from '../../shared/components/card/card.component';
+
+interface Feature {
+  icon: string;
+  iconLabel: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  image: string;
+  alt: string;
+}
 
 @Component({
   selector: 'app-features',
   standalone: true,
-  imports: [CommonModule, CardComponent],
+  imports: [CommonModule],
   template: `
-    <article class="features-container">
-      <h2>Key Features</h2>
-      <div class="features-container__cards">
-        @for (card of cards; track card.title) {
-          <app-card class="features-container__card">
-            <ng-template #title>
-              <div class="title_row">
-                <i [class]="card.icon" style="color: var(--primary-500)" [attr.aria-label]="card.iconLabel"></i>
-                <h3>{{ card.title }}</h3>
-                <span></span></div
-            ></ng-template>
-            <ng-template #content>
-              <p>{{ card.description }}</p>
+    <article class="features">
+      <h2>AI-Powered Scheduling Tools</h2>
+      <div class="features__list">
+        @for (feature of features; track feature.title; let odd = $odd) {
+          <div
+            class="feature-detail"
+            [class.feature-detail--reversed]="odd"
+          >
+            <div class="feature-detail__text">
+              <div class="feature-detail__heading">
+                <i
+                  [class]="feature.icon"
+                  [attr.aria-label]="feature.iconLabel"
+                ></i>
+                <h3>{{ feature.title }}</h3>
+              </div>
+              <p>{{ feature.description }}</p>
+              <ul>
+                @for (bullet of feature.bullets; track bullet) {
+                  <li>{{ bullet }}</li>
+                }
+              </ul>
+            </div>
+            <div class="feature-detail__image">
               <img
-                class="features-container__card-image"
-                [src]="card.image"
-                [alt]="card.alt"
+                [src]="feature.image"
+                [alt]="feature.alt"
                 loading="lazy"
-                width="800"
+                width="1000"
                 height="600"
               />
-            </ng-template>
-          </app-card>
+            </div>
+          </div>
         }
       </div>
     </article>
   `,
-  styleUrls: [`./features.component.scss`],
+  styleUrls: ['./features.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeaturesComponent {
-  cards: {
-    title: string;
-    description: string;
-    icon: string;
-    iconLabel: string;
-    image: string;
-    alt: string;
-  }[] = [];
-  constructor() {
-    this.cards = [
-      {
-        icon: 'pi pi-fw pi-microchip-ai',
-        iconLabel: 'AI icon',
-        title: 'RinkLinkGPT - Your AI Scheduling Assistant',
-        description:
-          'RinkLinkGPT is an AI agent that schedules games with your direction, contacts opponents and sends emails, discovers nearby restaurants, and finds teams and tournaments, then adds confirmed games to your calendar.',
-        image: 'rinklink-gpt.png',
-        alt: 'Screenshot of AI-powered game editing interface for automated hockey game scheduling',
-      },
-      {
-        icon: 'pi pi-fw pi-map-marker',
-        iconLabel: 'Location icon',
-        title: 'Smart Opponent Matching',
-        description:
-          'Instantly discover teams at your skill level, nearby or on the road. Effortlessly fill your schedule with the right matchups, wherever you play.',
-        image: 'find-nearby-teams.gif',
-        alt: 'Interactive map showing nearby hockey teams filtered by skill level and distance for easy opponent matching',
-      },
-      {
-        icon: 'pi pi-fw pi-trophy',
-        iconLabel: 'Trophy icon',
-        title: 'One-Click Tournament Scheduling',
-        description:
-          `Browse and add tournaments that fit your team's calendar and skill level in seconds. No more searching—just seamless scheduling.`,
-        image: 'tournaments.gif',
-        alt: 'Tournament directory with filtering options and one-click registration for youth hockey tournaments',
-      },
-      {
-        icon: 'pi pi-fw pi-upload',
-        iconLabel: 'Upload icon',
-        title: 'Bulk Ice Slot Import',
-        description: `Easily import multiple ice time slots in bulk, saving you time and effort.  Export schedule in the format of Youth Sports Management Platforms like Crossbar and SportsEngine.`,
-        image: 'bulk-upload.gif',
-        alt: 'Bulk ice time slot import interface showing CSV upload and schedule export capabilities',
-      },
-    ];
-  }
+  features: Feature[] = [
+    {
+      icon: 'pi pi-map-marker',
+      iconLabel: 'Location icon',
+      title: 'Game Matching',
+      description:
+        'Find opponents at your level, nearby or on the road. RinkLink surfaces the best matchups based on skill, distance, and schedule availability.',
+      bullets: [
+        'Filter by skill level, distance, and open dates',
+        'View opponents on an interactive map',
+        'Request games directly from search results',
+      ],
+      image: 'find-nearby-teams.gif',
+      alt: 'Interactive map showing nearby hockey teams filtered by skill level and distance',
+    },
+    {
+      icon: 'pi pi-exclamation-triangle',
+      iconLabel: 'Risk icon',
+      title: 'Scheduling Risk Monitor',
+      description:
+        'Stay ahead of scheduling gaps and conflicts before they become problems. The risk monitor continuously analyzes your season calendar.',
+      bullets: [
+        'Flags open weekends with no scheduled games',
+        'Detects back-to-back games and travel conflicts',
+        'Suggests actions to resolve each risk',
+      ],
+      image: 'schedule-risk-monitor.png',
+      alt: 'Dashboard showing scheduling risk alerts for a youth hockey season',
+    },
+    {
+      icon: 'pi pi-trophy',
+      iconLabel: 'Trophy icon',
+      title: 'Tournament Fit Evaluator',
+      description:
+        'Not every tournament is the right fit. RinkLink scores each tournament based on your schedule, location, and division preferences.',
+      bullets: [
+        'Automatic fit score for every listed tournament',
+        'Highlights date conflicts and travel distance',
+        'One-click add to your season calendar',
+      ],
+      image: 'tournaments.gif',
+      alt: 'Tournament listing with fit scores and one-click scheduling',
+    },
+    {
+      icon: 'pi pi-microchip-ai',
+      iconLabel: 'AI icon',
+      title: 'RinkLinkGPT',
+      description:
+        'Your AI scheduling assistant handles the tedious parts. Tell it what you need in plain English and it takes care of the rest.',
+      bullets: [
+        'Drafts and sends outreach emails to opponents',
+        'Negotiates game times on your behalf',
+        'Adds confirmed games to your calendar automatically',
+      ],
+      image: 'rinklink-gpt.png',
+      alt: 'AI chat interface for automated hockey game scheduling',
+    },
+  ];
 }

@@ -47,6 +47,7 @@ import {
   ChatInputComponent,
 } from './components';
 import { DisplayMessage } from './rinklink-gpt.types';
+import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/toolbar-actions.component';
 
 @Component({
   selector: 'app-rinklink-gpt',
@@ -64,13 +65,14 @@ import { DisplayMessage } from './rinklink-gpt.types';
     ChatMessageComponent,
     ChatTypingIndicatorComponent,
     ChatInputComponent,
+    ToolbarActionsComponent,
   ],
   template: `
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
           @if (returnRoute()) {
-            <ion-button (click)="navigateBack()">
+            <ion-button color="secondary" (click)="navigateBack()">
               <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
             </ion-button>
           } @else {
@@ -78,6 +80,9 @@ import { DisplayMessage } from './rinklink-gpt.types';
           }
         </ion-buttons>
         <ion-title>RinkLinkGPT</ion-title>
+        <ion-buttons slot="end">
+          <app-toolbar-actions />
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 

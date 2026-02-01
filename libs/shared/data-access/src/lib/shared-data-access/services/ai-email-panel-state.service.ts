@@ -41,6 +41,8 @@ export interface AiEmailPanelConfig {
   contact: AgentInvocationContext['contact'];
   relatedEntity?: AgentInvocationContext['relatedEntity'];
   workflow?: AgentWorkflow;
+  /** The user's own team name, used as the "from" in display messages */
+  sourceTeamName?: string;
 }
 
 /**
@@ -59,6 +61,7 @@ export class AiEmailPanelStateService {
   private contact: AgentInvocationContext['contact'] | null = null;
   private relatedEntity?: AgentInvocationContext['relatedEntity'];
   private workflow: AgentWorkflow = 'email-manager';
+  private sourceTeamName?: string;
 
   // Reactive state
   readonly messages = signal<DisplayMessage[]>([]);
@@ -117,6 +120,7 @@ export class AiEmailPanelStateService {
     this.contact = config.contact;
     this.relatedEntity = config.relatedEntity;
     this.workflow = config.workflow ?? 'email-manager';
+    this.sourceTeamName = config.sourceTeamName;
   }
 
   /**
@@ -168,7 +172,7 @@ export class AiEmailPanelStateService {
         contact: this.contact,
         suggestedIntent: intent,
       };
-      const message = buildEmailWorkflowPrompt(intent, context);
+      const message = buildEmailWorkflowPrompt(intent, context, this.sourceTeamName);
       return this.sendMessageToAi(message, intent);
     } else {
       // Default behavior for other workflows
@@ -392,14 +396,13 @@ export class AiEmailPanelStateService {
 
     // For intent selection with email-manager workflow, show a cleaner message
     if (intent && this.workflow === 'email-manager') {
-      const target = this.contact.team
-        ? `${this.contact.name} from ${this.contact.team}`
-        : this.contact.name;
+      const target = this.contact.team || this.contact.name;
+      const fromClause = this.sourceTeamName ? ` from ${this.sourceTeamName}` : '';
       const displayMessages: Record<EmailIntent, string> = {
-        schedule: `Draft an email to ${target} to schedule a game.`,
-        reschedule: `Draft an email to ${target} to reschedule a game.`,
-        cancel: `Draft an email to ${target} to cancel a game.`,
-        general: `Draft an email to ${target}.`,
+        schedule: `Draft an email to ${target}${fromClause} to schedule a game.`,
+        reschedule: `Draft an email to ${target}${fromClause} to reschedule a game.`,
+        cancel: `Draft an email to ${target}${fromClause} to cancel a game.`,
+        general: `Draft an email to ${target}${fromClause}.`,
       };
       return displayMessages[intent];
     }

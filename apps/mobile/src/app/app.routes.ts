@@ -73,6 +73,13 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'bug-report',
+        loadComponent: () =>
+          import('./bug-report/bug-report.page').then(
+            (m) => m.BugReportPage,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

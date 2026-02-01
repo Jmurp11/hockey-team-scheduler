@@ -194,10 +194,15 @@ export function buildIntentMessage(
 /**
  * Build the full contextual message for the first AI request.
  * This combines workflow instructions, contact context, and user intent.
+ *
+ * @param intent - The email intent (schedule, reschedule, cancel, general)
+ * @param context - The agent invocation context with recipient info
+ * @param sourceTeamName - Optional name of the user's own team (the sender)
  */
 export function buildEmailWorkflowPrompt(
   intent: EmailIntent,
-  context: AgentInvocationContext
+  context: AgentInvocationContext,
+  sourceTeamName?: string
 ): string {
   const { contact } = context;
   const target = contact.team ? `${contact.name} from ${contact.team}` : contact.name;
@@ -215,6 +220,10 @@ export function buildEmailWorkflowPrompt(
 
   if (contact.association) {
     parts.push(`Association: ${contact.association}`);
+  }
+
+  if (sourceTeamName) {
+    parts.push(`My team: ${sourceTeamName}`);
   }
 
   // Add intent-specific instruction

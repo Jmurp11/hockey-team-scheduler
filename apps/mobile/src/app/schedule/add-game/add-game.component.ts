@@ -84,7 +84,7 @@ import { ToastService } from '../../shared/toast/toast.service';
           <ion-toolbar>
             <ion-title>{{ title() }}</ion-title>
             <ion-buttons slot="end">
-              <ion-button (click)="cancel()">Close</ion-button>
+              <ion-button color="secondary" (click)="cancel()">Close</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>

@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
+import { formatTime, UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
 
 @Component({
   selector: 'app-upcoming-games-list',
@@ -29,7 +29,7 @@ import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
                 <span class="location">{{ game.rink }}</span>
                 <span class="city">{{ game.city }}, {{ game.state }}</span>
               </div>
-              <div class="game-type">{{ game.gameType }}</div>
+              <div class="game-type" [ngClass]="'type-' + (game.gameType || 'league')">{{ game.gameType | titlecase }}</div>
             </div>
           }
         </div>
@@ -147,11 +147,30 @@ import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
 
       .game-type {
         font-size: 0.75rem;
-        color: var(--gray-500, #6b7280);
+        font-weight: 500;
         padding: 0.125rem 0.5rem;
-        background-color: var(--gray-200, #e5e7eb);
         border-radius: 0.25rem;
         white-space: nowrap;
+
+        &.type-league {
+          color: #1e40af;
+          background-color: #dbeafe;
+        }
+
+        &.type-playoff {
+          color: #9a3412;
+          background-color: #ffedd5;
+        }
+
+        &.type-tournament {
+          color: #6b21a8;
+          background-color: #f3e8ff;
+        }
+
+        &.type-exhibition {
+          color: #166534;
+          background-color: #dcfce7;
+        }
       }
 
       .empty-state {
@@ -198,16 +217,5 @@ import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
 export class UpcomingGamesListComponent {
   @Input({ required: true }) games!: UpcomingGame[];
 
-  formatTime(time: string): string {
-    if (!time) return '';
-    try {
-      const [hours, minutes] = time.split(':');
-      const hour = parseInt(hours, 10);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const hour12 = hour % 12 || 12;
-      return `${hour12}:${minutes} ${ampm}`;
-    } catch {
-      return time;
-    }
-  }
+  formatTime = formatTime;
 }

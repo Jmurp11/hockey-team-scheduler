@@ -24,9 +24,9 @@ export class SeoService {
   private readonly DEFAULT_CONFIG: SEOConfig = {
     title: 'RinkLink.ai - AI-Powered Youth Hockey Scheduling & Tournament Management',
     description:
-      'Streamline youth hockey team scheduling with RinkLink.ai. AI-powered opponent matching, automated game scheduling, tournament discovery, and bulk ice slot import. Save time and focus on the game.',
+      'Streamline youth hockey team scheduling with RinkLink.ai. AI-powered game matching, schedule risk monitoring, tournament fit analysis, and an AI assistant that handles outreach — so you can focus on the game.',
     keywords:
-      'youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, hockey tournaments, ice time scheduling, sports management, AI scheduling',
+      'youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, game matching, schedule risk monitor, tournament fit evaluator, AI scheduling assistant, RinkLinkGPT, hockey tournaments, ice time scheduling, sports management, AI scheduling, bulk ice import',
     image: 'https://rinklink.ai/summary.png',
     url: 'https://rinklink.ai',
     type: 'website',
@@ -224,20 +224,17 @@ export class SeoService {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: 'RinkLink.ai',
-      applicationCategory: 'Sports Application',
+      applicationCategory: 'SportsApplication',
       operatingSystem: 'Web, iOS, Android',
       offers: {
         '@type': 'Offer',
-        price: '0',
+        price: '75',
         priceCurrency: 'USD',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '5',
-        ratingCount: '1',
+        billingDuration: 'P1Y',
+        description: 'Per seat per year',
       },
       description:
-        'AI-powered youth hockey scheduling and tournament management platform. Automate opponent scheduling, discover tournaments, and manage your team efficiently.',
+        'AI-powered youth hockey scheduling and tournament management platform. Features game matching by skill and distance, schedule risk monitoring, tournament fit analysis, and RinkLinkGPT — an AI assistant that drafts outreach, negotiates game times, and manages your calendar.',
     };
   }
 

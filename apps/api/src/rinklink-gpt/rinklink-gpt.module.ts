@@ -5,9 +5,10 @@ import { AuthModule } from '../auth/auth.module';
 import { GamesModule } from '../games/games.module';
 import { TeamsModule } from '../teams/teams.module';
 import { TournamentsModule } from '../tournaments/tournaments.module';
+import { GameMatchingModule } from '../game-matching/game-matching.module';
 
 @Module({
-  imports: [AuthModule, GamesModule, TeamsModule, TournamentsModule],
+  imports: [AuthModule, GamesModule, TeamsModule, TournamentsModule, GameMatchingModule],
   controllers: [RinkLinkGptController],
   providers: [RinkLinkGptService],
   exports: [RinkLinkGptService],

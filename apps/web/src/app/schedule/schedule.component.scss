@@ -8,12 +8,20 @@
   box-sizing: border-box;
 }
 
-.actions-container {
-  @include flex(flex-start, center, column);
-  height: auto;
+.schedule-header {
+  @include flex(space-between, center, row);
   width: 100%;
   flex-shrink: 0;
   margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.actions-container {
+  @include flex(flex-start, center, column);
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .table-container {

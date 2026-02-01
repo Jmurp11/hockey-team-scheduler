@@ -11,14 +11,15 @@ import { TooltipModule } from 'primeng/tooltip';
     <div class="chat-header">
       <div class="chat-header__content">
         @if (showBackButton()) {
-          <button
-            pButton
+          <p-button
             icon="pi pi-arrow-left"
-            class="p-button-text p-button-rounded chat-header__back-btn"
+            [text]="true"
+            [rounded]="true"
+            styleClass="chat-header__back-btn"
             (click)="backClick.emit()"
             pTooltip="Go back"
             tooltipPosition="bottom"
-          ></button>
+          />
         }
         <p-avatar
           icon="bi bi-robot"

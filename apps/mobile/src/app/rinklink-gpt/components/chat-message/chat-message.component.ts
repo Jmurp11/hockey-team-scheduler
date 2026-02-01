@@ -16,10 +16,13 @@ import { MessageFormatPipe } from '@hockey-team-scheduler/shared-ui';
 import { PendingAction } from '@hockey-team-scheduler/shared-data-access';
 import {
   DisplayMessage,
+  GameMatchResults,
   shouldShowEmailPreview,
+  shouldShowGameMatchResults,
   shouldShowStandardConfirmation,
 } from '@hockey-team-scheduler/shared-utilities';
 import { EmailPreviewComponent } from '../email-preview/email-preview.component';
+import { GameMatchListComponent } from '../game-match-list/game-match-list.component';
 
 @Component({
   selector: 'app-chat-message',
@@ -31,6 +34,7 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
     IonIcon,
     MessageFormatPipe,
     EmailPreviewComponent,
+    GameMatchListComponent,
   ],
   template: `
     <div
@@ -68,13 +72,22 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
           />
         }
 
+        <!-- Game Match Results for find_game_matches actions -->
+        @if (showGameMatchResults()) {
+          <app-game-match-list
+            [results]="getGameMatchResults()"
+            [disabled]="disabled()"
+            (sendEmail)="confirm.emit($event)"
+          />
+        }
+
         <!-- Standard confirmation for other actions -->
         @if (showStandardConfirmation()) {
           <div class="chat-message__confirmation">
             <p class="chat-message__confirmation-label">Confirm this action?</p>
             <div class="chat-message__confirmation-buttons">
               <ion-button
-                color="success"
+                color="secondary"
                 size="small"
                 (click)="confirm.emit(message().pendingAction!)"
                 [disabled]="disabled()"
@@ -84,7 +97,7 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
               </ion-button>
               <ion-button
                 fill="outline"
-                color="medium"
+                color="secondary"
                 size="small"
                 (click)="decline.emit()"
                 [disabled]="disabled()"
@@ -231,5 +244,13 @@ export class ChatMessageComponent {
 
   showStandardConfirmation(): boolean {
     return shouldShowStandardConfirmation(this.message());
+  }
+
+  showGameMatchResults(): boolean {
+    return shouldShowGameMatchResults(this.message());
+  }
+
+  getGameMatchResults(): GameMatchResults {
+    return this.message().pendingAction!.data as unknown as GameMatchResults;
   }
 }

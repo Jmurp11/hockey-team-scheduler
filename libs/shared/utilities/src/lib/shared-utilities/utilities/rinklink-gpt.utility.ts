@@ -28,20 +28,25 @@ export function shouldShowStandardConfirmation(message: DisplayMessage): boolean
   return (
     !!message.pendingAction &&
     !message.isConfirmation &&
-    message.pendingAction.type !== 'send_email'
+    message.pendingAction.type !== 'send_email' &&
+    message.pendingAction.type !== 'game_match_results'
+  );
+}
+
+/**
+ * Check if a message should show the game match results component.
+ */
+export function shouldShowGameMatchResults(message: DisplayMessage): boolean {
+  return (
+    !!message.pendingAction &&
+    !message.isConfirmation &&
+    message.pendingAction.type === 'game_match_results'
   );
 }
 
 // ============================================
 // Chat Input Utilities
 // ============================================
-
-/**
- * Check if a message can be sent.
- */
-export function canSendMessage(message: string, disabled: boolean): boolean {
-  return message.trim().length > 0 && !disabled;
-}
 
 /**
  * Handle enter key press in chat input.

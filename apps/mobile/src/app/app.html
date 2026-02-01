@@ -22,7 +22,11 @@
               lines="none"
               detail="false"
             >
-              <ion-icon slot="start" [name]="item.icon"></ion-icon>
+              @if (item.cssIcon) {
+                <i slot="start" [class]="item.cssIcon"></i>
+              } @else {
+                <ion-icon slot="start" [name]="item.icon"></ion-icon>
+              }
               <ion-label>{{ item.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
@@ -54,4 +58,6 @@
 
     <ion-router-outlet id="main-content"></ion-router-outlet>
   </ion-split-pane>
+
+  <app-game-matching-modal />
 </ion-app>

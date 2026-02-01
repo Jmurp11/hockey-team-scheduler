@@ -31,7 +31,6 @@
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
   padding: 1rem 2rem;
-  overflow-y: auto;
   flex: 1;
   align-content: start;
 
@@ -52,14 +51,14 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  contain: layout;
 }
 
-// Sort header row styling
+// Sort header row styling — pinned at top of list
 .sort-header {
   padding: 0.75rem 2rem;
   background: var(--p-surface-ground, #fafafa);
   border-bottom: 1px solid var(--p-surface-border, #e0e0e0);
+  flex-shrink: 0;
 
   @media (max-width: 1024px) {
     padding: 0.75rem 1rem;
@@ -70,12 +69,21 @@
   }
 }
 
-// Results info row below filters
+// Scrollable area below the pinned header/filters
+.scrollable-content {
+  @include flex(flex-start, stretch, column);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Results info row below filters — also pinned
 .results-info {
   @include flex(flex-start, center, row);
   gap: 1rem;
   padding: 0.5rem 2rem;
   border-bottom: 1px solid var(--p-surface-border, #e0e0e0);
+  flex-shrink: 0;
 
   .results-count {
     font-size: 0.9rem;
@@ -104,3 +112,84 @@
     gap: 0.5rem;
   }
 }
+
+// Featured Tournaments section
+.featured-section {
+  background: linear-gradient(135deg, var(--yellow-50, #fefce8) 0%, white 100%);
+  border-bottom: 2px solid var(--yellow-200, #fef08a);
+  padding: 1.5rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.featured-title {
+  i {
+    color: var(--yellow-500, #eab308) !important;
+  }
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.25rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Recommended for Your Team section
+.recommended-section {
+  background: linear-gradient(135deg, var(--green-50, #f0fdf4) 0%, white 100%);
+  border-bottom: 2px solid var(--green-200, #bbf7d0);
+  padding: 1.5rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.section-header {
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  @include flex(flex-start, center, row);
+  gap: 0.625rem;
+  margin-bottom: 0.375rem;
+
+  i {
+    color: var(--green-500, #22c55e);
+    font-size: 1.25rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--p-text-color, #1e293b);
+  }
+}
+
+.recommended-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.25rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+

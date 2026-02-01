@@ -5,6 +5,7 @@ import { supabase } from '../supabase';
 import { GamesService } from '../games/games.service';
 import { TeamsService } from '../teams/teams.service';
 import { TournamentsService } from '../tournaments/tournaments.service';
+import { GameMatchingService } from '../game-matching/game-matching.service';
 import {
   EmailService,
   buildHeading,
@@ -32,6 +33,7 @@ export class RinkLinkGptService {
     private readonly teamsService: TeamsService,
     private readonly tournamentsService: TournamentsService,
     private readonly emailService: EmailService,
+    private readonly gameMatchingService: GameMatchingService,
   ) {
     this.client = new OpenAI({
       apiKey: env.OPENAI_API_KEY || '',
@@ -327,6 +329,15 @@ USER CONTEXT:
             existingGameId?: string;
             additionalContext?: string;
           }, userContext);
+
+        case 'find_game_matches':
+          return this.executeFindGameMatches(args as {
+            startDate: string;
+            endDate: string;
+            maxDistance?: number;
+            excludeRecentOpponents?: boolean;
+            maxResults?: number;
+          }, userId);
 
         default:
           return {
@@ -1591,6 +1602,88 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
           location,
           placeType: args.placeType,
         },
+      };
+    }
+  }
+
+  /**
+   * Find and rank potential opponents for scheduling games.
+   * Returns a ranked list with contact info and draft emails.
+   */
+  private async executeFindGameMatches(
+    args: {
+      startDate: string;
+      endDate: string;
+      maxDistance?: number;
+      excludeRecentOpponents?: boolean;
+      maxResults?: number;
+    },
+    userId: string,
+  ): Promise<ToolExecutionResult> {
+    try {
+      this.logger.log(`Finding game matches for user ${userId}: ${args.startDate} to ${args.endDate}`);
+
+      const results = await this.gameMatchingService.findMatches({
+        userId,
+        startDate: args.startDate,
+        endDate: args.endDate,
+        maxDistance: args.maxDistance,
+        excludeRecentOpponents: args.excludeRecentOpponents,
+        maxResults: Math.min(args.maxResults || 5, 10), // Cap at 10
+      });
+
+      if (results.matches.length === 0) {
+        return {
+          success: true,
+          data: {
+            message: `I searched for opponents within ${results.searchRadius} miles with similar ratings, but didn't find any matches for ${args.startDate} to ${args.endDate}. Try expanding your search distance or adjusting the date range.`,
+            results,
+          },
+        };
+      }
+
+      // Build a pending action for the game match results
+      const pendingAction: PendingAction = {
+        type: 'game_match_results',
+        description: `Found ${results.matches.length} potential opponents for ${args.startDate} to ${args.endDate}`,
+        data: results as unknown as Record<string, unknown>,
+      };
+
+      // Build a summary message
+      const summaryLines = [
+        `I found ${results.matches.length} potential opponents for your ${results.userTeam.age || ''} team (rating: ${results.userTeam.rating}) within ${results.searchRadius} miles:\n`,
+      ];
+
+      for (const match of results.matches) {
+        const managerNote = match.managerStatus === 'found'
+          ? `Contact: ${match.manager?.name}`
+          : match.managerStatus === 'manual-contact'
+            ? 'Manual contact needed'
+            : 'No contact found';
+
+        summaryLines.push(
+          `**${match.rank}. ${match.team.name}** (Rating: ${match.team.rating}, ${match.distanceMiles} mi)\n` +
+          `   ${match.explanation}\n` +
+          `   ${managerNote}\n`,
+        );
+      }
+
+      summaryLines.push('\nYou can review and send individual emails to each team below.');
+
+      return {
+        success: true,
+        requiresConfirmation: true,
+        pendingAction,
+        data: {
+          confirmationMessage: summaryLines.join('\n'),
+          results,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Error in executeFindGameMatches:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to find game matches. Please try again.',
       };
     }
   }

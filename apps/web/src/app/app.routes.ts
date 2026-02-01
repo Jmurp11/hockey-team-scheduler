@@ -226,6 +226,13 @@ export const routes: Routes = [
             (m) => m.UpdatePasswordComponent,
           ),
       },
+      {
+        path: 'bug-report',
+        loadComponent: () =>
+          import('./bug-report/bug-report.component').then(
+            (m) => m.BugReportComponent,
+          ),
+      },
       // {
       //   path: 'inbox',
       //   loadComponent: () =>

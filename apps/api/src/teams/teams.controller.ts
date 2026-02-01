@@ -1,13 +1,16 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -20,6 +23,7 @@ import {
   Team,
   TeamsQueryDto,
 } from '../types';
+import { FindMatchesDto } from '../game-matching/find-matches.dto';
 
 import { TeamsService } from './teams.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
@@ -92,6 +96,36 @@ export class TeamsController {
       if (error instanceof HttpException) throw error;
       throw new HttpException(
         'Failed to fetch nearby teams',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('find-matches')
+  @ApiOperation({
+    summary: 'Find and rank potential opponents',
+    description:
+      'Searches for nearby teams with similar ratings, scores and ranks them, and looks up manager contact info.',
+  })
+  @ApiBody({ type: FindMatchesDto })
+  @ApiResponse({ status: 201, description: 'Match results returned successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - Missing required fields' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid API key' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async findMatches(@Body() dto: FindMatchesDto) {
+    if (!dto.userId || !dto.startDate || !dto.endDate) {
+      throw new HttpException(
+        'userId, startDate, and endDate are required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      return await this.teamsService.findGameMatches(dto);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        error.message || 'Failed to find matches',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

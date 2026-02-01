@@ -22,7 +22,7 @@ import { closeOutline } from 'ionicons/icons';
         <i class="bi bi-robot ai-panel-header__icon"></i>
         <ion-card-title>AI Email Assistant</ion-card-title>
       </div>
-      <ion-button fill="clear" size="small" (click)="close.emit()">
+      <ion-button color="secondary" fill="clear" size="small" (click)="close.emit()">
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
     </ion-card-header>
