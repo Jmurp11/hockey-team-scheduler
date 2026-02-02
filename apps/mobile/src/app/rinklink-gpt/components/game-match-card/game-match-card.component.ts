@@ -10,7 +10,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonBadge,
+  IonButton,
   IonIcon,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -35,7 +37,9 @@ import { EmailDraftFormComponent } from '../../../shared/components/email-draft-
     CommonModule,
     FormsModule,
     IonBadge,
+    IonButton,
     IonIcon,
+    IonSpinner,
     EmailDraftFormComponent,
   ],
   template: `
@@ -87,7 +91,12 @@ import { EmailDraftFormComponent } from '../../../shared/components/email-draft-
       <!-- Expanded Content -->
       @if (expanded()) {
         <div class="match-card__content">
-          @if (match().manager && match().emailDraft) {
+          @if (isSearching()) {
+            <div class="match-card__searching">
+              <ion-spinner name="crescent"></ion-spinner>
+              <p>Searching for contact information...</p>
+            </div>
+          } @else if (match().manager && match().emailDraft) {
             <div class="match-card__manager">
               <div class="match-card__manager-label">Manager Contact</div>
               <div class="match-card__manager-info">
@@ -126,10 +135,18 @@ import { EmailDraftFormComponent } from '../../../shared/components/email-draft-
               <ion-icon name="warning-outline"></ion-icon>
               <p>No email address found. You may need to reach out by phone or through their association website.</p>
             </div>
+            <ion-button fill="outline" size="small" expand="block" class="match-card__search-btn" (click)="onFindContact()">
+              <ion-icon name="search-outline" slot="start"></ion-icon>
+              Search for Email
+            </ion-button>
           } @else {
             <div class="match-card__no-contact">
               <ion-icon name="information-circle-outline"></ion-icon>
               <p>No contact information available for this team's manager.</p>
+              <ion-button fill="outline" size="small" (click)="onFindContact()">
+                <ion-icon name="search-outline" slot="start"></ion-icon>
+                Search for Contact
+              </ion-button>
             </div>
           }
         </div>
@@ -317,6 +334,28 @@ import { EmailDraftFormComponent } from '../../../shared/components/email-draft-
           color: #854d0e;
         }
       }
+
+      &__searching {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+
+        ion-spinner {
+          color: var(--ion-color-primary);
+        }
+
+        p {
+          margin: 0;
+          font-size: 0.8125rem;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      &__search-btn {
+        margin-top: 0.75rem;
+      }
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -324,7 +363,9 @@ import { EmailDraftFormComponent } from '../../../shared/components/email-draft-
 export class GameMatchCardComponent {
   match = input.required<OpponentMatch>();
   disabled = input(false);
+  isSearching = input(false);
   sendEmail = output<PendingAction>();
+  findContact = output<{ teamId: number; team: string; location: string }>();
 
   expanded = signal(false);
   editableSubject = signal('');
@@ -365,5 +406,14 @@ export class GameMatchCardComponent {
   onSendEmail(action: PendingAction): void {
     this.sendEmail.emit(action);
     this.expanded.set(false);
+  }
+
+  onFindContact(): void {
+    const team = this.match().team;
+    this.findContact.emit({
+      teamId: team.id,
+      team: team.name,
+      location: `${team.association.city}, ${team.association.state}`,
+    });
   }
 }

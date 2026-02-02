@@ -109,7 +109,9 @@ import { GameMatchingModalService } from './game-matching-modal.service';
           @if (matchingState.state() === 'results' && matchingState.results()) {
             <app-game-match-list
               [results]="matchingState.results()!"
+              [searchingTeamId]="matchingState.searchingTeamId()"
               (sendEmail)="onSendEmail($event)"
+              (findContact)="onFindContact($event)"
             />
           }
 
@@ -279,5 +281,9 @@ export class GameMatchingModalComponent {
   onSendEmail(action: PendingAction): void {
     // The email action is emitted from the game-match-list/card
     // For now, the card handles closing itself after emit
+  }
+
+  onFindContact(event: { teamId: number; team: string; location: string }): void {
+    this.matchingState.handleFindContact(event);
   }
 }
