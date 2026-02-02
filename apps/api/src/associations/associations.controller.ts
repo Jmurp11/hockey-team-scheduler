@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiExcludeEndpoint,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -84,6 +85,7 @@ export class AssociationsController {
   }
 
   @Get(':id/admin')
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Get association admin data',
     description: 'Retrieve admin dashboard data including members, invitations, and subscription info',
@@ -106,6 +108,7 @@ export class AssociationsController {
   }
 
   @Get(':id/members')
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Get association members',
     description: 'Retrieve all members of an association',
@@ -126,6 +129,7 @@ export class AssociationsController {
   }
 
   @Get(':id/invitations')
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Get association invitations',
     description: 'Retrieve all invitations for an association',

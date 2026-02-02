@@ -398,6 +398,7 @@ export class DeveloperPortalService {
       .eq('id', userId);
 
     if (error) {
+      console.error('[DeveloperPortal] Failed to rotate API key:', error);
       throw new Error('Failed to rotate API key');
     }
 

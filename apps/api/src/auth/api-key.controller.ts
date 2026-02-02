@@ -8,6 +8,7 @@ import {
 import { ApiKeyService } from './api-key.service';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -19,6 +20,7 @@ class GenerateApiKeyDto {
 }
 
 @ApiTags('API Keys')
+@ApiExcludeController()
 @Controller('v1/api-keys')
 export class ApiKeyController {
   constructor(private readonly apiKeyService: ApiKeyService) {}

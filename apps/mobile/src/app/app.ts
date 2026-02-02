@@ -125,7 +125,7 @@ export class App implements OnInit {
     {
       title: 'Bug Report',
       url: '/app/bug-report',
-      icon: 'bug',
+      cssIcon: 'bug',
     },
     {
       title: 'Admin',

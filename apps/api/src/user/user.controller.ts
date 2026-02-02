@@ -10,7 +10,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiExcludeController, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import Stripe from 'stripe';
 
 import { UserService } from './user.service';
@@ -75,6 +75,7 @@ class CompleteRegistrationDto {
 }
 
 @ApiTags('Users')
+@ApiExcludeController()
 @Controller('v1/users')
 export class UserController {
   constructor(

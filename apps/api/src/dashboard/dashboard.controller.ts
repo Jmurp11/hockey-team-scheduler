@@ -5,11 +5,12 @@ import {
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiExcludeController, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { DashboardService, DashboardSummary } from './dashboard.service';
 
 @ApiTags('dashboard')
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @Controller('v1/dashboard')
 export class DashboardController {

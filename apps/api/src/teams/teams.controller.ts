@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeEndpoint,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -102,6 +103,7 @@ export class TeamsController {
   }
 
   @Post('find-matches')
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Find and rank potential opponents',
     description:

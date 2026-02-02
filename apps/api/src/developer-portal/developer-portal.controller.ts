@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import {
+  ApiExcludeController,
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -45,6 +46,7 @@ class CreateCheckoutDto {
  * - Webhook: Stripe signature verification
  */
 @ApiTags('Developer Portal')
+@ApiExcludeController()
 @Controller('v1/developers')
 export class DeveloperPortalController {
   constructor(private readonly developerPortalService: DeveloperPortalService) {}
@@ -242,7 +244,8 @@ export class DeveloperPortalController {
         message: 'API key rotated successfully. This is the only time the full key will be shown.',
       });
     } catch (error: any) {
-      const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      console.error('[DeveloperPortal] Rotate API key error:', error.message);
+      const status = error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR;
       return res.status(status).json({
         error: error.message || 'Failed to rotate API key',
       });

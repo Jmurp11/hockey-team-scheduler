@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiResponse,
@@ -19,6 +20,7 @@ import { ContactSchedulerDto } from './open-ai.types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('AI Services')
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
