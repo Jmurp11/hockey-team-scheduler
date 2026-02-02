@@ -1,4 +1,4 @@
-package com.rinklinkai.mobile;
+package ai.rinklink.mobile;
 
 import com.getcapacitor.BridgeActivity;
 

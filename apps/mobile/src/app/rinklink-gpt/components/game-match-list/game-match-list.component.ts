@@ -60,7 +60,9 @@ import { GameMatchCardComponent } from '../game-match-card/game-match-card.compo
           <app-game-match-card
             [match]="match"
             [disabled]="disabled()"
+            [isSearching]="searchingTeamId() === match.team.id"
             (sendEmail)="sendEmail.emit($event)"
+            (findContact)="findContact.emit($event)"
           />
         }
       </div>
@@ -154,7 +156,9 @@ import { GameMatchCardComponent } from '../game-match-card/game-match-card.compo
 export class GameMatchListComponent {
   results = input.required<GameMatchResults>();
   disabled = input(false);
+  searchingTeamId = input<number | null>(null);
   sendEmail = output<PendingAction>();
+  findContact = output<{ teamId: number; team: string; location: string }>();
 
   constructor() {
     addIcons({ peopleOutline, informationCircleOutline });
