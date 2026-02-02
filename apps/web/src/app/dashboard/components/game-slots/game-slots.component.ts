@@ -37,7 +37,7 @@ import { RouterModule } from '@angular/router';
       .action-link {
         display: inline-block;
         margin-top: 0.75rem;
-        color: var(--primary-600);
+        color: var(--secondary-600);
         text-decoration: none;
         font-weight: 500;
         font-size: 0.875rem;

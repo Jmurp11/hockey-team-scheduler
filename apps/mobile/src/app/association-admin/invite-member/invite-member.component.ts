@@ -19,6 +19,7 @@ import {
   AssociationAdminService,
   AuthService,
 } from '@hockey-team-scheduler/shared-data-access';
+import { prepareInvitationRequest } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButton,
   IonButtons,
@@ -59,7 +60,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
           <ion-toolbar>
             <ion-title>Invite New Member</ion-title>
             <ion-buttons slot="end">
-              <ion-button (click)="cancel()">Close</ion-button>
+              <ion-button color="secondary" (click)="cancel()">Close</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -91,7 +92,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
             <div class="button-group">
               <ion-button
                 expand="block"
-                color="medium"
+                color="secondary"
                 fill="outline"
                 (click)="cancel()"
               >
@@ -99,6 +100,7 @@ import { InviteMemberModalService } from './invite-member-modal.service';
               </ion-button>
               <ion-button
                 expand="block"
+                color="secondary"
                 [disabled]="inviteForm.invalid || sending()"
                 (click)="submit()"
               >
@@ -185,14 +187,15 @@ export class InviteMemberComponent implements OnInit {
 
     this.sending.set(true);
 
+    const invitationData = prepareInvitationRequest(
+      { name: this.nameControl.value!, email: this.emailControl.value! },
+      this.subscriptionId,
+      user.association_id.toString(),
+      user.user_id
+    );
+
     this.adminService
-      .createInvitation({
-        subscriptionId: this.subscriptionId,
-        associationId: user.association_id.toString(),
-        email: this.emailControl.value!,
-        role: 'MANAGER',
-        inviter_user_id: user.user_id,
-      })
+      .createInvitation(invitationData)
       .subscribe({
         next: async (result) => {
           this.sending.set(false);

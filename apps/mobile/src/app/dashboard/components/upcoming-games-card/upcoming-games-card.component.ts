@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
+import { formatTime, UpcomingGame } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonCardContent,
   IonCardHeader,
@@ -52,9 +52,12 @@ import { ButtonComponent } from '../../../shared/button/button.component';
                   <p>{{ game.date | date : 'EEE, MMM d' }} · {{ formatTime(game.time) }}</p>
                   <p class="location">{{ game.rink }}</p>
                 </ion-label>
-                @if (game.opponentRating) {
-                  <ion-note slot="end">{{ game.opponentRating | number : '1.1-1' }}</ion-note>
-                }
+                <div slot="end" class="end-slot">
+                  <span class="game-type-badge" [ngClass]="'type-' + (game.gameType || 'league')">{{ game.gameType | titlecase }}</span>
+                  @if (game.opponentRating) {
+                    <ion-note>{{ game.opponentRating | number : '1.1-1' }}</ion-note>
+                  }
+                </div>
               </ion-item>
             }
           </ion-list>
@@ -126,6 +129,41 @@ import { ButtonComponent } from '../../../shared/button/button.component';
         font-weight: 500;
       }
 
+      .end-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+
+      .game-type-badge {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        padding: 1px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+
+        &.type-league {
+          color: #1e40af;
+          background-color: #dbeafe;
+        }
+
+        &.type-playoff {
+          color: #9a3412;
+          background-color: #ffedd5;
+        }
+
+        &.type-tournament {
+          color: #6b21a8;
+          background-color: #f3e8ff;
+        }
+
+        &.type-exhibition {
+          color: #166534;
+          background-color: #dcfce7;
+        }
+      }
+
       .view-all {
         display: flex;
         justify-content: center;
@@ -155,14 +193,7 @@ export class UpcomingGamesCardComponent {
     addIcons({ calendar, chevronForward });
   }
 
-  formatTime(time: string): string {
-    if (!time) return '';
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  }
+  formatTime = formatTime;
 
   navigateToSchedule(): void {
     this.router.navigate(['/app/schedule']);

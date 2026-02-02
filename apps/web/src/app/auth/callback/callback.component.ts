@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, SupabaseService } from '@hockey-team-scheduler/shared-data-access';
+import {
+  AuthService,
+  SupabaseService,
+  UserAccessService,
+} from '@hockey-team-scheduler/shared-data-access';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
@@ -72,6 +76,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 export class CallbackComponent implements OnInit, OnDestroy {
   private supabaseService = inject(SupabaseService);
   private authService = inject(AuthService);
+  private userAccessService = inject(UserAccessService);
   private router = inject(Router);
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -140,18 +145,33 @@ export class CallbackComponent implements OnInit, OnDestroy {
       // Small delay for visual feedback
       await this.delay(500);
 
-      const needsProfile = await this.checkUserProfile(session.user.id);
+      // Load user access info (determines routing based on user type)
+      this.statusMessage.set('Determining access...');
+      this.statusSubtitle.set('Checking your permissions');
+
+      const access = await this.userAccessService.loadUserAccess();
 
       this.statusMessage.set('Almost there!');
       this.statusSubtitle.set('Preparing your dashboard');
 
       await this.delay(300);
 
-      if (needsProfile) {
-        this.clearTimeoutAndNavigate('/app/complete-profile');
-      } else {
-        this.clearTimeoutAndNavigate('/app/schedule');
+      if (!access) {
+        // No access info - fall back to legacy behavior
+        const needsProfile = await this.checkUserProfile(session.user.id);
+        if (needsProfile) {
+          this.clearTimeoutAndNavigate('/app/complete-profile');
+        } else {
+          this.clearTimeoutAndNavigate('/app/schedule');
+        }
+        return;
       }
+
+      // Route based on user type
+      const redirectPath = this.userAccessService.getRedirectPath();
+      console.log(`[Callback] User type: ${access.userType}, redirecting to: ${redirectPath}`);
+
+      this.clearTimeoutAndNavigate(redirectPath);
     } catch (error) {
       console.error('Unexpected callback error:', error);
       this.clearTimeoutAndNavigate('/login');

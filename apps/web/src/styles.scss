@@ -185,6 +185,7 @@ body {
 
   --p-textarea-hover-border-color: var(--secondary-500) !important;
   --p-textarea-focus-border-color: var(--secondary-500) !important;
+  --p-textarea-focus-ring-shadow: var(--secondary-200) !important;
 
   --p-tag-info-background: var(--primary-500) !important;
 
@@ -208,6 +209,12 @@ body {
 
 .p-dialog {
   font-family: 'Space Grotesk', 'Noto Sans', sans-serif;
+}
+
+/* PrimeNG Tooltip Font Styling */
+.p-tooltip,
+.p-tooltip .p-tooltip-text {
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif !important;
 }
 .p-toast .p-toast-message .p-toast-message-content .p-toast-summary {
   font-weight: 600 !important;

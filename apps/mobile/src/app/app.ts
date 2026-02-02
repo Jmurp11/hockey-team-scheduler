@@ -1,9 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import {
   AuthService,
+  ScheduleRiskService,
+  ScheduleService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
+import { of, switchMap } from 'rxjs';
 import {
   IonApp,
   IonContent,
@@ -23,7 +27,9 @@ import {
 import { addIcons } from 'ionicons';
 import {
   barChart,
+  bug,
   calendar,
+  chatbubbleEllipses,
   chatbubbles,
   cog,
   home,
@@ -33,11 +39,13 @@ import {
   search,
   trophy,
 } from 'ionicons/icons';
+import { GameMatchingModalComponent } from './game-matching/game-matching-modal.component';
 
 interface MenuItem {
   title: string;
   url: string;
-  icon: string;
+  icon?: string;
+  cssIcon?: string;
   adminOnly?: boolean;
 }
 
@@ -59,15 +67,27 @@ interface MenuItem {
     IonSplitPane,
     IonFooter,
     RouterModule,
+    GameMatchingModalComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
+export class App implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private router = inject(Router);
+  private scheduleService = inject(ScheduleService);
+  private scheduleRiskService = inject(ScheduleRiskService);
+  private destroyRef = inject(DestroyRef);
+
+  private riskEvaluation$ = toObservable(this.authService.currentUser).pipe(
+    switchMap((user) => {
+      if (!user?.user_id) return of([]);
+      return this.scheduleService.gamesFull(user.user_id);
+    }),
+    takeUntilDestroyed(this.destroyRef),
+  );
 
   protected title = 'RinkLink.ai (Mobile)';
 
@@ -82,6 +102,11 @@ export class App {
       url: '/app/schedule',
       icon: 'calendar',
     },
+    {
+      title: 'RinkLinkGPT',
+      url: '/app/rinklink-gpt',
+      cssIcon: 'bi bi-robot',
+    }, 
     {
       title: 'Opponents',
       url: '/app/opponents',
@@ -98,12 +123,19 @@ export class App {
       icon: 'person',
     },
     {
+      title: 'Bug Report',
+      url: '/app/bug-report',
+      icon: 'bug',
+    },
+    {
       title: 'Admin',
       url: '/app/admin',
       icon: 'cog',
       adminOnly: true,
     },
   ];
+
+  public isLoggedIn = computed(() => !!this.authService.currentUser()?.user_id);
 
   public menuItems = computed(() => {
     const user = this.authService.currentUser();
@@ -115,7 +147,9 @@ export class App {
   constructor() {
     addIcons({
       barChart,
+      bug,
       calendar,
+      chatbubbleEllipses,
       people,
       trophy,
       chatbubbles,
@@ -123,6 +157,12 @@ export class App {
       search,
       cog,
       logOutOutline,
+    });
+  }
+
+  ngOnInit(): void {
+    this.riskEvaluation$.subscribe((games) => {
+      this.scheduleRiskService.evaluate(games);
     });
   }
 

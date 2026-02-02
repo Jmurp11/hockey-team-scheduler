@@ -9,6 +9,7 @@ import {
 import {
   formatTournamentLocation,
   Tournament,
+  TournamentFitEvaluation,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonCard,
@@ -30,6 +31,7 @@ import {
   trophyOutline,
 } from 'ionicons/icons';
 import { ButtonComponent } from '../../shared/button/button.component';
+import { TournamentFitBadgeComponent } from '../../shared/components/tournament-fit-badge/tournament-fit-badge.component';
 
 /**
  * Tournament card component for mobile public listing.
@@ -51,6 +53,7 @@ import { ButtonComponent } from '../../shared/button/button.component';
     IonIcon,
     IonChip,
     ButtonComponent,
+    TournamentFitBadgeComponent,
   ],
   template: `
     <ion-card
@@ -70,11 +73,18 @@ import { ButtonComponent } from '../../shared/button/button.component';
           <ion-card-title class="tournament-name" [class.featured]="tournament.featured">
             {{ tournament.name }}
           </ion-card-title>
-          <!-- Distance indicator for authenticated users -->
-          @if (showAuthenticatedFeatures && tournament.distance !== undefined) {
-            <div class="distance-badge">
-              <ion-icon name="compass-outline"></ion-icon>
-              <span>{{ formatDistance(tournament.distance) }}</span>
+          <!-- Distance and fit indicators for authenticated users -->
+          @if (showAuthenticatedFeatures) {
+            <div class="badges-row">
+              @if (fitData) {
+                <app-tournament-fit-badge [fit]="fitData" />
+              }
+              @if (tournament.distance !== undefined) {
+                <div class="distance-badge">
+                  <ion-icon name="compass-outline"></ion-icon>
+                  <span>{{ formatDistance(tournament.distance) }}</span>
+                </div>
+              }
             </div>
           }
         </div>
@@ -235,6 +245,14 @@ import { ButtonComponent } from '../../shared/button/button.component';
         }
       }
 
+      // Badges row for fit badge and distance
+      .badges-row {
+        @include flex(flex-end, center, row);
+        gap: 0.35rem;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+
       // Distance badge for authenticated users
       .distance-badge {
         @include flex(center, center, row);
@@ -353,6 +371,7 @@ export class TournamentPublicCardComponent {
    * Used when the card is rendered in /app/tournaments for logged-in users.
    */
   @Input() showAuthenticatedFeatures = false;
+  @Input() fitData: TournamentFitEvaluation | undefined;
 
   @Output() registerClick = new EventEmitter<Tournament>();
   @Output() contactClick = new EventEmitter<Tournament>();

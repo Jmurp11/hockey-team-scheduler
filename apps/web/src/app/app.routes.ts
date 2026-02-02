@@ -2,6 +2,11 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'error',
+    loadComponent: () =>
+      import('./error/api-error.component').then((m) => m.ApiErrorComponent),
+  },
+  {
     path: '*',
     redirectTo: '/',
   },
@@ -87,8 +92,8 @@ export const routes: Routes = [
         path: 'developer/dashboard',
         canActivate: [
           () =>
-            import('./developer/guards/developer-auth.guard').then(
-              (m) => m.developerAuthGuard,
+            import('./guards/developer.guard').then(
+              (m) => m.developerGuard,
             ),
         ],
         loadComponent: () =>
@@ -131,11 +136,25 @@ export const routes: Routes = [
             (m) => m.InviteAcceptComponent,
           ),
       },
+      {
+        path: 'terms-of-service',
+        loadComponent: () =>
+          import(
+            './landing/terms-of-service/terms-of-service.component'
+          ).then((m) => m.TermsOfServiceComponent),
+      },
+      {
+        path: 'privacy-policy',
+        loadComponent: () =>
+          import(
+            './landing/privacy-policy/privacy-policy.component'
+          ).then((m) => m.PrivacyPolicyComponent),
+      },
     ],
   },
   {
     path: 'app',
-    canActivate: [() => import('./guards/auth.guard').then((m) => m.authGuard)],
+    canActivate: [() => import('./guards/app-user.guard').then((m) => m.appUserGuard)],
     loadComponent: () =>
       import('./container/container.component').then(
         (m) => m.ContainerComponent,
@@ -180,6 +199,13 @@ export const routes: Routes = [
           import('./profile/profile.component').then((m) => m.ProfileComponent),
       },
       {
+        path: 'rinklink-gpt',
+        loadComponent: () =>
+          import('./rinklink-gpt/rinklink-gpt.component').then(
+            (m) => m.RinkLinkGptComponent,
+          ),
+      },
+      {
         path: 'admin',
         loadComponent: () =>
           import('./association-admin/association-admin.component').then(
@@ -198,6 +224,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./auth/update-password/update-password.component').then(
             (m) => m.UpdatePasswordComponent,
+          ),
+      },
+      {
+        path: 'bug-report',
+        loadComponent: () =>
+          import('./bug-report/bug-report.component').then(
+            (m) => m.BugReportComponent,
           ),
       },
       // {

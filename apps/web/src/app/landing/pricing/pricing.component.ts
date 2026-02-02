@@ -27,12 +27,14 @@ import { SeoService } from '../../shared/services/seo.service';
 /**
  * Pricing configuration - single plan with per-seat pricing.
  */
-const PRICE_PER_SEAT = 30; // $30 per seat per year
+const PRICE_PER_SEAT = 75; // $75 per seat per year
 
 const FEATURES = [
-  'Keep your team\'s schedule up to date',
-  'Find youth hockey tournaments in your area—before the spots fill up',
-  'Discover nearby teams by distance or skill level',
+  'AI-powered game matching by distance and skill level',
+  'Schedule risk alerts for overlaps, tight turnarounds, and travel conflicts',
+  'Tournament fit analysis based on team rating and schedule',
+  'AI assistant for schedule questions, game planning, and email drafts',
+  'Organization-level admin with master schedule across all teams',
 ];
 
 /**
@@ -62,7 +64,7 @@ const FEATURES = [
       <header class="hero-section">
         <h1>Simple, Transparent Pricing</h1>
         <p class="subtitle">
-          Pay only for what you need. No hidden fees, cancel anytime.
+          Pay only for what you need. No hidden fees!
         </p>
       </header>
 
@@ -71,11 +73,11 @@ const FEATURES = [
           <div class="pricing-option">
             <div class="price-display">
               <span class="price">\${{ pricePerSeat }}</span>
-              <span class="price-detail">per seat / year</span>
+              <span class="price-detail">per user / year</span>
             </div>
 
             <div class="seat-selector">
-              <label for="seats">Number of seats</label>
+              <label for="seats">Number of users</label>
               <div class="seat-controls">
                 <button
                   type="button"
@@ -123,9 +125,6 @@ const FEATURES = [
       </app-card>
 
       <div class="pricing-footer">
-        <p class="guarantee">
-          30-day money-back guarantee. No questions asked.
-        </p>
         <p class="contact-info">
           Need a custom plan? <a href="/contact">Contact us</a>
         </p>
@@ -197,11 +196,11 @@ export class PricingComponent implements OnInit {
         },
         offers: {
           '@type': 'Offer',
-          price: '30.00',
+          price: '75.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '30.00',
+            price: '75.00',
             priceCurrency: 'USD',
             unitText: 'per seat per year',
           },
@@ -218,7 +217,7 @@ export class PricingComponent implements OnInit {
         {
           question: 'How much does RinkLink.ai cost?',
           answer:
-            'RinkLink.ai costs $30 per seat per year. You can select the number of seats you need based on your team size.',
+            'RinkLink.ai costs $75 per seat per year. You can select the number of seats you need based on your organization size.',
         },
         {
           question: 'Can I cancel my subscription anytime?',
@@ -228,7 +227,7 @@ export class PricingComponent implements OnInit {
         {
           question: 'What features are included?',
           answer:
-            'All plans include AI-powered opponent matching, automated game scheduling, tournament discovery, bulk ice slot import, and team management features.',
+            'All plans include AI-powered game matching, schedule risk monitoring, tournament fit analysis, an AI assistant for scheduling and emails, and organization-level administration.',
         },
         {
           question: 'Is there a free trial?',

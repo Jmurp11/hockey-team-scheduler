@@ -13,6 +13,8 @@ export interface ApiUser {
   created_at: string;
   api_key: string | null;
   email: string;
+  /** Supabase Auth user ID - links api_user to unified auth system */
+  auth_user_id: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   is_active: boolean;

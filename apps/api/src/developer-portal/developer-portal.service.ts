@@ -1,6 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomBytes, createHash } from 'crypto';
-import * as jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import { supabase } from '../supabase';
 import { EmailService } from '../email/email.service';
@@ -18,33 +21,26 @@ import {
  *
  * Handles all business logic for the Developer Portal including:
  * - Stripe checkout and subscription management
- * - Magic link authentication (separate from Supabase Auth)
  * - API key generation, rotation, and validation
  * - Usage tracking and billing enforcement
  *
- * AUTHENTICATION STRATEGY:
- * We use Magic Link authentication because:
- * 1. No password management required
- * 2. Simple, secure flow for developers
- * 3. Email verification built-in
- * 4. Stateless JWT tokens for session management
+ * AUTHENTICATION:
+ * Uses Supabase Auth for all user authentication.
+ * Users log in via the unified login flow and are linked to api_users
+ * records for developer access.
  *
  * BILLING MODEL:
  * Pay-per-request at $0.05 per API call. Usage is tracked in the database
- * and can be reported to Stripe for metered billing if a metered price is configured.
+ * and can be reported to Stripe for metered billing.
  *
  * Security considerations:
- * - Magic link tokens expire after 15 minutes
- * - Session tokens expire after 7 days
  * - API keys are hashed for storage (prefix stored for display)
  * - All sensitive operations require active subscription
+ * - Supabase JWT tokens handle session expiry
  */
 @Injectable()
 export class DeveloperPortalService {
   private stripe: Stripe;
-  private readonly JWT_SECRET: string;
-  private readonly JWT_EXPIRY = '7d';
-  private readonly MAGIC_LINK_EXPIRY_MINUTES = 15;
   private readonly PRICE_PER_REQUEST = 0.05; // $0.05 per request
 
   // Stripe Product ID for Developer API access
@@ -52,11 +48,6 @@ export class DeveloperPortalService {
 
   constructor(private readonly emailService: EmailService) {
     this.stripe = this.initStripe();
-    this.JWT_SECRET = process.env.DEVELOPER_JWT_SECRET || process.env.JWT_SECRET || 'dev-secret-change-me';
-
-    if (this.JWT_SECRET === 'dev-secret-change-me') {
-      console.warn('WARNING: Using default JWT secret. Set DEVELOPER_JWT_SECRET in production!');
-    }
   }
 
   private initStripe(): Stripe {
@@ -184,7 +175,7 @@ export class DeveloperPortalService {
     }
 
     // Check if user already exists
-    let apiUser = await this.findApiUserByEmail(email);
+    const apiUser = await this.findApiUserByEmail(email);
 
     if (apiUser) {
       // Reactivate existing user
@@ -276,113 +267,105 @@ export class DeveloperPortalService {
     }
   }
 
-  // ============ MAGIC LINK AUTHENTICATION ============
+  // ============ SUPABASE AUTH INTEGRATION ============
 
   /**
-   * Sends a magic link email for developer authentication.
-   * Only works for existing API users with active subscriptions.
+   * Gets an API user by Supabase Auth user ID.
+   * Used for unified auth where users log in via Supabase.
+   *
+   * First checks by auth_user_id, then falls back to email lookup
+   * for legacy api_users that haven't been linked yet.
+   *
+   * @param authUserId - The Supabase Auth user ID (UUID)
+   * @param email - The user's email (used for fallback lookup)
    */
-  async sendMagicLink(email: string): Promise<{ success: boolean; message: string }> {
-    const apiUser = await this.findApiUserByEmail(email);
-
-    if (!apiUser) {
-      // Don't reveal if email exists - return generic success message
-      return {
-        success: true,
-        message: 'If an account exists with this email, a login link has been sent.',
-      };
-    }
-
-    // Generate magic link token
-    const token = randomBytes(32).toString('hex');
-    const tokenHash = this.hashToken(token);
-    const expiresAt = new Date(Date.now() + this.MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000);
-
-    // Store token in database
-    const { error } = await supabase.from('developer_magic_links').insert({
-      api_user_id: apiUser.id,
-      token_hash: tokenHash,
-      expires_at: expiresAt.toISOString(),
-      used: false,
-    });
-
-    if (error) {
-      console.error('Error creating magic link:', error);
-      throw new Error('Failed to create login link');
-    }
-
-    // Send email
-    const appUrl = process.env.APP_URL || 'http://localhost:4200';
-    const magicLinkUrl = `${appUrl}/developer/auth?token=${token}`;
-
-    await this.sendMagicLinkEmail(email, magicLinkUrl);
-
-    return {
-      success: true,
-      message: 'If an account exists with this email, a login link has been sent.',
-    };
-  }
-
-  /**
-   * Verifies a magic link token and returns a session JWT.
-   */
-  async verifyMagicLink(token: string): Promise<{ token: string; expiresAt: string }> {
-    const tokenHash = this.hashToken(token);
-
-    // Find and validate token
-    const { data: magicLink, error } = await supabase
-      .from('developer_magic_links')
-      .select('*, api_users(*)')
-      .eq('token_hash', tokenHash)
-      .eq('used', false)
-      .gt('expires_at', new Date().toISOString())
+  async getApiUserByAuthId(authUserId: string, email: string): Promise<ApiUser | null> {
+    // First try by auth_user_id
+    const { data: byAuthId, error: authIdError } = await supabase
+      .from('api_users')
+      .select('*')
+      .eq('auth_user_id', authUserId)
+      .eq('is_active', true)
       .single();
 
-    if (error || !magicLink) {
-      throw new UnauthorizedException('Invalid or expired login link');
+    if (byAuthId && !authIdError) {
+      return byAuthId as ApiUser;
     }
 
-    // Mark token as used
-    await supabase
-      .from('developer_magic_links')
-      .update({ used: true })
-      .eq('id', magicLink.id);
+    // Fallback: Check by email for unlinked api_users
+    if (email) {
+      const { data: byEmail, error: emailError } = await supabase
+        .from('api_users')
+        .select('*')
+        .eq('email', email)
+        .is('auth_user_id', null)
+        .eq('is_active', true)
+        .single();
 
-    // Generate session JWT
-    const apiUser = magicLink.api_users;
-    const sessionToken = this.generateSessionToken(apiUser.id, apiUser.email);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      if (byEmail && !emailError) {
+        // Link this api_user to the Supabase auth user
+        await supabase
+          .from('api_users')
+          .update({ auth_user_id: authUserId })
+          .eq('id', byEmail.id);
 
-    return {
-      token: sessionToken,
-      expiresAt: expiresAt.toISOString(),
-    };
+        console.log(`[DeveloperPortal] Linked api_user ${byEmail.id} to auth_user ${authUserId}`);
+
+        return { ...byEmail, auth_user_id: authUserId } as ApiUser;
+      }
+    }
+
+    return null;
   }
 
   /**
-   * Validates a session token and returns the user.
+   * Creates an API user for an existing Supabase Auth user.
+   * Used when an app user signs up for developer API access.
+   *
+   * @param authUserId - The Supabase Auth user ID
+   * @param email - The user's email
    */
-  async validateSessionToken(token: string): Promise<ApiUser | null> {
-    try {
-      const payload = jwt.verify(token, this.JWT_SECRET) as { userId: number; email: string };
-      const apiUser = await this.findApiUserById(payload.userId);
-
-      if (!apiUser || apiUser.email !== payload.email) {
-        return null;
-      }
-
-      return apiUser;
-    } catch {
-      return null;
+  async createApiUserForAuthUser(
+    authUserId: string,
+    email: string,
+    stripeCustomerId?: string,
+    stripeSubscriptionId?: string,
+  ): Promise<ApiUser> {
+    // Check if already exists
+    const existing = await this.getApiUserByAuthId(authUserId, email);
+    if (existing) {
+      return existing;
     }
-  }
 
-  private generateSessionToken(userId: number, email: string): string {
-    return jwt.sign({ userId, email }, this.JWT_SECRET, { expiresIn: this.JWT_EXPIRY });
-  }
+    // Generate API key
+    const apiKey = await this.generateApiKey();
+    const hashedKey = this.hashApiKey(apiKey);
 
-  private hashToken(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
+    // Create api_user linked to auth user
+    const { data, error } = await supabase
+      .from('api_users')
+      .insert({
+        auth_user_id: authUserId,
+        email,
+        api_key: hashedKey,
+        api_key_prefix: this.getApiKeyPrefix(apiKey),
+        stripe_customer_id: stripeCustomerId || null,
+        stripe_subscription_id: stripeSubscriptionId || null,
+        is_active: true,
+        request_count: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[DeveloperPortal] Error creating api_user:', error);
+      throw new Error('Failed to create API user');
+    }
+
+    // Send welcome email with API key
+    await this.sendWelcomeEmail(email, apiKey);
+
+    return data as ApiUser;
   }
 
   // ============ API KEY MANAGEMENT ============
@@ -415,6 +398,7 @@ export class DeveloperPortalService {
       .eq('id', userId);
 
     if (error) {
+      console.error('[DeveloperPortal] Failed to rotate API key:', error);
       throw new Error('Failed to rotate API key');
     }
 
@@ -620,191 +604,21 @@ export class DeveloperPortalService {
 
   // ============ EMAIL METHODS ============
 
+  /**
+   * Sends a welcome email with API key using the unified email template.
+   */
   private async sendWelcomeEmail(email: string, apiKey: string): Promise<void> {
     const appUrl = process.env.APP_URL || 'http://localhost:4200';
     const dashboardUrl = `${appUrl}/developer/dashboard`;
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              margin: 0;
-              padding: 0;
-              background-color: #f5f5f5;
-            }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header {
-              background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-              color: white;
-              padding: 30px 20px;
-              text-align: center;
-              border-radius: 8px 8px 0 0;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 0 0 8px 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .api-key-box {
-              background: #f7fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 8px;
-              padding: 16px;
-              font-family: monospace;
-              word-break: break-all;
-              margin: 20px 0;
-            }
-            .warning {
-              background: #fef3c7;
-              border-left: 4px solid #f59e0b;
-              padding: 12px;
-              margin: 20px 0;
-            }
-            .button {
-              display: inline-block;
-              background: #3182ce;
-              color: white !important;
-              padding: 14px 28px;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to RinkLink.ai API</h1>
-            </div>
-            <div class="content">
-              <h2>Your API Key</h2>
-              <p>Thank you for subscribing to the RinkLink.ai Developer API. Here is your API key:</p>
-
-              <div class="api-key-box">
-                ${apiKey}
-              </div>
-
-              <div class="warning">
-                <strong>Important:</strong> This is the only time your full API key will be shown.
-                Please store it securely. If you lose it, you'll need to generate a new one from your dashboard.
-              </div>
-
-              <h3>Quick Start</h3>
-              <p>Include your API key in the <code>x-api-key</code> header of your requests:</p>
-              <pre style="background: #f7fafc; padding: 12px; border-radius: 4px; overflow-x: auto;">
-curl -H "x-api-key: ${apiKey}" \\
-  https://api.rinklink.ai/v1/tournaments</pre>
-
-              <p style="text-align: center; margin-top: 30px;">
-                <a href="${dashboardUrl}" class="button">Go to Dashboard</a>
-              </p>
-
-              <h3>Pricing</h3>
-              <p>You are billed $0.05 per API request. View your usage and estimated costs in your dashboard.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
     try {
-      await (this.emailService as any).transporter.sendMail({
-        from: `"RinkLink.ai Developer" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      await this.emailService.sendWelcomeEmail({
         to: email,
-        subject: 'Welcome to RinkLink.ai API - Your API Key',
-        html,
+        apiKey,
+        dashboardUrl,
       });
     } catch (error) {
       console.error('Error sending welcome email:', error);
-    }
-  }
-
-  private async sendMagicLinkEmail(email: string, magicLinkUrl: string): Promise<void> {
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              margin: 0;
-              padding: 0;
-              background-color: #f5f5f5;
-            }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header {
-              background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-              color: white;
-              padding: 30px 20px;
-              text-align: center;
-              border-radius: 8px 8px 0 0;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 0 0 8px 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .button {
-              display: inline-block;
-              background: #3182ce;
-              color: white !important;
-              padding: 14px 28px;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Developer Portal Login</h1>
-            </div>
-            <div class="content">
-              <h2>Sign In to Your Account</h2>
-              <p>Click the button below to sign in to your RinkLink.ai Developer Portal:</p>
-
-              <p style="text-align: center;">
-                <a href="${magicLinkUrl}" class="button">Sign In</a>
-              </p>
-
-              <p style="color: #718096; font-size: 14px;">
-                This link will expire in 15 minutes. If you didn't request this login link,
-                you can safely ignore this email.
-              </p>
-
-              <p style="color: #718096; font-size: 12px; word-break: break-all;">
-                Or copy this link: ${magicLinkUrl}
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    try {
-      await (this.emailService as any).transporter.sendMail({
-        from: `"RinkLink.ai Developer" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
-        to: email,
-        subject: 'Sign in to RinkLink.ai Developer Portal',
-        html,
-      });
-    } catch (error) {
-      console.error('Error sending magic link email:', error);
     }
   }
 }

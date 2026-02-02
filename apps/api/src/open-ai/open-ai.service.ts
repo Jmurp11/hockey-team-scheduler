@@ -97,10 +97,10 @@ export class OpenAiService {
 
     const managers = JSON.parse(response.output_text).managers.map(
       (manager) => ({
-        name: manager.name.replace(/ cite.*/g, '').trim(),
-        email: manager.email.replace(/ cite.*/g, '').trim(),
-        phone: manager.phone.replace(/ cite.*/g, '').trim(),
-        sourceUrl: manager.sourceUrl.replace(/ cite.*/g, '').trim(),
+        name: manager.name.replace(/ cite.*/g, '').trim(),
+        email: manager.email.replace(/ cite.*/g, '').trim(),
+        phone: manager.phone.replace(/ cite.*/g, '').trim(),
+        sourceUrl: manager.sourceUrl.replace(/ cite.*/g, '').trim(),
         team: props.team,
       }),
     );
@@ -117,6 +117,7 @@ export class OpenAiService {
       throw new Error('Could not save manager');
     }
 
+    console.log(`Successfully saved ${managers.length} manager(s) to database for team "${props.team}"`);
     return managers;
   }
 

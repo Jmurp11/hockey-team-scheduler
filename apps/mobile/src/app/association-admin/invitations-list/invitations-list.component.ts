@@ -6,7 +6,12 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { AssociationInvitation } from '@hockey-team-scheduler/shared-utilities';
+import {
+  AssociationInvitation,
+  getInvitationStatusSeverity,
+  getInvitationCancellationMessage,
+  mapToIonicColor,
+} from '@hockey-team-scheduler/shared-utilities';
 import {
   AlertController,
   IonBadge,
@@ -97,18 +102,7 @@ export class InvitationsListComponent {
   }
 
   getStatusColor(status: string): string {
-    switch (status) {
-      case 'ACCEPTED':
-        return 'success';
-      case 'pending':
-        return 'primary';
-      case 'expired':
-        return 'warning';
-      case 'canceled':
-        return 'danger';
-      default:
-        return 'medium';
-    }
+    return mapToIonicColor(getInvitationStatusSeverity(status));
   }
 
   onResend(invitation: AssociationInvitation) {
@@ -118,7 +112,7 @@ export class InvitationsListComponent {
   async onCancel(invitation: AssociationInvitation) {
     const alert = await this.alertController.create({
       header: 'Confirm Cancellation',
-      message: `Are you sure you want to cancel the invitation for ${invitation.invited_email}?`,
+      message: getInvitationCancellationMessage(invitation),
       buttons: [
         {
           text: 'No',

@@ -20,6 +20,7 @@ import {
   AssociationAdminService,
   AuthService,
 } from '@hockey-team-scheduler/shared-data-access';
+import { prepareInvitationRequest } from '@hockey-team-scheduler/shared-utilities';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -156,14 +157,15 @@ export class InviteMemberComponent implements OnInit {
 
     this.sending = true;
 
+    const invitationData = prepareInvitationRequest(
+      { name: this.nameControl.value!, email: this.emailControl.value! },
+      this.subscriptionId,
+      user.association_id.toString(),
+      user.user_id
+    );
+
     this.adminService
-      .createInvitation({
-        subscriptionId: this.subscriptionId,
-        associationId: user.association_id.toString(),
-        email: this.emailControl.value!,
-        role: 'MANAGER',
-        inviter_user_id: user.user_id,
-      })
+      .createInvitation(invitationData)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {

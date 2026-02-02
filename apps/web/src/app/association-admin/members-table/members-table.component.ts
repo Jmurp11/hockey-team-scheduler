@@ -11,6 +11,10 @@ import {
 import {
   AssociationMember,
   TableOptions,
+  getMemberStatusSeverity,
+  getMemberRoleChangeMessage,
+  getMemberRemovalMessage,
+  mapToPrimeNgSeverity,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -139,31 +143,20 @@ export class MembersTableComponent {
   getStatusSeverity(
     status: string
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'PENDING':
-        return 'info';
-      case 'INACTIVE':
-        return 'warn';
-      case 'REMOVED':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
+    return mapToPrimeNgSeverity(getMemberStatusSeverity(status)) as 'success' | 'info' | 'warn' | 'danger' | 'secondary';
   }
 
   onToggleAdmin(member: AssociationMember, event: any) {
     const newRole = event.checked ? 'ADMIN' : 'MANAGER';
-    const action = event.checked ? 'promote' : 'demote';
-    const roleLabel = event.checked ? 'an admin' : 'a regular member';
+    const isPromoting = event.checked;
+    const { message } = getMemberRoleChangeMessage(member, isPromoting);
     this.pendingToggleMemberId = member.id;
 
     this.confirmationService.confirm({
-      message: `Are you sure you want to ${action} ${member.user_name || member.user_email} to ${roleLabel}?`,
+      message,
       header: 'Confirm Role Change',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: event.checked ? 'p-button-primary' : 'p-button-warning',
+      acceptButtonStyleClass: isPromoting ? 'p-button-primary' : 'p-button-warning',
       accept: () => {
         this.pendingToggleMemberId = null;
         this.updateMemberRole.emit({ member, role: newRole });
@@ -183,7 +176,7 @@ export class MembersTableComponent {
 
   onRemove(member: AssociationMember) {
     this.confirmationService.confirm({
-      message: `Are you sure you want to remove ${member.user_name || member.user_email} from the association?`,
+      message: getMemberRemovalMessage(member),
       header: 'Confirm Removal',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',

@@ -7,6 +7,7 @@ import {
   AssociationsService,
   AuthService,
   OpenAiService,
+  ScheduleRiskService,
   ScheduleService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -42,6 +43,7 @@ import { ScheduleListComponent } from './schedule-list/schedule-list.component';
 import { Game, UserProfile } from '@hockey-team-scheduler/shared-utilities';
 import { ContactSchedulerDialogService } from '../contact-scheduler/contact-scheduler.service';
 import { ContactSchedulerLazyWrapperComponent } from '../contact-scheduler/contact-scheduler-lazy-wrapper.component';
+import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/toolbar-actions.component';
 
 interface TeamOption {
   label: string;
@@ -71,6 +73,7 @@ interface TeamOption {
     FloatingActionButtonComponent,
     AddGameLazyWrapperComponent,
     ContactSchedulerLazyWrapperComponent,
+    ToolbarActionsComponent,
   ],
   template: `
     <ion-header>
@@ -79,6 +82,9 @@ interface TeamOption {
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
         <ion-title>Schedule</ion-title>
+        <ion-buttons slot="end">
+          <app-toolbar-actions />
+        </ion-buttons>
       </ion-toolbar>
       @if (isAdmin()) {
         <ion-toolbar class="admin-bar">
@@ -193,6 +199,7 @@ export class SchedulePage implements OnInit {
   private router = inject(Router);
   private openAiService = inject(OpenAiService);
   private contactSchedulerService = inject(ContactSchedulerDialogService);
+  scheduleRiskService = inject(ScheduleRiskService);
   private destroyRef = inject(DestroyRef);
 
   contactingScheduler = signal<boolean>(false);
@@ -256,7 +263,12 @@ export class SchedulePage implements OnInit {
             return this.scheduleService.gamesFull(selection.id);
         }
       }),
-      tap(() => this.loading.set(false)),
+      tap((games) => {
+        this.loading.set(false);
+        if (games) {
+          this.scheduleRiskService.evaluate(games);
+        }
+      }),
       map((games) => games?.sort((a, b) => (a.date < b.date ? -1 : 1))),
     );
   }

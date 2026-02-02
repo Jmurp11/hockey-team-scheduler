@@ -8,6 +8,8 @@ Allow: /contact
 Allow: /tournaments
 Allow: /tournament-director
 Allow: /developer
+Allow: /privacy-policy
+Allow: /terms-of-service
 
 # Disallow authenticated areas
 Disallow: /app/

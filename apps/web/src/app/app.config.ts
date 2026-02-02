@@ -1,9 +1,17 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApiKeyInterceptor } from './shared/api-key.interceptor';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter } from '@angular/router';
-import { APP_CONFIG } from '@hockey-team-scheduler/shared-data-access';
+import { Router, provideRouter } from '@angular/router';
+import {
+  APP_CONFIG,
+  HealthCheckService,
+} from '@hockey-team-scheduler/shared-data-access';
 import Lara from '@primeng/themes/lara';
 import { FilterMatchMode, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
@@ -12,6 +20,18 @@ import { routes } from './app.routes';
 import { environment } from './environments/environment';
 
 const apiKeyInterceptor = new ApiKeyInterceptor();
+
+function initializeHealthCheck(
+  healthCheckService: HealthCheckService,
+  router: Router
+) {
+  return async () => {
+    const result = await healthCheckService.checkHealth();
+    if (!result.isHealthy) {
+      setTimeout(() => router.navigate(['/error']), 0);
+    }
+  };
+}
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(
@@ -68,6 +88,12 @@ export const appConfig: ApplicationConfig = {
         supabaseAnonKey: environment.PUBLIC_SUPABASE_SERVICE_ROLE,
         appName: 'web', // Differentiates from mobile app storage
       },
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeHealthCheck,
+      deps: [HealthCheckService, Router],
+      multi: true,
     },
   ],
 };

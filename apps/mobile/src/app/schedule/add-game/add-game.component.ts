@@ -84,7 +84,7 @@ import { ToastService } from '../../shared/toast/toast.service';
           <ion-toolbar>
             <ion-title>{{ title() }}</ion-title>
             <ion-buttons slot="end">
-              <ion-button (click)="cancel()">Close</ion-button>
+              <ion-button color="secondary" (click)="cancel()">Close</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -142,6 +142,8 @@ import { ToastService } from '../../shared/toast/toast.service';
                             [fill]="'outline'"
                             [control]="getFormControl(field.controlName)!"
                             [items]="field.items"
+                            [isRink]="field.isRink || false"
+                            [allowAddNew]="field.allowAddNew || false"
                           />
                         </ion-item>
                       }
@@ -352,7 +354,7 @@ export class AddGameComponent implements OnInit {
   }
 
   handleRinkValueChange(value: any) {
-    if (!value || (value && value.value === 'New Item')) {
+    if (!value || typeof value === 'string') {
       this.addGameForm.get('city')?.setValue(null);
       this.addGameForm.get('state')?.setValue(null);
       this.addGameForm.get('country')?.setValue(null);
@@ -417,12 +419,13 @@ export class AddGameComponent implements OnInit {
       return;
     }
 
+    const rawRink = this.addGameForm.getRawValue().rink;
+    const rinkWrapper = typeof rawRink === 'string'
+      ? { label: rawRink, value: rawRink }
+      : { label: rawRink.rink, value: rawRink };
     const formValue = {
       ...this.addGameForm.getRawValue(),
-      rink: {
-        label: this.addGameForm.getRawValue().rink.rink,
-        value: this.addGameForm.getRawValue().rink,
-      },
+      rink: rinkWrapper,
     };
     const input = transformAddGameFormData(
       formValue,

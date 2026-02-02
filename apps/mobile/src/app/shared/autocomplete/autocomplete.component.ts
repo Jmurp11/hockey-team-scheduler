@@ -43,6 +43,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
           [items]="items"
           [title]="label"
           [isRink]="isRink"
+          [allowAddNew]="allowAddNew"
           (selectionChange)="onSelectionChange($event)"
           (selectionCancel)="onSelectionCancel()"
         ></app-typeahead>
@@ -69,6 +70,7 @@ export class AutocompleteComponent implements ControlValueAccessor {
   @Input() fill?: 'outline' | 'solid';
   @Input() disabled = false;
   @Input() isRink: boolean = false;
+  @Input() allowAddNew = false;
 
   @Output() selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();
@@ -84,6 +86,10 @@ export class AutocompleteComponent implements ControlValueAccessor {
   get displayValue(): string | null {
     if (!this.control?.value) {
       return null;
+    }
+
+    if (typeof this.control.value === 'string') {
+      return this.control.value;
     }
 
     if (

@@ -9,7 +9,10 @@ import {
 import {
   formatTournamentLocation,
   Tournament,
+  TournamentFitEvaluation,
+  TournamentWithFit,
 } from '@hockey-team-scheduler/shared-utilities';
+import { TournamentFitBadgeComponent } from '@hockey-team-scheduler/shared-ui';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 
@@ -23,7 +26,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-tournament-public-card',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TagModule],
+  imports: [CommonModule, ButtonModule, TagModule, TournamentFitBadgeComponent],
   template: `
     <div
       class="tournament-card"
@@ -48,13 +51,24 @@ import { TagModule } from 'primeng/tag';
       <div class="card-header">
         <div class="header-row">
           <h3 class="tournament-name">{{ tournament.name }}</h3>
-          <!-- Distance indicator for authenticated users -->
-          @if (showAuthenticatedFeatures && tournament.distance !== undefined) {
-            <div class="distance-badge">
-              <i class="pi pi-compass"></i>
-              <span>{{ formatDistance(tournament.distance) }}</span>
-            </div>
-          }
+          <div class="header-badges">
+            <!-- Fit badge for authenticated users with fit data -->
+            @if (showAuthenticatedFeatures && tournamentFit) {
+              <app-tournament-fit-badge
+                [fit]="tournamentFit"
+                [showTooltip]="true"
+              />
+            }
+            <!-- Distance indicator for authenticated users -->
+            @if (
+              showAuthenticatedFeatures && tournament.distance !== undefined
+            ) {
+              <div class="distance-badge">
+                <i class="pi pi-compass"></i>
+                <span>{{ formatDistance(tournament.distance) }}</span>
+              </div>
+            }
+          </div>
         </div>
         <div class="tournament-meta">
           <div class="meta-item">
@@ -73,6 +87,14 @@ import { TagModule } from 'primeng/tag';
 
       <!-- Card Content -->
       <div class="card-content">
+        <!-- Fit explanation for authenticated users -->
+        @if (showAuthenticatedFeatures && tournamentFit) {
+          <p class="fit-explanation">
+            <i class="pi pi-info-circle"></i>
+            {{ tournamentFit.explanation }}
+          </p>
+        }
+
         @if (tournament.description) {
           <p class="description" [class.expanded]="isExpanded">
             {{ tournament.description }}
@@ -96,7 +118,11 @@ import { TagModule } from 'primeng/tag';
               <span class="detail-label">Levels</span>
               <div class="tag-list">
                 @for (level of getLevels(); track level) {
-                  <p-tag [value]="level" severity="secondary" [rounded]="true" />
+                  <p-tag
+                    [value]="level"
+                    severity="secondary"
+                    [rounded]="true"
+                  />
                 }
               </div>
             </div>
@@ -118,7 +144,7 @@ import { TagModule } from 'primeng/tag';
             label="Register"
             icon="pi pi-trophy"
             iconPos="right"
-            [outlined]="!tournament.featured"
+            variant="outlined"
             (click)="onRegister($event)"
           />
         } @else {
@@ -126,7 +152,7 @@ import { TagModule } from 'primeng/tag';
             label="Contact"
             icon="pi pi-envelope"
             severity="secondary"
-            [outlined]="true"
+            variant="outlined"
             (click)="onContact($event)"
           />
         }
@@ -134,11 +160,10 @@ import { TagModule } from 'primeng/tag';
         <!-- Add to Schedule button for authenticated users -->
         @if (showAuthenticatedFeatures) {
           <p-button
-            label="Add to Schedule"
+            label="Add"
             icon="pi pi-plus"
             iconPos="right"
-            [outlined]="true"
-            severity="secondary"
+            variant="outlined"
             (click)="onAddToSchedule($event)"
           />
         }
@@ -149,13 +174,21 @@ import { TagModule } from 'primeng/tag';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TournamentPublicCardComponent {
-  @Input({ required: true }) tournament!: Tournament;
+  @Input({ required: true }) tournament!: TournamentWithFit;
 
   /**
-   * When true, shows authenticated-only features like distance and "Add to Schedule" button.
+   * When true, shows authenticated-only features like distance, fit badges, and "Add to Schedule" button.
    * Used when the card is rendered in /app/tournaments for logged-in users.
    */
   @Input() showAuthenticatedFeatures = false;
+
+  /**
+   * Gets the tournament fit evaluation if available.
+   * The fit data may come from the TournamentWithFit interface.
+   */
+  get tournamentFit(): TournamentFitEvaluation | undefined {
+    return (this.tournament as TournamentWithFit).fit;
+  }
 
   @Output() registerClick = new EventEmitter<Tournament>();
   @Output() contactClick = new EventEmitter<Tournament>();
@@ -203,7 +236,9 @@ export class TournamentPublicCardComponent {
       // Check if it's a nested array like [["10U", "12U"]]
       if (data.length > 0 && Array.isArray(data[0])) {
         // Flatten nested arrays
-        return data.flat().filter((item): item is string => typeof item === 'string');
+        return data
+          .flat()
+          .filter((item): item is string => typeof item === 'string');
       }
       // Regular array - filter to strings only
       return data.filter((item): item is string => typeof item === 'string');
@@ -211,7 +246,10 @@ export class TournamentPublicCardComponent {
 
     // If it's a comma-separated string
     if (typeof data === 'string') {
-      return data.split(',').map((s) => s.trim()).filter(Boolean);
+      return data
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
 
     return [];

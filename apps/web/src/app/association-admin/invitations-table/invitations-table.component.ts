@@ -9,6 +9,9 @@ import {
 import {
   AssociationInvitation,
   TableOptions,
+  getInvitationStatusSeverity,
+  getInvitationCancellationMessage,
+  mapToPrimeNgSeverity,
 } from '@hockey-team-scheduler/shared-utilities';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -105,18 +108,7 @@ export class InvitationsTableComponent {
   getStatusSeverity(
     status: string
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    switch (status) {
-      case 'ACCEPTED':
-        return 'success';
-      case 'pending':
-        return 'info';
-      case 'expired':
-        return 'warn';
-      case 'canceled':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
+    return mapToPrimeNgSeverity(getInvitationStatusSeverity(status)) as 'success' | 'info' | 'warn' | 'danger' | 'secondary';
   }
 
   onResend(invitation: AssociationInvitation) {
@@ -125,7 +117,7 @@ export class InvitationsTableComponent {
 
   onCancel(invitation: AssociationInvitation) {
     this.confirmationService.confirm({
-      message: `Are you sure you want to cancel the invitation for ${invitation.invited_email}?`,
+      message: getInvitationCancellationMessage(invitation),
       header: 'Confirm Cancellation',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
