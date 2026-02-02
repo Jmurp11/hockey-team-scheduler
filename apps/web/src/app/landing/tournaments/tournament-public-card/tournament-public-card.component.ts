@@ -60,7 +60,9 @@ import { TagModule } from 'primeng/tag';
               />
             }
             <!-- Distance indicator for authenticated users -->
-            @if (showAuthenticatedFeatures && tournament.distance !== undefined) {
+            @if (
+              showAuthenticatedFeatures && tournament.distance !== undefined
+            ) {
               <div class="distance-badge">
                 <i class="pi pi-compass"></i>
                 <span>{{ formatDistance(tournament.distance) }}</span>
@@ -116,7 +118,11 @@ import { TagModule } from 'primeng/tag';
               <span class="detail-label">Levels</span>
               <div class="tag-list">
                 @for (level of getLevels(); track level) {
-                  <p-tag [value]="level" severity="secondary" [rounded]="true" />
+                  <p-tag
+                    [value]="level"
+                    severity="secondary"
+                    [rounded]="true"
+                  />
                 }
               </div>
             </div>
@@ -138,7 +144,7 @@ import { TagModule } from 'primeng/tag';
             label="Register"
             icon="pi pi-trophy"
             iconPos="right"
-            
+            variant="outlined"
             (click)="onRegister($event)"
           />
         } @else {
@@ -146,7 +152,7 @@ import { TagModule } from 'primeng/tag';
             label="Contact"
             icon="pi pi-envelope"
             severity="secondary"
-            [outlined]="true"
+            variant="outlined"
             (click)="onContact($event)"
           />
         }
@@ -157,7 +163,7 @@ import { TagModule } from 'primeng/tag';
             label="Add"
             icon="pi pi-plus"
             iconPos="right"
-            [outlined]="true"
+            variant="outlined"
             (click)="onAddToSchedule($event)"
           />
         }
@@ -230,7 +236,9 @@ export class TournamentPublicCardComponent {
       // Check if it's a nested array like [["10U", "12U"]]
       if (data.length > 0 && Array.isArray(data[0])) {
         // Flatten nested arrays
-        return data.flat().filter((item): item is string => typeof item === 'string');
+        return data
+          .flat()
+          .filter((item): item is string => typeof item === 'string');
       }
       // Regular array - filter to strings only
       return data.filter((item): item is string => typeof item === 'string');
@@ -238,7 +246,10 @@ export class TournamentPublicCardComponent {
 
     // If it's a comma-separated string
     if (typeof data === 'string') {
-      return data.split(',').map((s) => s.trim()).filter(Boolean);
+      return data
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
 
     return [];
