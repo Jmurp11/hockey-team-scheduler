@@ -44,8 +44,8 @@ interface Feature {
                 [src]="feature.image"
                 [alt]="feature.alt"
                 loading="lazy"
-                width="1000"
-                height="600"
+                width="100%"
+                height="100%"
               />
             </div>
           </div>
@@ -66,11 +66,10 @@ export class FeaturesComponent {
         'Find opponents at your level, nearby or on the road. RinkLink surfaces the best matchups based on skill, distance, and schedule availability.',
       bullets: [
         'Filter by skill level, distance, and open dates',
-        'View opponents on an interactive map',
         'Request games directly from search results',
       ],
-      image: 'find-nearby-teams.gif',
-      alt: 'Interactive map showing nearby hockey teams filtered by skill level and distance',
+      image: 'game-matching-assistant.gif',
+      alt: 'AI Agent helping to find and schedule hockey games with nearby opponents',
     },
     {
       icon: 'pi pi-exclamation-triangle',
@@ -97,7 +96,7 @@ export class FeaturesComponent {
         'Highlights date conflicts and travel distance',
         'One-click add to your season calendar',
       ],
-      image: 'tournaments.gif',
+      image: 'tournament-fit.gif',
       alt: 'Tournament listing with fit scores and one-click scheduling',
     },
     {

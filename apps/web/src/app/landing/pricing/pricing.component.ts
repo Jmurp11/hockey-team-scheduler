@@ -64,7 +64,7 @@ const FEATURES = [
       <header class="hero-section">
         <h1>Simple, Transparent Pricing</h1>
         <p class="subtitle">
-          Pay only for what you need. No hidden fees, cancel anytime.
+          Pay only for what you need. No hidden fees!
         </p>
       </header>
 
@@ -73,11 +73,11 @@ const FEATURES = [
           <div class="pricing-option">
             <div class="price-display">
               <span class="price">\${{ pricePerSeat }}</span>
-              <span class="price-detail">per seat / year</span>
+              <span class="price-detail">per user / year</span>
             </div>
 
             <div class="seat-selector">
-              <label for="seats">Number of seats</label>
+              <label for="seats">Number of users</label>
               <div class="seat-controls">
                 <button
                   type="button"
