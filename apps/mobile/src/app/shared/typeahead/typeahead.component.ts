@@ -8,7 +8,11 @@ import {
   IonSearchbar,
   IonContent,
   IonList,
+  IonIcon,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { addCircleOutline } from 'ionicons/icons';
+import { toTitleCase } from '@hockey-team-scheduler/shared-utilities';
 import { AutocompleteOption } from '../types/autocomplete-option.type';
 
 @Component({
@@ -23,6 +27,7 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
     IonContent,
     IonList,
     IonTitle,
+    IonIcon,
   ],
   template: `
     <ion-header>
@@ -35,6 +40,12 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       <ion-searchbar (ionInput)="searchbarInput($event)"></ion-searchbar>
 
       <ion-list id="modal-list" [inset]="true">
+        @if (allowAddNew && currentSearchQuery.trim()) {
+          <ion-item class="add-new-item" (click)="addNewItem()">
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+            <span>Add "{{ currentSearchQuery.trim() }}"</span>
+          </ion-item>
+        }
         @for (item of filteredItems; track item.value) {
           <ion-item (click)="confirmChanges(item)">
             @if (isRink) {
@@ -60,6 +71,16 @@ import { AutocompleteOption } from '../types/autocomplete-option.type';
       @use 'mixins/mixins' as *;
       ion-item {
         cursor: pointer;
+      }
+
+      .add-new-item {
+        --color: var(--ion-color-primary);
+        font-weight: 500;
+
+        ion-icon {
+          margin-right: 0.5rem;
+          font-size: 1.25rem;
+        }
       }
 
       .rink {
@@ -94,11 +115,17 @@ export class TypeaheadComponent implements OnInit {
   @Input() items: AutocompleteOption[] = [];
   @Input() title?: string = 'Select an Option';
   @Input() isRink: boolean = false;
+  @Input() allowAddNew = false;
   @Output()
   selectionCancel = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<AutocompleteOption>();
 
   filteredItems: AutocompleteOption[] = [];
+  currentSearchQuery = '';
+
+  constructor() {
+    addIcons({ addCircleOutline });
+  }
 
   ngOnInit() {
     this.filteredItems = [...this.items];
@@ -114,7 +141,13 @@ export class TypeaheadComponent implements OnInit {
 
   searchbarInput(event: Event) {
     const inputElement = event.target as HTMLInputElement;
+    this.currentSearchQuery = inputElement.value || '';
     this.filterList(inputElement.value);
+  }
+
+  addNewItem() {
+    const label = toTitleCase(this.currentSearchQuery.trim());
+    this.selectionChange.emit({ label, value: label });
   }
 
   /**

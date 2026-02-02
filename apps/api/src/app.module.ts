@@ -11,7 +11,6 @@ import { RinkLinkGptModule } from './rinklink-gpt/rinklink-gpt.module';
 import { TeamsModule } from './teams/teams.module';
 import { UserModule } from './user/user.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
-import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { RinkModule } from './rinks/rink.module';
 import { EmailModule } from './email/email.module';
@@ -28,7 +27,6 @@ import { GameMatchingModule } from './game-matching/game-matching.module';
     LeaguesModule,
     OpenAiModule,
     RinkLinkGptModule,
-    MessageModule,
     TeamsModule,
     TournamentsModule,
     UserModule,

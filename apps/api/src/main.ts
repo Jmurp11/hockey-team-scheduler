@@ -31,6 +31,7 @@ async function bootstrap() {
   });
 
   app.use('/v1/users/webhook', bodyParser.raw({ type: 'application/json' }));
+  app.use('/v1/developers/webhook', bodyParser.raw({ type: 'application/json' }));
 
   app.use(bodyParser.json());
 

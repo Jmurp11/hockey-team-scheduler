@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -41,6 +42,7 @@ class CheckoutSessionResponse {
 }
 
 @ApiTags('Tournaments')
+@ApiExcludeController()
 @Controller('v1/tournaments')
 export class TournamentsController {
   constructor(private readonly tournamentsService: TournamentsService) {}

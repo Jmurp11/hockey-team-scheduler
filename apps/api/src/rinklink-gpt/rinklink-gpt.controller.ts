@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiResponse,
@@ -19,6 +20,7 @@ import { ChatRequestDto, ChatResponseDto } from './rinklink-gpt.types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('RinkLinkGPT')
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',

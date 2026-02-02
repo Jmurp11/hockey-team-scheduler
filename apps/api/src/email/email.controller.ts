@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiResponse,
@@ -23,6 +24,7 @@ class ContactFormDto {
 }
 
 @ApiTags('Email')
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',

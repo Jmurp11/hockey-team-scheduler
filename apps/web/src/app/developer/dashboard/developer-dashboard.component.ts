@@ -113,7 +113,8 @@ import { SeoService } from '../../shared/services/seo.service';
                   <div class="new-key-alert">
                     <i class="pi pi-exclamation-triangle"></i>
                     <p>
-                      <strong>Save this key now!</strong> It won't be shown again.
+                      <strong>Save this key now!</strong> It won't be shown
+                      again.
                     </p>
                   </div>
                   <div class="key-value full-key">
@@ -166,7 +167,9 @@ import { SeoService } from '../../shared/services/seo.service';
             <ng-template #content>
               <div class="stats-grid">
                 <div class="stat">
-                  <span class="stat-value">{{ usage()?.totalRequests || 0 }}</span>
+                  <span class="stat-value">{{
+                    usage()?.totalRequests || 0
+                  }}</span>
                   <span class="stat-label">Total Requests</span>
                 </div>
                 <div class="stat">
@@ -269,12 +272,12 @@ import { SeoService } from '../../shared/services/seo.service';
         .header-content {
           h1 {
             font-size: 2rem;
-            color: var(--primary-700);
+            color: var(--primary-500);
             margin: 0 0 0.25rem;
           }
 
           .email {
-            color: var(--text-color-secondary);
+            color: var(--primary-500);
             margin: 0;
           }
         }

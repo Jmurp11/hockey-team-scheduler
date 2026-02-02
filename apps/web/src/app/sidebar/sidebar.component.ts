@@ -116,7 +116,7 @@ export class SidebarComponent {
     },
     {
       label: 'Bug Report',
-      icon: 'pi pi-fw pi-flag',
+      icon: 'bi bi-bug',
       routerLink: '/app/bug-report',
     },
     {

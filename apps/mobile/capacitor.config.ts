@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.rinklinkai.mobile',
+  appId: 'ai.rinklink.mobile',
   appName: 'RinkLink.ai',
   webDir: '../../dist/apps/mobile/browser',
   plugins: {
