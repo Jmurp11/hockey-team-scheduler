@@ -302,3 +302,74 @@ export interface Message {
 export interface ConversationWithMessages extends Conversation {
   messages: Message[];
 }
+
+/**
+ * Tournament Fit Agent DTOs
+ */
+
+export class TournamentFitScoresDto {
+  @ApiProperty({ description: 'How well the tournament level matches the team rating (0-100)' })
+  ratingFit: number;
+
+  @ApiProperty({ description: 'How well the dates fit with the team schedule (0-100)' })
+  scheduleAvailability: number;
+
+  @ApiProperty({ description: 'How reasonable the travel distance is (0-100)' })
+  travelScore: number;
+
+  @ApiProperty({ description: 'Overall schedule density around tournament dates (0-100)' })
+  scheduleDensity: number;
+}
+
+export class TournamentFitEvaluationDto {
+  @ApiProperty({ description: 'Tournament ID' })
+  tournamentId: string;
+
+  @ApiProperty({ description: 'Fit label: Good Fit, Tight Schedule, or Travel Heavy' })
+  fitLabel: 'Good Fit' | 'Tight Schedule' | 'Travel Heavy';
+
+  @ApiProperty({ description: 'Plain-English explanation of the fit assessment' })
+  explanation: string;
+
+  @ApiProperty({ type: TournamentFitScoresDto, description: 'Detailed scores for each dimension' })
+  scores: TournamentFitScoresDto;
+
+  @ApiProperty({ description: 'Overall fit score (0-100)' })
+  overallScore: number;
+
+  @ApiProperty({ description: 'Whether the team has schedule conflicts during tournament dates' })
+  hasScheduleConflict: boolean;
+
+  @ApiProperty({ description: 'Number of games around the tournament dates' })
+  gamesNearby: number;
+}
+
+export class TournamentWithFitDto extends Tournament {
+  @ApiProperty({ type: TournamentFitEvaluationDto, required: false, description: 'Fit evaluation results' })
+  fit?: TournamentFitEvaluationDto;
+
+  @ApiProperty({ required: false, description: 'Whether this is a featured tournament' })
+  featured?: boolean;
+}
+
+export class EvaluateTournamentFitRequestDto {
+  @ApiProperty({ description: 'Team ID to evaluate fit for', example: 1234 })
+  teamId: number;
+
+  @ApiProperty({ description: 'User ID for fetching schedule', example: 'abc-123-def' })
+  userId: string;
+
+  @ApiProperty({ description: 'Association ID for location/distance calculation', example: 4918 })
+  associationId: number;
+
+  @ApiProperty({ required: false, description: 'Specific tournament IDs to evaluate', type: [String] })
+  tournamentIds?: string[];
+}
+
+export class EvaluateTournamentFitResponseDto {
+  @ApiProperty({ type: [TournamentWithFitDto], description: 'Tournaments with fit evaluations, sorted by overall fit score' })
+  tournaments: TournamentWithFitDto[];
+
+  @ApiProperty({ type: [TournamentWithFitDto], description: 'Tournaments that are recommended (Good Fit)' })
+  recommended: TournamentWithFitDto[];
+}

@@ -17,6 +17,7 @@ import {
   AssociationAdminData,
   AssociationInvitation,
   AssociationMember,
+  isUserAdmin,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
   IonButtons,
@@ -92,7 +93,7 @@ import { InviteMemberComponent } from './invite-member/invite-member.component';
 
         <!-- FAB Button for Invite -->
         <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-          <ion-fab-button (click)="openInviteModal()">
+          <ion-fab-button (click)="openInviteModal()" color="secondary">
             <ion-icon name="person-add"></ion-icon>
           </ion-fab-button>
         </ion-fab>
@@ -143,9 +144,9 @@ export class AssociationAdminPage implements OnInit {
 
   ngOnInit(): void {
     const user = this.currentUser();
-    
+
     // Check if user is an admin
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user.role)) {
       this.router.navigate(['/app/profile']);
       return;
     }

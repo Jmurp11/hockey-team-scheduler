@@ -10,10 +10,11 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExcludeController, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import Stripe from 'stripe';
 
 import { UserService } from './user.service';
+import { UserAccessService } from './user-access.service';
 
 // ============ DTOs ============
 
@@ -58,10 +59,29 @@ class CreateAssociationDto {
   subscriptionId?: string;
 }
 
+/**
+ * DTO for completing user registration after subscription/invite.
+ * This is the primary registration completion workflow.
+ */
+class CompleteRegistrationDto {
+  userId: string;
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  associationId: number;
+  teamId: number;
+  age?: string;
+}
+
 @ApiTags('Users')
+@ApiExcludeController()
 @Controller('v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userAccessService: UserAccessService,
+  ) {}
 
   // ============ STRIPE WEBHOOK ============
 
@@ -165,6 +185,102 @@ export class UserController {
 
       (res as any).status(500).json({
         message: 'Error registering user',
+        error: error.message,
+      });
+    }
+  }
+
+  // ============ COMPLETE REGISTRATION ============
+
+  @Post('complete-registration')
+  @ApiOperation({
+    summary: 'Complete user registration',
+    description: `
+      Completes user registration after subscription or invitation.
+      This is the primary workflow called after the user fills out the registration form.
+
+      Creates/updates:
+      1. Updates app_users with profile data (name, phone, association, team)
+      2. Updates auth user with password
+      3. Creates manager record (idempotent - prevents duplicates)
+      4. Creates association_members record if subscription has > 1 seat (idempotent)
+
+      For multi-seat subscriptions:
+      - User is assigned ADMIN role in association_members
+      - Subscription is linked to the selected association
+
+      All operations are idempotent and safe to retry.
+    `,
+  })
+  @ApiBody({ type: CompleteRegistrationDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Registration completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        isMultiSeat: { type: 'boolean', description: 'Whether the subscription has multiple seats' },
+        appUser: { type: 'object', description: 'Updated app_users record' },
+        manager: { type: 'object', description: 'Manager record' },
+        associationMember: { type: 'object', nullable: true, description: 'Association member record (if multi-seat)' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request or validation error' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async completeRegistration(
+    @Body() body: CompleteRegistrationDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.userService.completeRegistration({
+        userId: body.userId,
+        email: body.email,
+        password: body.password,
+        name: body.name,
+        phone: body.phone,
+        associationId: body.associationId,
+        teamId: body.teamId,
+        age: body.age,
+      });
+
+      (res as any).status(200).json({
+        success: true,
+        message: 'Registration completed successfully',
+        isMultiSeat: result.isMultiSeat,
+        appUser: result.appUser,
+        manager: result.manager,
+        associationMember: result.associationMember,
+      });
+    } catch (error: any) {
+      console.error('Error completing registration:', error);
+
+      // Handle specific error types
+      if (error.message === 'User not found. Please contact support.') {
+        (res as any).status(404).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      if (
+        error.message === 'Invalid association selected' ||
+        error.message === 'Invalid team selected'
+      ) {
+        (res as any).status(400).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error completing registration',
         error: error.message,
       });
     }
@@ -600,6 +716,134 @@ export class UserController {
     } catch (error: any) {
       (res as any).status(500).json({
         message: 'Error retrieving session status',
+        error: error.message,
+      });
+    }
+  }
+
+  // ============ USER ACCESS (Unified Auth) ============
+
+  @Get('me/access')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get current user access info',
+    description: `
+      Returns comprehensive access information for the authenticated user.
+      Used for post-login routing and determining UI state.
+
+      User types:
+      - app_only: User has app access only (redirect to /app)
+      - api_only: User has developer portal access only (redirect to /developer)
+      - both: User has both app and developer access (redirect to /app, show developer in sidenav)
+      - none: User exists in auth but has no access (redirect to login or onboarding)
+
+      Requires a valid Supabase Auth JWT in the Authorization header.
+    `,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User access information',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        access: {
+          type: 'object',
+          properties: {
+            authUserId: { type: 'string', format: 'uuid' },
+            email: { type: 'string', format: 'email' },
+            isAppUser: { type: 'boolean' },
+            isApiUser: { type: 'boolean' },
+            userType: { type: 'string', enum: ['app_only', 'api_only', 'both', 'none'] },
+            defaultRedirect: { type: 'string' },
+            appUserId: { type: 'number', nullable: true },
+            apiUserId: { type: 'number', nullable: true },
+            isAppProfileComplete: { type: 'boolean', nullable: true },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or missing auth token' })
+  async getCurrentUserAccess(
+    @Headers('authorization') authHeader: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Extract token from Authorization header
+      const token = authHeader?.replace('Bearer ', '');
+
+      if (!token) {
+        (res as any).status(401).json({
+          success: false,
+          message: 'Missing authorization token',
+        });
+        return;
+      }
+
+      // Validate token and get user ID
+      const authUserId = await this.userAccessService.validateSupabaseToken(token);
+
+      if (!authUserId) {
+        (res as any).status(401).json({
+          success: false,
+          message: 'Invalid or expired token',
+        });
+        return;
+      }
+
+      // Get user access info
+      const access = await this.userAccessService.getUserAccess(authUserId);
+
+      (res as any).status(200).json({
+        success: true,
+        access,
+      });
+    } catch (error: any) {
+      console.error('Error getting user access:', error);
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error retrieving user access',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('user-access/:authUserId')
+  @ApiOperation({
+    summary: 'Get user access info by auth user ID',
+    description: 'Returns access information for a specific user. Requires service role access.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User access information',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserAccessById(
+    @Param('authUserId') authUserId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const access = await this.userAccessService.getUserAccess(authUserId);
+
+      (res as any).status(200).json({
+        success: true,
+        access,
+      });
+    } catch (error: any) {
+      console.error('Error getting user access:', error);
+
+      if (error.message === 'User not found') {
+        (res as any).status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+        return;
+      }
+
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error retrieving user access',
         error: error.message,
       });
     }

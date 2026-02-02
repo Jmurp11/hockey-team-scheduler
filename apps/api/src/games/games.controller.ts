@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -29,6 +30,7 @@ import { GamesService } from './games.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('Games')
+@ApiExcludeController()
 @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',

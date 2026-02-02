@@ -1,0 +1,99 @@
+@use 'mixins/mixins' as *;
+
+.privacy-container {
+  @include flex(flex-start, center, column);
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  background: var(--p-surface-ground);
+  font-family: 'Space Grotesk', 'Noto Sans', sans-serif;
+}
+
+:host ::ng-deep .privacy-card {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.privacy-content {
+  padding: 1rem;
+  line-height: 1.8;
+
+  h1 {
+    font-size: 2rem;
+    color: var(--primary-500);
+    margin: 0 0 0.5rem;
+    text-align: center;
+  }
+
+  .updated-date {
+    text-align: center;
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  section {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    color: var(--primary-500);
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--p-surface-border);
+  }
+
+  p {
+    color: var(--p-text-color);
+    margin: 0 0 1rem;
+    text-align: justify;
+  }
+
+  ul {
+    margin: 0 0 1rem;
+    padding-left: 1.5rem;
+
+    li {
+      color: var(--p-text-color);
+      margin-bottom: 0.75rem;
+
+      strong {
+        color: var(--p-text-color);
+      }
+    }
+  }
+
+  a {
+    color: var(--primary-500);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .privacy-container {
+    padding: 1rem;
+  }
+
+  .privacy-content {
+    padding: 0.5rem;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+    }
+
+    p {
+      text-align: left;
+    }
+  }
+}

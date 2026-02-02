@@ -18,6 +18,7 @@ import {
   AssociationAdminData,
   AssociationInvitation,
   AssociationMember,
+  isUserAdmin,
 } from '@hockey-team-scheduler/shared-utilities';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -119,7 +120,7 @@ export class AssociationAdminComponent implements OnInit {
     const user = this.currentUser();
 
     // Check if user is an admin
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !isUserAdmin(user.role)) {
       this.router.navigate(['/app/profile']);
       return;
     }

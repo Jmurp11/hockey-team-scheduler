@@ -29,7 +29,8 @@ ion-menu {
     cursor: pointer;
     --color: white;
 
-    ion-icon {
+    ion-icon,
+    i[slot='start'] {
       margin-inline-end: 16px;
       font-size: 24px;
       color: white;
@@ -43,6 +44,7 @@ ion-menu {
       --background: var(--secondary-500);
 
       ion-icon,
+      i[slot='start'],
       ion-label {
         color: white;
         font-weight: 600;

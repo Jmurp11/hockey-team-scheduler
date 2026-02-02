@@ -4,6 +4,11 @@ import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Route[] = [
   {
+    path: 'error',
+    loadComponent: () =>
+      import('./error/api-error.page').then((m) => m.ApiErrorPage),
+  },
+  {
     path: 'auth',
     loadComponent: () => import('./auth/auth.page').then((m) => m.AuthPage),
     children: authRoutes,
@@ -35,6 +40,13 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'rinklink-gpt',
+        loadComponent: () =>
+          import('./rinklink-gpt/rinklink-gpt.page').then(
+            (m) => m.RinkLinkGptPage,
+          ),
+      },
+      {
         path: 'conversations',
         loadComponent: () =>
           import('./conversations/conversations.page').then(
@@ -58,6 +70,13 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./association-admin/association-admin.page').then(
             (m) => m.AssociationAdminPage,
+          ),
+      },
+      {
+        path: 'bug-report',
+        loadComponent: () =>
+          import('./bug-report/bug-report.page').then(
+            (m) => m.BugReportPage,
           ),
       },
       {

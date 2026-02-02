@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import {
   IonCardContent,
   IonCardHeader,
@@ -8,6 +8,11 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { statsChart } from 'ionicons/icons';
+import {
+  getStrengthOfScheduleClassification,
+  getStrengthOfScheduleLabel,
+  StrengthClassification,
+} from '@hockey-team-scheduler/shared-utilities';
 import { CardComponent } from '../../../shared/card/card.component';
 
 @Component({
@@ -30,10 +35,10 @@ import { CardComponent } from '../../../shared/card/card.component';
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <div class="stat-value" [class]="strengthClass">
-          {{ strengthOfSchedule | number : '1.2-2' }}
+        <div class="stat-value" [class]="strengthClass()">
+          {{ strengthOfSchedule() | number : '1.1-1' }}
         </div>
-        <div class="stat-label">{{ strengthLabel }}</div>
+        <div class="stat-label">{{ strengthLabel() }}</div>
       </ion-card-content>
     </app-card>
   `,
@@ -83,21 +88,18 @@ import { CardComponent } from '../../../shared/card/card.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StrengthOfScheduleCardComponent {
-  @Input({ required: true }) strengthOfSchedule!: number;
+  strengthOfSchedule = input.required<number>();
+  teamRating = input.required<number>();
 
   constructor() {
     addIcons({ statsChart });
   }
 
-  get strengthClass(): string {
-    if (this.strengthOfSchedule >= 1.1) return 'strong';
-    if (this.strengthOfSchedule >= 0.9) return 'moderate';
-    return 'weak';
-  }
+  strengthClass = computed((): StrengthClassification => {
+    return getStrengthOfScheduleClassification(this.strengthOfSchedule(), this.teamRating());
+  });
 
-  get strengthLabel(): string {
-    if (this.strengthOfSchedule >= 1.1) return 'Strong';
-    if (this.strengthOfSchedule >= 0.9) return 'Moderate';
-    return 'Weak';
-  }
+  strengthLabel = computed((): string => {
+    return getStrengthOfScheduleLabel(this.strengthClass());
+  });
 }

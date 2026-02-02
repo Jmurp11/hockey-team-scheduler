@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  getSubscriptionStatusSeverity,
+  getSubscriptionDateLabel,
+  mapToPrimeNgSeverity,
+} from '@hockey-team-scheduler/shared-utilities';
 import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 
@@ -34,7 +39,7 @@ import { TagModule } from 'primeng/tag';
           </div>
           @if (subscriptionEndDate) {
             <div class="admin-header__subscription-date">
-              <span class="admin-header__label">{{ subscriptionStatus === 'ACTIVE' ? 'Renews' : 'Ends' }}</span>
+              <span class="admin-header__label">{{ dateLabel }}</span>
               <span class="admin-header__value">{{ subscriptionEndDate | date:'mediumDate' }}</span>
             </div>
           }
@@ -151,17 +156,11 @@ export class AssociationAdminHeaderComponent {
   @Input() seatsInUse = 0;
   @Input() totalSeats = 0;
 
+  get dateLabel(): string {
+    return getSubscriptionDateLabel(this.subscriptionStatus);
+  }
+
   getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    switch (status) {
-      case 'ACTIVE':
-        return 'success';
-      case 'PENDING':
-        return 'info';
-      case 'EXPIRED':
-      case 'CANCELED':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
+    return mapToPrimeNgSeverity(getSubscriptionStatusSeverity(status));
   }
 }

@@ -1,9 +1,41 @@
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { UpdateUser } from '@hockey-team-scheduler/shared-utilities';
 import { AuthService } from './auth.service';
+import { APP_CONFIG } from '../config/app-config';
+import { firstValueFrom } from 'rxjs';
+
+/**
+ * Parameters for completing user registration via the API.
+ */
+export interface CompleteRegistrationDto {
+  userId: string;
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  associationId: number;
+  teamId: number;
+  age?: string;
+}
+
+/**
+ * Response from the complete registration API endpoint.
+ */
+export interface CompleteRegistrationResponse {
+  success: boolean;
+  message: string;
+  isMultiSeat: boolean;
+  appUser: any;
+  manager: any;
+  associationMember: any | null;
+}
+
 @Injectable({providedIn: 'root'})
 export class UserService {
+  private http = inject(HttpClient);
+  private config = inject(APP_CONFIG);
   supabaseClient = inject(SupabaseService).getSupabaseClient();
   authService = inject(AuthService);
 
@@ -107,5 +139,29 @@ export class UserService {
       association: user.association,
       role: 'MANAGER'
     });
+  }
+
+  /**
+   * Completes user registration after subscription or invitation.
+   * This is the primary registration workflow that:
+   * 1. Updates app_users with profile data
+   * 2. Updates auth user with password
+   * 3. Creates manager record (idempotent)
+   * 4. Creates association_members for multi-seat subscriptions (idempotent)
+   *
+   * All operations are idempotent and safe to retry.
+   *
+   * @param dto - Registration completion data
+   * @returns Promise with registration result
+   */
+  async completeRegistration(dto: CompleteRegistrationDto): Promise<CompleteRegistrationResponse> {
+    const response = await firstValueFrom(
+      this.http.post<CompleteRegistrationResponse>(
+        `${this.config.apiUrl}/users/complete-registration`,
+        dto
+      )
+    );
+
+    return response;
   }
 }

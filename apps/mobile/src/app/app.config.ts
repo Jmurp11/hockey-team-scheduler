@@ -6,11 +6,12 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import {
   APP_CONFIG,
   AssociationsService,
   AuthService,
+  HealthCheckService,
   MessagesService,
   SupabaseService,
   TeamsService,
@@ -25,6 +26,22 @@ import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
 
 const apiKeyInterceptor = new ApiKeyInterceptor();
+
+/**
+ * Check API health on app startup
+ * Redirects to error page if API is unavailable
+ */
+function initializeHealthCheck(
+  healthCheckService: HealthCheckService,
+  router: Router
+) {
+  return async () => {
+    const result = await healthCheckService.checkHealth();
+    if (!result.isHealthy) {
+      setTimeout(() => router.navigate(['/error']), 0);
+    }
+  };
+}
 
 /**
  * Initialize auth session on app startup
@@ -85,6 +102,12 @@ export const appConfig: ApplicationConfig = {
         supabaseAnonKey: environment.PUBLIC_SUPABASE_SERVICE_ROLE,
         appName: 'mobile', // Differentiates from web app storage
       },
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeHealthCheck,
+      deps: [HealthCheckService, Router],
+      multi: true,
     },
     {
       provide: APP_INITIALIZER,
