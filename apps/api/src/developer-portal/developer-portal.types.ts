@@ -17,6 +17,7 @@ export interface ApiUser {
   auth_user_id: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  stripe_subscription_item_id: string | null;
   is_active: boolean;
   last_used: string | null;
   request_count: number;

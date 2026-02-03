@@ -41,10 +41,8 @@ import {
 @Injectable()
 export class DeveloperPortalService {
   private stripe: Stripe;
-  private readonly PRICE_PER_REQUEST = 0.05; // $0.05 per request
+  private readonly PRICE_PER_REQUEST_CENTS = 5; // $0.05 per request
 
-  // Stripe Product ID for Developer API access
-  private readonly STRIPE_PRODUCT_ID = 'prod_TlJK71isy9QShT';
 
   constructor(private readonly emailService: EmailService) {
     this.stripe = this.initStripe();
@@ -76,8 +74,7 @@ export class DeveloperPortalService {
       throw new BadRequestException('An active subscription already exists for this email');
     }
 
-    // Create Stripe checkout session
-    // Using a simple subscription model - usage is tracked internally
+    // Create Stripe checkout session with metered billing
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: email,
@@ -85,13 +82,16 @@ export class DeveloperPortalService {
         {
           price_data: {
             currency: 'usd',
-            product: this.STRIPE_PRODUCT_ID,
-            unit_amount: 0, // $0 base fee - usage is tracked separately
+            product_data: {
+              name: 'RinkLink API Access',
+              description: 'API access subscription with usage-based billing at $0.05 per request',
+            },
+            unit_amount: this.PRICE_PER_REQUEST_CENTS,
             recurring: {
               interval: 'month',
+              usage_type: 'metered',
             },
           },
-          quantity: 1,
         },
       ],
       subscription_data: {
@@ -174,6 +174,15 @@ export class DeveloperPortalService {
       return;
     }
 
+    // Retrieve the subscription item ID for metered usage reporting
+    let subscriptionItemId: string | null = null;
+    if (subscriptionId) {
+      const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['items'],
+      });
+      subscriptionItemId = subscription.items.data[0]?.id || null;
+    }
+
     // Check if user already exists
     const apiUser = await this.findApiUserByEmail(email);
 
@@ -184,6 +193,7 @@ export class DeveloperPortalService {
         .update({
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
+          stripe_subscription_item_id: subscriptionItemId,
           is_active: true,
         })
         .eq('id', apiUser.id);
@@ -198,6 +208,7 @@ export class DeveloperPortalService {
         api_key_prefix: this.getApiKeyPrefix(apiKey),
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
+        stripe_subscription_item_id: subscriptionItemId,
         is_active: true,
         request_count: 0,
       });
@@ -431,13 +442,13 @@ export class DeveloperPortalService {
   async recordApiRequest(userId: number): Promise<void> {
     const { data: user } = await supabase
       .from('api_users')
-      .select('request_count, stripe_subscription_id')
+      .select('request_count, stripe_subscription_item_id')
       .eq('id', userId)
       .single();
 
     if (!user) return;
 
-    // Update request count
+    // Update local request count
     await supabase
       .from('api_users')
       .update({
@@ -446,10 +457,22 @@ export class DeveloperPortalService {
       })
       .eq('id', userId);
 
-    // Optionally log the request for detailed analytics
+    // Report usage to Stripe for metered billing
+    if (user.stripe_subscription_item_id) {
+      try {
+        await this.stripe.subscriptionItems.createUsageRecord(
+          user.stripe_subscription_item_id,
+          { quantity: 1 },
+        );
+      } catch (error) {
+        console.error('[DeveloperPortal] Failed to report usage to Stripe:', error);
+      }
+    }
+
+    // Log the request for detailed analytics
     await supabase.from('api_request_log').insert({
       api_user_id: userId,
-      endpoint: 'unknown', // Can be passed from the guard
+      endpoint: 'unknown',
       method: 'unknown',
     });
   }
@@ -566,7 +589,7 @@ export class DeveloperPortalService {
       totalRequests: apiUser.request_count || 0,
       requestsThisMonth: apiUser.request_count || 0, // TODO: Calculate monthly from api_request_log
       lastRequestAt: apiUser.last_used,
-      estimatedCost: (apiUser.request_count || 0) * this.PRICE_PER_REQUEST,
+      estimatedCost: (apiUser.request_count || 0) * (this.PRICE_PER_REQUEST_CENTS / 100),
     };
 
     return { user, apiKey, usage };
