@@ -107,7 +107,7 @@ export class FeaturesComponent {
         'Your AI scheduling assistant handles the tedious parts. Tell it what you need in plain English and it takes care of the rest.',
       bullets: [
         'Drafts and sends outreach emails to opponents',
-        'Negotiates game times on your behalf',
+        'Helps plan team outings and logistics',
         'Adds confirmed games to your calendar automatically',
       ],
       image: 'rinklink-gpt.png',
