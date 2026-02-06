@@ -19,9 +19,26 @@ Disallow: /login
 Disallow: /forgot-password
 Disallow: /welcome
 
+# Disallow developer auth routes
+Disallow: /developer/dashboard
+Disallow: /developer/signup
+Disallow: /developer/login
+
 # Disallow private/internal pages
 Disallow: /api/
 Disallow: /admin/
+
+# Googlebot-specific rules
+User-agent: Googlebot
+Allow: /*.js$
+Allow: /*.css$
+
+# Crawl-delay for aggressive bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
 
 # Sitemap
 Sitemap: https://rinklink.ai/sitemap.xml

@@ -4,6 +4,7 @@ import { CapabilitiesComponent } from '../capabilities/capabilities.component';
 import { FeaturesComponent } from '../features/features.component';
 import { GetStartedComponent } from '../get-started.component.ts/get-started.component';
 import { HowItWorksComponent } from '../how-it-works/how-it-works.component';
+import { MobileComponent } from '../mobile/mobile.component';
 import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
@@ -15,15 +16,17 @@ import { SeoService } from '../../shared/services/seo.service';
     GetStartedComponent,
     CapabilitiesComponent,
     HowItWorksComponent,
+    MobileComponent,
   ],
   template: `
     <main class="main-content">
       <!-- Section 1: Hero -->
       <header class="hero-section">
-        <h1>AI-Powered Scheduling for Youth Hockey Teams</h1>
+        <h1>Youth Hockey AI: Smart Team Management & Scheduling</h1>
         <p class="hero-section__subtitle">
-          RinkLink.ai uses AI to find opponents, fill your calendar, and manage
-          your season — so you can focus on the game.
+          RinkLink is the youth hockey team management platform that uses AI to
+          find opponents, build your schedule, and manage your season — the
+          hockey team scheduler that lets you focus on the game.
         </p>
         <div class="hero-section__actions">
           <app-get-started size="large" />
@@ -39,14 +42,14 @@ import { SeoService } from '../../shared/services/seo.service';
 
       <!-- Section 2: Problem Framing -->
       <section class="problem-section">
-        <h2>Scheduling Shouldn't Be a Second Job</h2>
+        <h2>Youth Hockey Team Management Shouldn't Be a Second Job</h2>
         <ul>
           @for (pain of painPoints; track pain) {
             <li>{{ pain }}</li>
           }
         </ul>
         <p class="problem-section__transition">
-          RinkLink eliminates the busywork!
+          RinkLink's hockey team scheduler eliminates the busywork!
         </p>
       </section>
 
@@ -60,9 +63,14 @@ import { SeoService } from '../../shared/services/seo.service';
         <app-capabilities />
       </section>
 
-      <!-- Section 5: Built for Organizations -->
+      <!-- Section 5: Mobile -->
+      <section class="main-content__section">
+        <app-mobile />
+      </section>
+
+      <!-- Section 6: Built for Organizations -->
       <section class="organizations-section">
-        <h2>Built for the Way Hockey Organizations Work</h2>
+        <h2>Built for Every Youth Hockey Organization</h2>
         <div class="organizations-section__grid">
           @for (org of organizations; track org.label) {
             <div class="organizations-section__item">
@@ -83,8 +91,11 @@ import { SeoService } from '../../shared/services/seo.service';
 
       <!-- Section 7: Final CTA -->
       <aside class="cta-section">
-        <h2>Ready to Simplify Your Season?</h2>
-        <p>Join teams already using RinkLink to schedule smarter.</p>
+        <h2>Ready to Automate Your Youth Hockey Schedule?</h2>
+        <p>
+          Join teams already using RinkLink's AI-powered hockey team scheduler
+          to manage their season smarter.
+        </p>
         <app-get-started size="large" />
       </aside>
     </main>
@@ -97,19 +108,19 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.updateTags({
-      title: 'RinkLink.ai - AI-Powered Youth Hockey Scheduling & Tournament Management',
+      title: 'Youth Hockey AI Team Management & Scheduling Software | RinkLink',
       description:
-        'Streamline youth hockey team scheduling with RinkLink.ai. AI-powered game matching, schedule risk monitoring, tournament fit analysis, and an AI assistant that handles outreach — so you can focus on the game.',
+        'AI-powered youth hockey team management and scheduling software. RinkLink\'s hockey team scheduler uses AI for game matching, schedule risk monitoring, tournament management, and automated outreach — so you can focus on the game.',
       url: 'https://rinklink.ai',
       keywords:
-        'youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, game matching, schedule risk monitor, tournament fit evaluator, AI scheduling assistant, RinkLinkGPT, hockey tournaments, ice time scheduling, sports management, AI scheduling, bulk ice import',
+        'youth hockey ai, team management ai, youth hockey team management, hockey team scheduler, hockey tournament management, youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, game matching, schedule risk monitor, tournament fit evaluator, AI scheduling assistant, RinkLinkGPT, hockey tournaments, ice time scheduling, sports management, AI scheduling, bulk ice import',
     });
 
     this.seoService.addMultipleStructuredData([
       this.seoService.getOrganizationSchema(),
       this.seoService.getWebSiteSchema(),
       this.seoService.getSoftwareApplicationSchema(),
-    ]);
+]);
   }
 
   painPoints = [
