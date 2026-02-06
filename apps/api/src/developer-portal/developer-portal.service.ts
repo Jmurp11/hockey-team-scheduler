@@ -41,10 +41,9 @@ import {
 @Injectable()
 export class DeveloperPortalService {
   private stripe: Stripe;
-  private readonly PRICE_PER_REQUEST = 0.05; // $0.05 per request
+  private readonly STRIPE_METER_EVENT_NAME = 'api_requests';
+  private readonly STRIPE_API_PRICE_ID = process.env.STRIPE_API_PRICE_ID || '';
 
-  // Stripe Product ID for Developer API access
-  private readonly STRIPE_PRODUCT_ID = 'prod_TlJK71isy9QShT';
 
   constructor(private readonly emailService: EmailService) {
     this.stripe = this.initStripe();
@@ -76,22 +75,17 @@ export class DeveloperPortalService {
       throw new BadRequestException('An active subscription already exists for this email');
     }
 
-    // Create Stripe checkout session
-    // Using a simple subscription model - usage is tracked internally
+    if (!this.STRIPE_API_PRICE_ID) {
+      throw new Error('STRIPE_API_PRICE_ID is not set');
+    }
+
+    // Create Stripe checkout session with meter-linked price
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product: this.STRIPE_PRODUCT_ID,
-            unit_amount: 0, // $0 base fee - usage is tracked separately
-            recurring: {
-              interval: 'month',
-            },
-          },
-          quantity: 1,
+          price: this.STRIPE_API_PRICE_ID,
         },
       ],
       subscription_data: {
@@ -174,6 +168,15 @@ export class DeveloperPortalService {
       return;
     }
 
+    // Retrieve the subscription item ID for metered usage reporting
+    let subscriptionItemId: string | null = null;
+    if (subscriptionId) {
+      const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['items'],
+      });
+      subscriptionItemId = subscription.items.data[0]?.id || null;
+    }
+
     // Check if user already exists
     const apiUser = await this.findApiUserByEmail(email);
 
@@ -184,6 +187,7 @@ export class DeveloperPortalService {
         .update({
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
+          stripe_subscription_item_id: subscriptionItemId,
           is_active: true,
         })
         .eq('id', apiUser.id);
@@ -198,6 +202,7 @@ export class DeveloperPortalService {
         api_key_prefix: this.getApiKeyPrefix(apiKey),
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
+        stripe_subscription_item_id: subscriptionItemId,
         is_active: true,
         request_count: 0,
       });
@@ -431,13 +436,13 @@ export class DeveloperPortalService {
   async recordApiRequest(userId: number): Promise<void> {
     const { data: user } = await supabase
       .from('api_users')
-      .select('request_count, stripe_subscription_id')
+      .select('request_count, stripe_customer_id')
       .eq('id', userId)
       .single();
 
     if (!user) return;
 
-    // Update request count
+    // Update local request count
     await supabase
       .from('api_users')
       .update({
@@ -446,10 +451,25 @@ export class DeveloperPortalService {
       })
       .eq('id', userId);
 
-    // Optionally log the request for detailed analytics
+    // Report usage to Stripe Billing Meter
+    if (user.stripe_customer_id) {
+      try {
+        await this.stripe.billing.meterEvents.create({
+          event_name: this.STRIPE_METER_EVENT_NAME,
+          payload: {
+            stripe_customer_id: user.stripe_customer_id,
+            value: '1',
+          },
+        });
+      } catch (error) {
+        console.error('[DeveloperPortal] Failed to report usage to Stripe:', error);
+      }
+    }
+
+    // Log the request for detailed analytics
     await supabase.from('api_request_log').insert({
       api_user_id: userId,
-      endpoint: 'unknown', // Can be passed from the guard
+      endpoint: 'unknown',
       method: 'unknown',
     });
   }
@@ -566,7 +586,7 @@ export class DeveloperPortalService {
       totalRequests: apiUser.request_count || 0,
       requestsThisMonth: apiUser.request_count || 0, // TODO: Calculate monthly from api_request_log
       lastRequestAt: apiUser.last_used,
-      estimatedCost: (apiUser.request_count || 0) * this.PRICE_PER_REQUEST,
+      estimatedCost: (apiUser.request_count || 0) * 0.05,
     };
 
     return { user, apiKey, usage };

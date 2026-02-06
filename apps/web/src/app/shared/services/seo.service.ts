@@ -22,11 +22,11 @@ export class SeoService {
   private metaService = inject(Meta);
 
   private readonly DEFAULT_CONFIG: SEOConfig = {
-    title: 'RinkLink.ai - AI-Powered Youth Hockey Scheduling & Tournament Management',
+    title: 'Youth Hockey AI Team Management & Scheduling Software | RinkLink',
     description:
-      'Streamline youth hockey team scheduling with RinkLink.ai. AI-powered game matching, schedule risk monitoring, tournament fit analysis, and an AI assistant that handles outreach — so you can focus on the game.',
+      'AI-powered youth hockey team management and scheduling software. RinkLink\'s hockey team scheduler uses AI for game matching, schedule risk monitoring, tournament management, and automated outreach — so you can focus on the game.',
     keywords:
-      'youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, game matching, schedule risk monitor, tournament fit evaluator, AI scheduling assistant, RinkLinkGPT, hockey tournaments, ice time scheduling, sports management, AI scheduling, bulk ice import',
+      'youth hockey ai, team management ai, youth hockey team management, hockey team scheduler, hockey tournament management, youth hockey, hockey scheduling, tournament management, ice hockey, team scheduling, opponent matching, game matching, schedule risk monitor, tournament fit evaluator, AI scheduling assistant, RinkLinkGPT, hockey tournaments, ice time scheduling, sports management, AI scheduling, bulk ice import',
     image: 'https://rinklink.ai/summary.png',
     url: 'https://rinklink.ai',
     type: 'website',
@@ -182,14 +182,16 @@ export class SeoService {
       url: 'https://rinklink.ai',
       logo: 'https://rinklink.ai/favicon.ico',
       description:
-        'AI-powered youth hockey scheduling and tournament management platform',
+        'Youth hockey AI team management and scheduling software. RinkLink helps hockey teams automate scheduling, manage tournaments, and find opponents with AI-powered tools.',
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Customer Service',
         url: 'https://rinklink.ai/contact',
       },
       sameAs: [
-        // Add social media URLs when available
+        'https://x.com/RinkLinkAI',
+        'https://www.instagram.com/rinklink.ai/',
+        'https://www.youtube.com/channel/UC-KQvlXxb-4ren-nSuJxwww',
       ],
     };
   }
@@ -204,7 +206,7 @@ export class SeoService {
       name: 'RinkLink.ai',
       url: 'https://rinklink.ai',
       description:
-        'AI-powered youth hockey scheduling and tournament management platform',
+        'Youth hockey AI team management and hockey team scheduler software for tournament management, game matching, and season scheduling.',
       potentialAction: {
         '@type': 'SearchAction',
         target: {
@@ -234,7 +236,18 @@ export class SeoService {
         description: 'Per seat per year',
       },
       description:
-        'AI-powered youth hockey scheduling and tournament management platform. Features game matching by skill and distance, schedule risk monitoring, tournament fit analysis, and RinkLinkGPT — an AI assistant that drafts outreach, negotiates game times, and manages your calendar.',
+        'Youth hockey AI team management and hockey team scheduler software. Features AI-powered game matching by skill and distance, schedule risk monitoring, hockey tournament management, and RinkLinkGPT — an AI assistant that drafts outreach, negotiates game times, and manages your calendar.',
+      featureList: [
+        'AI Game Matching',
+        'Schedule Risk Monitor',
+        'Tournament Fit Evaluator',
+        'RinkLinkGPT AI Assistant',
+        'Bulk Ice Import',
+        'Season Calendar',
+        'Schedule Export',
+        'Youth Hockey Team Management',
+        'Hockey Tournament Management',
+      ],
     };
   }
 
