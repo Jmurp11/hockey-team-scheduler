@@ -86,7 +86,8 @@ export class OpenAiService {
 
     const response = await this.client.responses.create({
       model: 'gpt-5-mini',
-      tools: [{ type: 'web_search' }],
+      tools: [{ type: 'web_search', search_context_size: 'low' } as any],
+      store: false,
       input: this.generateSchedulerPrompt(props),
       text: {
         format: zodTextFormat(this.managerResponse, 'managers'),

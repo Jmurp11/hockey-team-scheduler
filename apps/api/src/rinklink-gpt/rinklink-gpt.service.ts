@@ -1529,7 +1529,8 @@ Please let me know if you have any questions or if there's anything we need to d
       this.logger.log(`Starting web search for ${args.placeType}s near ${location}`);
       const response = await this.client.responses.create({
         model: 'gpt-5-mini',
-        tools: [{ type: 'web_search' }],
+        tools: [{ type: 'web_search', search_context_size: 'low' } as any],
+        store: false,
         input: `You are a local recommendations assistant for hockey families traveling to games.
 
 Search for the best ${args.placeType}s near ${location}.
@@ -1934,7 +1935,8 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
     try {
       const response = await this.client.responses.create({
         model: 'gpt-5-mini',
-        tools: [{ type: 'web_search' }],
+        tools: [{ type: 'web_search', search_context_size: 'low' } as any],
+        store: false,
         input: `You are a contact information extraction agent.
 
 Search for the youth hockey team named "${teamName}".

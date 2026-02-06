@@ -41,7 +41,8 @@ import {
 @Injectable()
 export class DeveloperPortalService {
   private stripe: Stripe;
-  private readonly PRICE_PER_REQUEST_CENTS = 5; // $0.05 per request
+  private readonly STRIPE_METER_EVENT_NAME = 'api_requests';
+  private readonly STRIPE_API_PRICE_ID = process.env.STRIPE_API_PRICE_ID || '';
 
 
   constructor(private readonly emailService: EmailService) {
@@ -74,24 +75,17 @@ export class DeveloperPortalService {
       throw new BadRequestException('An active subscription already exists for this email');
     }
 
-    // Create Stripe checkout session with metered billing
+    if (!this.STRIPE_API_PRICE_ID) {
+      throw new Error('STRIPE_API_PRICE_ID is not set');
+    }
+
+    // Create Stripe checkout session with meter-linked price
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'RinkLink API Access',
-              description: 'API access subscription with usage-based billing at $0.05 per request',
-            },
-            unit_amount: this.PRICE_PER_REQUEST_CENTS,
-            recurring: {
-              interval: 'month',
-              usage_type: 'metered',
-            },
-          },
+          price: this.STRIPE_API_PRICE_ID,
         },
       ],
       subscription_data: {
@@ -442,7 +436,7 @@ export class DeveloperPortalService {
   async recordApiRequest(userId: number): Promise<void> {
     const { data: user } = await supabase
       .from('api_users')
-      .select('request_count, stripe_subscription_item_id')
+      .select('request_count, stripe_customer_id')
       .eq('id', userId)
       .single();
 
@@ -457,13 +451,16 @@ export class DeveloperPortalService {
       })
       .eq('id', userId);
 
-    // Report usage to Stripe for metered billing
-    if (user.stripe_subscription_item_id) {
+    // Report usage to Stripe Billing Meter
+    if (user.stripe_customer_id) {
       try {
-        await this.stripe.subscriptionItems.createUsageRecord(
-          user.stripe_subscription_item_id,
-          { quantity: 1 },
-        );
+        await this.stripe.billing.meterEvents.create({
+          event_name: this.STRIPE_METER_EVENT_NAME,
+          payload: {
+            stripe_customer_id: user.stripe_customer_id,
+            value: '1',
+          },
+        });
       } catch (error) {
         console.error('[DeveloperPortal] Failed to report usage to Stripe:', error);
       }
@@ -589,7 +586,7 @@ export class DeveloperPortalService {
       totalRequests: apiUser.request_count || 0,
       requestsThisMonth: apiUser.request_count || 0, // TODO: Calculate monthly from api_request_log
       lastRequestAt: apiUser.last_used,
-      estimatedCost: (apiUser.request_count || 0) * (this.PRICE_PER_REQUEST_CENTS / 100),
+      estimatedCost: (apiUser.request_count || 0) * 0.05,
     };
 
     return { user, apiKey, usage };
