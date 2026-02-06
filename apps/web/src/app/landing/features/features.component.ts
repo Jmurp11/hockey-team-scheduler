@@ -17,7 +17,7 @@ interface Feature {
   imports: [CommonModule],
   template: `
     <article class="features">
-      <h2>AI-Powered Scheduling Tools</h2>
+      <h2>AI-Powered Youth Hockey Scheduling Tools</h2>
       <div class="features__list">
         @for (feature of features; track feature.title; let odd = $odd) {
           <div

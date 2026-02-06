@@ -35,6 +35,7 @@ const FEATURES = [
   'Tournament fit analysis based on team rating and schedule',
   'AI assistant for schedule questions, game planning, and email drafts',
   'Organization-level admin with master schedule across all teams',
+  'Access to iOS and Android mobile apps for coaches and managers',
 ];
 
 /**

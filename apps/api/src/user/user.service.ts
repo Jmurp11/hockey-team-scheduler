@@ -224,9 +224,9 @@ export class UserService {
   // ============ SUBSCRIPTION CHECKOUT ============
 
   /**
-   * Price per seat in cents ($30/seat/year)
+   * Price per seat in cents ($75/seat/year)
    */
-  private readonly PRICE_PER_SEAT_CENTS = 3000;
+  private readonly PRICE_PER_SEAT_CENTS = 7500;
 
   /**
    * Creates a Stripe Checkout Session for a seat-based subscription.
