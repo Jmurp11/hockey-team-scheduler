@@ -222,10 +222,16 @@ jobs:
           PUBLIC_SUPABASE_API_KEY=${{ secrets.PUBLIC_SUPABASE_API_KEY }}
           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_ENDPOINT_SECRET=${{ secrets.STRIPE_ENDPOINT_SECRET }}
+          STRIPE_API_PRICE_ID=${{ secrets.STRIPE_API_PRICE_ID }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_PHONE=${{ secrets.TWILIO_PHONE }}
+          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+          SMTP_HOST=${{ secrets.SMTP_HOST }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
           EOF
 
       - name: Deploy
