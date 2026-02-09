@@ -37,7 +37,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         </div>
         <div class="mobile__image">
           <img
-            src="mobile-preview.png"
+            src="mobile-preview.gif"
             alt="RinkLink mobile app on iPhone and Android devices"
             loading="lazy"
             width="100%"
