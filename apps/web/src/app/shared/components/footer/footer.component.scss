@@ -1,6 +1,7 @@
 @use "mixins/mixins" as *;
 
 .footer {
+  @include flex(center, center, row);
   position: fixed;
   bottom: 0;
   left: 0;
