@@ -89,6 +89,7 @@ import {
             <ion-button
               expand="block"
               type="submit"
+              color="secondary"
               [disabled]="bugReportState.form.invalid || bugReportState.loading()"
             >
               @if (bugReportState.loading()) {

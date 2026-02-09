@@ -111,7 +111,7 @@ export class EmailService {
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'false', // true for 465, false for other ports
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -171,7 +171,7 @@ export class EmailService {
 
     try {
       const mailOptions: nodemailer.SendMailOptions = {
-        from: `"${fromName || 'RinkLink.ai'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+        from: `"${fromName || 'RinkLink.ai'}" <${process.env.SMTP_USER}>`,
         to,
         subject,
         html,
