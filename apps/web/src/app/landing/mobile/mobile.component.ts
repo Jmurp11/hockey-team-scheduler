@@ -20,14 +20,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
           </ul>
           <div class="mobile__badges">
             <img
-              src="assets/app-store-badge.svg"
+              src="app-store.svg"
               alt="Download on the App Store"
               loading="lazy"
               width="135"
               height="40"
             />
             <img
-              src="assets/google-play-badge.png"
+              src="play-store.png"
               alt="Get it on Google Play"
               loading="lazy"
               width="135"
