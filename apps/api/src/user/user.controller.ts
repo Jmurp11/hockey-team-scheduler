@@ -515,6 +515,63 @@ export class UserController {
     }
   }
 
+  // ============ ACCOUNT CANCELLATION ============
+
+  @Post('cancel-account')
+  @ApiOperation({
+    summary: 'Cancel user account',
+    description: 'Soft-deletes a user account by setting status to CANCELED. Admins must transfer their role first.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string', format: 'uuid' },
+      },
+      required: ['userId'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Account canceled successfully' })
+  @ApiResponse({ status: 400, description: 'User is an admin' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async cancelAccount(
+    @Body() body: { userId: string },
+    @Res() res: Response,
+  ) {
+    try {
+      await this.userService.cancelAccount(body.userId);
+
+      (res as any).status(200).json({
+        success: true,
+        message: 'Account canceled successfully',
+      });
+    } catch (error: any) {
+      console.error('Error canceling account:', error);
+
+      if (error.message === 'User not found') {
+        (res as any).status(404).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      if (error.message.includes('admin')) {
+        (res as any).status(400).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      (res as any).status(500).json({
+        success: false,
+        message: 'Error canceling account',
+        error: error.message,
+      });
+    }
+  }
+
   // ============ ACCESS CHECK ============
 
   @Get('access/:userId')

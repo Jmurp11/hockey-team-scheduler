@@ -7,6 +7,7 @@ export interface Association {
   city: string;
   state: string;
   country: string;
+  association_url?: string;
 }
 
 export interface AssociationFull extends Association {

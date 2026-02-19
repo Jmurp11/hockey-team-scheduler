@@ -1741,11 +1741,13 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
       let managers;
       let teamName = args.teamName;
 
+      let associationUrl: string | undefined;
+
       if (args.teamId) {
         // Look up by team ID - first get team name from rankings
         const { data: team } = await supabase
           .from('rankings')
-          .select('team_name, association(city, state)')
+          .select('team_name, association(city, state, association_url)')
           .eq('id', args.teamId)
           .single();
 
@@ -1757,6 +1759,7 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
         }
 
         teamName = team.team_name;
+        associationUrl = (team.association as any)?.association_url;
         managers = await this.searchManagersInDatabase(team.team_name);
       } else if (args.teamName) {
         managers = await this.searchManagersInDatabase(args.teamName);
@@ -1798,7 +1801,7 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
 
       // Fall back to web search using GPT-5
       this.logger.log(`No manager found in database for "${teamName}", falling back to web search`);
-      return this.searchManagerOnWeb(teamName || '');
+      return this.searchManagerOnWeb(teamName || '', associationUrl);
     } catch (error) {
       this.logger.error('Error in executeGetTeamManager:', error);
       return {
@@ -1931,8 +1934,12 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
   /**
    * Search for team manager contact information on the web using GPT-5.
    */
-  private async searchManagerOnWeb(teamName: string): Promise<ToolExecutionResult> {
+  private async searchManagerOnWeb(teamName: string, associationUrl?: string): Promise<ToolExecutionResult> {
     try {
+      const associationUrlInstruction = associationUrl
+        ? `\nIMPORTANT: This team belongs to an association with the website: ${associationUrl}\nStart by searching this website for team rosters, contacts, or manager directories.\n`
+        : '';
+
       const response = await this.client.responses.create({
         model: 'gpt-5-mini',
         tools: [{ type: 'web_search', search_context_size: 'low' } as any],
@@ -1941,7 +1948,7 @@ Return up to ${maxResults} results. If nothing is found, return: { "places": [] 
 
 Search for the youth hockey team named "${teamName}".
 Find official contact information for the **team manager** or **scheduler**.
-
+${associationUrlInstruction}
 Search query example:
 "${teamName}" hockey manager contact email
 
