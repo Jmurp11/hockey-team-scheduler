@@ -156,7 +156,6 @@ export class MembersTableComponent {
       message,
       header: 'Confirm Role Change',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: isPromoting ? 'p-button-primary' : 'p-button-warning',
       accept: () => {
         this.pendingToggleMemberId = null;
         this.updateMemberRole.emit({ member, role: newRole });
@@ -179,7 +178,6 @@ export class MembersTableComponent {
       message: getMemberRemovalMessage(member),
       header: 'Confirm Removal',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.removeMember.emit(member);
       },

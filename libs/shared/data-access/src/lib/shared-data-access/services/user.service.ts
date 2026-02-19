@@ -142,6 +142,31 @@ export class UserService {
   }
 
   /**
+   * Cancels the current user's account (soft delete).
+   * Sets app_users.status to CANCELED, deactivates association memberships,
+   * and logs the user out.
+   */
+  async cancelAccount(): Promise<{ success: boolean; message: string }> {
+    const userId = this.authService.session()?.user?.id;
+    if (!userId) {
+      throw new Error('No authenticated user');
+    }
+
+    const response = await firstValueFrom(
+      this.http.post<{ success: boolean; message: string }>(
+        `${this.config.apiUrl}/users/cancel-account`,
+        { userId }
+      )
+    );
+
+    if (response.success) {
+      await this.logout();
+    }
+
+    return response;
+  }
+
+  /**
    * Completes user registration after subscription or invitation.
    * This is the primary registration workflow that:
    * 1. Updates app_users with profile data

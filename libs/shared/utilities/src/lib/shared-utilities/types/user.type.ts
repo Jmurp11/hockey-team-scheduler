@@ -14,6 +14,8 @@ export interface UpdateUser extends User {
 
 export type AssociationMemberRole = 'ADMIN' | 'MANAGER' | null;
 
+export type UserStatus = 'ACTIVE' | 'CANCELED' | 'EXPIRED' | 'PENDING';
+
 export interface UserProfile {
   idx: number;
   id: number;
@@ -27,4 +29,5 @@ export interface UserProfile {
   team_rating: number;
   email: string;
   role?: AssociationMemberRole;
+  status?: UserStatus;
 }

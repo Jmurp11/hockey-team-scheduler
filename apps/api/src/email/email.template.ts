@@ -53,8 +53,8 @@ const COLORS = {
 } as const;
 
 // Font stack for maximum email client compatibility
-const FONT_STACK = "'Space Grotesk', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-const BODY_FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const FONT_STACK = "'Space Grotesk', 'Noto Sans', sans-serif";
+const BODY_FONT_STACK = "'Space Grotesk', 'Noto Sans', sans-serif";
 
 export interface EmailTemplateParams {
   /** The email subject (also displayed in header area) */
@@ -135,7 +135,7 @@ export function buildLinkFallback(href: string): string {
   return `
     <p style="margin: 16px 0 0 0; padding: 0; font-family: ${BODY_FONT_STACK}; font-size: 12px; line-height: 1.5; color: ${COLORS.mediumGray}; word-break: break-all;">
       If the button doesn't work, copy and paste this link into your browser:<br />
-      <a href="${href}" style="color: ${COLORS.mediumGray};">${href}</a>
+      <a href="${href}" style="color: ${COLORS.primary}; text-decoration: underline;">${href}</a>
     </p>
   `.trim();
 }
@@ -163,7 +163,7 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
   } = params;
 
   const currentYear = new Date().getFullYear();
-  const defaultFooterText = `&copy; ${currentYear} RinkLink.ai. All rights reserved.`;
+  const defaultFooterText = `&copy; ${currentYear} RINKLINKAI LLC. All rights reserved.`;
 
   // Preheader: hidden text that appears in email client preview
   const preheaderHtml = preheader
@@ -175,24 +175,15 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
   const headerHtml = hideHeader
     ? ''
     : `
-    <!--[if mso]>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${COLORS.primary};">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${COLORS.primary}" style="background-color: ${COLORS.primary}; border-radius: 8px 8px 0 0;">
       <tr>
-        <td align="center" style="padding: 30px 20px;">
-          <span style="font-family: ${FONT_STACK}; font-size: 28px; font-weight: 700; color: ${COLORS.white};">RinkLink</span><span style="font-family: ${FONT_STACK}; font-size: 28px; font-weight: 700; color: ${COLORS.secondary};">.ai</span>
+        <td align="center" bgcolor="${COLORS.primary}" style="padding: 30px 20px; background-color: ${COLORS.primary};">
+          <a href="https://rinklink.ai" style="text-decoration: none; font-family: ${FONT_STACK}; font-size: 28px; font-weight: 700;">
+            <span style="color: ${COLORS.white};">RinkLink</span><span style="color: ${COLORS.secondary};">.ai</span>
+          </a>
         </td>
       </tr>
     </table>
-    <![endif]-->
-    <!--[if !mso]><!-->
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${COLORS.primary}; border-radius: 8px 8px 0 0;">
-      <tr>
-        <td align="center" style="padding: 30px 20px;">
-          <span style="font-family: ${FONT_STACK}; font-size: 28px; font-weight: 700; color: ${COLORS.white};">RinkLink</span><span style="font-family: ${FONT_STACK}; font-size: 28px; font-weight: 700; color: ${COLORS.secondary};">.ai</span>
-        </td>
-      </tr>
-    </table>
-    <!--<![endif]-->
   `;
 
   return `
@@ -204,6 +195,8 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="x-apple-disable-message-reformatting">
   <meta name="format-detection" content="telephone=no, address=no, email=no, date=no, url=no">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>${subject}</title>
   <!--[if mso]>
   <noscript>
@@ -219,6 +212,11 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
   </style>
   <![endif]-->
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap");
+    :root {
+      color-scheme: light;
+      supported-color-schemes: light;
+    }
     /* Reset styles */
     body, table, td, p, a, li, blockquote {
       -webkit-text-size-adjust: 100%;
@@ -261,25 +259,13 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
         padding-right: 20px !important;
       }
     }
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      .email-body {
-        background-color: #1a1a1a !important;
-      }
-      .email-container {
-        background-color: #2d2d2d !important;
-      }
-      .email-content {
-        background-color: #2d2d2d !important;
-      }
-    }
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: ${COLORS.lightGray}; font-family: ${BODY_FONT_STACK};">
   ${preheaderHtml}
 
   <!-- Email wrapper table -->
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: ${COLORS.lightGray};" class="email-body">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${COLORS.lightGray}" style="background-color: ${COLORS.lightGray};">
     <tr>
       <td align="center" style="padding: 20px 10px;">
 
@@ -289,7 +275,7 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
         <tr>
         <td>
         <![endif]-->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;" class="container email-container">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;" class="container">
 
           <!-- Header -->
           <tr>
@@ -301,16 +287,9 @@ export function buildEmailHtml(params: EmailTemplateParams): string {
           <!-- Content area -->
           <tr>
             <td>
-              <!--[if mso]>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${COLORS.white};">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${COLORS.white}" style="background-color: ${COLORS.white}; ${hideHeader ? 'border-radius: 8px;' : 'border-radius: 0 0 8px 8px;'}">
                 <tr>
-                  <td style="padding: 30px 40px;">
-              <![endif]-->
-              <!--[if !mso]><!-->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${COLORS.white}; ${hideHeader ? 'border-radius: 8px;' : 'border-radius: 0 0 8px 8px;'}" class="email-content">
-                <tr>
-                  <td style="padding: 30px 40px;" class="content-padding">
-              <!--<![endif]-->
+                  <td bgcolor="${COLORS.white}" style="padding: 30px 40px; background-color: ${COLORS.white};" class="content-padding">
 
                     <!-- Email body content -->
                     <div style="font-family: ${BODY_FONT_STACK}; font-size: 16px; line-height: 1.6; color: ${COLORS.darkGray};">

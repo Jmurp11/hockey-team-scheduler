@@ -11,6 +11,8 @@ export class Association {
   state: string;
   @ApiProperty()
   country: string;
+  @ApiProperty({ required: false })
+  association_url?: string;
 }
 
 export class League {

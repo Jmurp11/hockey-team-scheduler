@@ -564,7 +564,6 @@ export class DeveloperDashboardComponent implements OnInit {
         'Are you sure you want to rotate your API key? Your current key will stop working immediately.',
       header: 'Rotate API Key',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-warning',
       accept: () => this.rotateKey(),
     });
   }
@@ -617,7 +616,6 @@ export class DeveloperDashboardComponent implements OnInit {
         'Are you sure you want to cancel your subscription? Your API access will continue until the end of your billing period.',
       header: 'Cancel Subscription',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
       accept: () => this.cancelSubscription(),
     });
   }
