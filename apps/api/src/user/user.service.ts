@@ -1395,6 +1395,82 @@ export class UserService {
 
   // ============ ACCESS CHECK METHODS ============
 
+  async cancelAccount(userId: string): Promise<void> {
+    await this.verifyUserExists(userId);
+    await this.verifyUserIsNotAdmin(userId);
+    await this.setUserStatusCanceled(userId);
+    await this.deactivateMembershipsAndReleaseSeats(userId);
+
+    console.log(`[CancelAccount] Account canceled for user: ${userId}`);
+  }
+
+  private async verifyUserExists(userId: string): Promise<void> {
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !data) {
+      throw new Error('User not found');
+    }
+  }
+
+  private async verifyUserIsNotAdmin(userId: string): Promise<void> {
+    const { data: adminMemberships } = await supabase
+      .from('association_members')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('role', 'ADMIN')
+      .eq('status', 'ACTIVE');
+
+    if (adminMemberships && adminMemberships.length > 0) {
+      throw new Error('User is an admin of an organization. Transfer the admin role before canceling.');
+    }
+  }
+
+  private async setUserStatusCanceled(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('app_users')
+      .update({ status: 'CANCELED' })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('[CancelAccount] Error updating user status:', error);
+      throw new Error('Failed to cancel account');
+    }
+  }
+
+  private async deactivateMembershipsAndReleaseSeats(userId: string): Promise<void> {
+    const { data: activeMembers } = await supabase
+      .from('association_members')
+      .select('id, association')
+      .eq('user_id', userId)
+      .eq('status', 'ACTIVE');
+
+    if (!activeMembers || activeMembers.length === 0) {
+      return;
+    }
+
+    for (const member of activeMembers) {
+      await supabase
+        .from('association_members')
+        .update({ status: 'INACTIVE' })
+        .eq('id', member.id);
+
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('association', member.association)
+        .eq('status', 'ACTIVE')
+        .single();
+
+      if (subscription) {
+        await this.decrementSeatsInUse(subscription.id);
+      }
+    }
+  }
+
   async userHasAccess(userId: string): Promise<boolean | null> {
     // Check 1: User owns an active subscription
     const ownedSub = await this.getSubscriptionByUser(userId);
