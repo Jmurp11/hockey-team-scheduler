@@ -125,10 +125,10 @@ export function getMemberRoleChangeMessage(
   member: AssociationMember,
   isPromoting: boolean
 ): { action: string; roleLabel: string; message: string } {
-  const action = isPromoting ? 'promote' : 'demote';
-  const roleLabel = isPromoting ? 'an admin' : 'a regular member';
+  const action = 'assign';
+  const roleLabel = isPromoting ? 'an admin' : 'a non-admin';
   const memberName = member.user_name || member.user_email;
-  const message = `Are you sure you want to ${action} ${memberName} to ${roleLabel}?`;
+  const message = `Are you sure you want to ${action} ${memberName} the ${roleLabel} role?`;
 
   return { action, roleLabel, message };
 }
@@ -205,4 +205,22 @@ export function isUserAdmin(userRole: string | undefined | null): boolean {
  */
 export function getSubscriptionDateLabel(status: string): string {
   return status === 'ACTIVE' ? 'Renews' : 'Ends';
+}
+
+// ============================================
+// Account Cancellation Utilities
+// ============================================
+
+/**
+ * Build confirmation message for account cancellation (non-admin users).
+ */
+export function getAccountCancellationMessage(): string {
+  return 'Are you sure you want to cancel your account? You will be logged out and lose access to all your teams and associations. This action cannot be undone.';
+}
+
+/**
+ * Build message explaining admin must transfer role before canceling.
+ */
+export function getAdminCancellationBlockedMessage(): string {
+  return 'You are an admin of an organization. You must transfer the admin role to another member before you can cancel your account.';
 }

@@ -132,13 +132,9 @@ interface NearbyTeamData {
   record?: string;
   distance?: number;
   association_name?: string;
+  association_url?: string;
   city?: string;
   state?: string;
-  association?: {
-    name?: string;
-    city?: string;
-    state?: string;
-  };
 }
 
 const STATE_ABBREVIATIONS: Record<string, string> = {
@@ -261,9 +257,9 @@ export class GameMatchingService {
           rating: candidate.team.rating || 0,
           record: candidate.team.record || '',
           association: {
-            name: candidate.team.association_name || candidate.team.association?.name || '',
-            city: candidate.team.city || candidate.team.association?.city || '',
-            state: candidate.team.state || candidate.team.association?.state || '',
+            name: candidate.team.association_name || '',
+            city: candidate.team.city || '',
+            state: candidate.team.state || '',
           },
         },
         distanceMiles: Math.round(candidate.team.distance || 0),
@@ -483,7 +479,8 @@ export class GameMatchingService {
       }
 
       // Fall back to web search
-      const webResult = await this.searchManagerOnWeb(teamName);
+      const associationUrl = team.association_url;
+      const webResult = await this.searchManagerOnWeb(teamName, associationUrl);
 
       if (webResult.manager) {
         return {
@@ -550,8 +547,13 @@ export class GameMatchingService {
    */
   private async searchManagerOnWeb(
     teamName: string,
+    associationUrl?: string,
   ): Promise<{ manager?: { name: string; email: string; phone?: string; team: string } }> {
     try {
+      const associationUrlInstruction = associationUrl
+        ? `\nIMPORTANT: This team belongs to an association with the website: ${associationUrl}\nStart by searching this website for team rosters, contacts, or manager directories.\n`
+        : '';
+
       const response = await this.client.responses.create({
         model: 'gpt-5-mini',
         tools: [{ type: 'web_search' }],
@@ -559,7 +561,7 @@ export class GameMatchingService {
 
 Search for the youth hockey team named "${teamName}".
 Find official contact information for the **team manager** or **scheduler**.
-
+${associationUrlInstruction}
 Search query example:
 "${teamName}" hockey manager contact email
 

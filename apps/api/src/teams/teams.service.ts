@@ -56,9 +56,10 @@ interface NearbyTeamData {
   record?: string;
   distance?: number;
   association_name?: string;
+  association_url?: string;
   city?: string;
   state?: string;
-  association?: { name?: string; city?: string; state?: string };
+  association?: { name?: string; city?: string; state?: string; association_url?: string };
 }
 
 @Injectable()

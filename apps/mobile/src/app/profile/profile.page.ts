@@ -12,18 +12,27 @@ import {
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  getAccountCancellationMessage,
+  getAdminCancellationBlockedMessage,
+  isUserAdmin,
   Profile,
   setSelect,
   UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
 import {
+  AlertController,
+  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonMenuButton,
   IonTitle,
   IonToolbar,
+  NavController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeCircleOutline } from 'ionicons/icons';
 import { filter, map, Observable, startWith } from 'rxjs';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
@@ -39,6 +48,8 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
     IonContent,
     IonButtons,
     IonMenuButton,
+    IonButton,
+    IonIcon,
     ProfileContentComponent,
     ProfileHeaderComponent,
   ],
@@ -59,6 +70,12 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
           [card]="profile"
           (formSubmit)="onFormSubmit($event)"
         />
+        <div style="margin-top: 2rem; text-align: center;">
+          <ion-button color="danger" fill="outline" (click)="onCancelAccount()">
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Cancel Account
+          </ion-button>
+        </div>
       }
     </ion-content>
   `,
@@ -77,6 +94,8 @@ export class ProfilePage implements OnInit {
   private associationsService = inject(AssociationsService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private alertController = inject(AlertController);
+  private navController = inject(NavController);
 
   profile$!: Observable<Profile>;
 
@@ -87,6 +106,10 @@ export class ProfilePage implements OnInit {
     filter((user) => user != null),
   );
   associations$ = this.associationsService.getAssociations();
+
+  constructor() {
+    addIcons({ closeCircleOutline });
+  }
 
   ngOnInit(): void {
     this.profile$ = this.user$.pipe(
@@ -114,5 +137,54 @@ export class ProfilePage implements OnInit {
     if (userId) {
       await this.authService.setCurrentUser(userId);
     }
+  }
+
+  async onCancelAccount() {
+    const currentUser = this.authService.currentUser();
+
+    if (isUserAdmin(currentUser?.role)) {
+      const alert = await this.alertController.create({
+        header: 'Cannot Cancel Account',
+        message: getAdminCancellationBlockedMessage(),
+        buttons: [
+          {
+            text: 'Close',
+            role: 'cancel',
+          },
+          {
+            text: 'Go to Admin Page',
+            handler: () => {
+              this.navController.navigateForward('/app/admin');
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Cancel Account',
+      message: getAccountCancellationMessage(),
+      buttons: [
+        {
+          text: 'Keep Account',
+          role: 'cancel',
+        },
+        {
+          text: 'Cancel Account',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.userService.cancelAccount();
+              this.navController.navigateRoot('/login');
+            } catch (error) {
+              console.error('Error canceling account:', error);
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 }

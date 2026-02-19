@@ -6,17 +6,22 @@ import {
   OnInit,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
-  AssociationsService,
   AuthService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
+  getAccountCancellationMessage,
+  getAdminCancellationBlockedMessage,
+  isUserAdmin,
   Profile,
   setSelect,
   UserProfile,
 } from '@hockey-team-scheduler/shared-utilities';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { filter, map, Observable, startWith } from 'rxjs';
 import { ProfileContentComponent } from './profile-content/profile-content.component';
 import { ProfileHeaderComponent } from './profile-header/profile-header.component';
@@ -29,24 +34,37 @@ import { ProfileHeaderComponent } from './profile-header/profile-header.componen
     RouterModule,
     ProfileContentComponent,
     ProfileHeaderComponent,
+    ConfirmDialogModule,
+    ButtonModule,
   ],
   template: ` @if (profile$ | async; as profile) {
     <div class="profile-title">Profile</div>
-    <app-profile-header [name]="profile.display_name" />
+    <div class="profile-header-row">
+      <app-profile-header [name]="profile.display_name" />
+      <p-button
+        label="Cancel Account"
+        severity="danger"
+        [outlined]="true"
+        (click)="onCancelAccount()"
+      />
+    </div>
     <div class="container">
       <app-profile-content
         [card]="profile"
         (formSubmit)="onFormSubmit($event)"
       />
     </div>
+    <p-confirmDialog />
   }`,
-  providers: [],
+  providers: [ConfirmationService],
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private confirmationService = inject(ConfirmationService);
+  private router = inject(Router);
 
   profile$: Observable<Profile>;
 
@@ -82,5 +100,39 @@ export class ProfileComponent implements OnInit {
     if (userId) {
       await this.authService.setCurrentUser(userId);
     }
+  }
+
+  onCancelAccount() {
+    const currentUser = this.authService.currentUser();
+
+    if (isUserAdmin(currentUser?.role)) {
+      this.confirmationService.confirm({
+        message: getAdminCancellationBlockedMessage(),
+        header: 'Cannot Cancel Account',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Go to Admin Page',
+        rejectLabel: 'Close',
+        accept: () => {
+          this.router.navigate(['/app/admin']);
+        },
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: getAccountCancellationMessage(),
+      header: 'Cancel Account',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Cancel Account',
+      rejectLabel: 'Keep Account',
+      accept: async () => {
+        try {
+          await this.userService.cancelAccount();
+          this.router.navigate(['/login']);
+        } catch (error) {
+          console.error('Error canceling account:', error);
+        }
+      },
+    });
   }
 }

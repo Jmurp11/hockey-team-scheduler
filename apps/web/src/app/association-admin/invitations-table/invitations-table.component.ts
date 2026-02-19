@@ -120,7 +120,6 @@ export class InvitationsTableComponent {
       message: getInvitationCancellationMessage(invitation),
       header: 'Confirm Cancellation',
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.cancelInvitation.emit(invitation);
       },

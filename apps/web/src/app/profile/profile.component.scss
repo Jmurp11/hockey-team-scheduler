@@ -10,3 +10,10 @@
   margin-bottom: 16px;
   color: var(--primary-500);
 }
+
+.profile-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4rem;
+}
