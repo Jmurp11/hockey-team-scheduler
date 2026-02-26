@@ -147,6 +147,10 @@ body {
   --p-button-primary-hover-border-color: var(--secondary-600) !important;
   --p-button-primary-active-background: var(--secondary-700) !important;
   --p-button-primary-active-border-color: var(--secondary-700) !important;
+  --p-button-primary-focus-ring-color: transparent !important;
+  --p-button-primary-focus-ring-shadow: 0 0 0 0.2rem var(--secondary-200) !important;
+  --p-button-secondary-focus-ring-color: transparent !important;
+  --p-button-secondary-focus-ring-shadow: 0 0 0 0.2rem var(--secondary-200) !important;
 
   --p-autocomplete-focus-border-color: var(--secondary-300) !important;
   --p-autocomplete-shadow: var(--secondary-300) !important;

@@ -89,14 +89,12 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
               <p-button
                 label="Yes, proceed"
                 icon="pi pi-check"
-                class="p-button-success p-button-sm"
                 (click)="confirm.emit(message().pendingAction!)"
                 [disabled]="disabled()"
               />
               <p-button
                 label="No, cancel"
                 icon="pi pi-times"
-                class="p-button-secondary p-button-sm"
                 (click)="decline.emit()"
                 [disabled]="disabled()"
               />
@@ -189,7 +187,6 @@ import { EmailPreviewComponent } from '../email-preview/email-preview.component'
         &__confirmation {
           margin-top: 1rem;
           padding-top: 1rem;
-          border-top: 1px solid var(--surface-border);
 
           &-label {
             font-weight: 500;
