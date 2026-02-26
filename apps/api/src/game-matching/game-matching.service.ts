@@ -156,6 +156,19 @@ const STATE_ABBREVIATIONS: Record<string, string> = {
 @Injectable()
 export class GameMatchingService {
   private readonly logger = new Logger(GameMatchingService.name);
+
+  private readonly ageGroups: string[][] = [
+    ['9u', '10u'],
+    ['11u', '12u'],
+    ['13u', '14u'],
+    ['15u', '16u'],
+  ];
+
+  private getCompatibleAges(age: string): string[] {
+    const normalizedAge = age.toLowerCase().replace(/\s+/g, '');
+    const group = this.ageGroups.find((g) => g.includes(normalizedAge));
+    return group || [normalizedAge];
+  }
   private client: OpenAI;
 
   constructor(
@@ -184,6 +197,10 @@ export class GameMatchingService {
     const userRating = userContext.rating || 50;
     this.logger.log(`User team: ${userContext.teamName}, rating: ${userRating}, age: ${userContext.age}`);
 
+    if (!userContext.age) {
+      this.logger.warn(`User ${userId} has no age group set - game matching results may include all age groups`);
+    }
+
     // 2. Get user's existing games to check for previously played teams
     const existingGames = await this.getUserGamesInRange(userId, startDate, endDate);
     const playedOpponentIds = new Set(existingGames.map(g => g.opponent).filter(Boolean));
@@ -201,7 +218,22 @@ export class GameMatchingService {
     this.logger.log(`Found ${nearbyTeams?.length || 0} nearby teams within rating range`);
 
     // Cast to our interface for proper typing (RPC returns different structure than Team type)
-    const typedNearbyTeams = nearbyTeams as unknown as NearbyTeamData[];
+    let typedNearbyTeams = nearbyTeams as unknown as NearbyTeamData[];
+
+    // Post-filter by compatible age group (e.g., 15U/16U can play each other)
+    if (userContext.age && typedNearbyTeams?.length > 0) {
+      const compatibleAges = this.getCompatibleAges(userContext.age);
+      const ageFiltered = typedNearbyTeams.filter(t => {
+        const teamAge = t.age?.toLowerCase().replace(/\s+/g, '');
+        return teamAge && compatibleAges.includes(teamAge);
+      });
+      if (ageFiltered.length > 0) {
+        this.logger.log(`Age post-filter: ${typedNearbyTeams.length} -> ${ageFiltered.length} teams matching compatible ages ${JSON.stringify(compatibleAges)}`);
+        typedNearbyTeams = ageFiltered;
+      } else {
+        this.logger.warn(`Age post-filter removed all ${typedNearbyTeams.length} teams - none matched compatible ages ${JSON.stringify(compatibleAges)}. Keeping unfiltered results.`);
+      }
+    }
 
     if (!typedNearbyTeams || typedNearbyTeams.length === 0) {
       return {
