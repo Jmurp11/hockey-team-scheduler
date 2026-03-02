@@ -75,8 +75,26 @@ export class DashboardService {
       averageGoalDifferential: data.average_goal_differential || 0,
       totalGames: data.total_games || 0,
       openGameSlots: data.open_game_slots || 0,
-      upcomingGames: data.upcoming_games || [],
-      upcomingTournaments: data.upcoming_tournaments || [],
+      upcomingGames: (data.upcoming_games || []).map((game: any) => ({
+        id: game.id,
+        date: game.date,
+        time: game.time,
+        opponent: game.opponent ?? game.opponent_name ?? '',
+        opponentRating: game.opponent_rating ?? game.opponentRating ?? null,
+        rink: game.rink ?? game.rink_name ?? '',
+        city: game.city ?? '',
+        state: game.state ?? '',
+        isHome: game.is_home ?? game.isHome ?? false,
+        gameType: game.game_type ?? game.gameType ?? 'league',
+      })),
+      upcomingTournaments: (data.upcoming_tournaments || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        location: t.location,
+        startDate: t.start_date ?? t.startDate ?? '',
+        endDate: t.end_date ?? t.endDate ?? '',
+        rink: t.rink ?? t.rink_name ?? null,
+      })),
     };
   }
 }

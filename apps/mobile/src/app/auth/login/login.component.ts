@@ -85,7 +85,7 @@ import { ToastService } from '../../shared/toast/toast.service';
                 <p>
                   Don't have an account?
                   <a
-                    (click)="navigation.navigateToLink('auth/pricing')"
+                    (click)="navigation.navigateToLink('/pricing')"
                     (keyup.enter)="navigation.navigateToLink('auth/pricing')"
                     tabindex="0"
                     role="button"

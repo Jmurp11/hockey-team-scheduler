@@ -6,11 +6,21 @@ import { GamesModule } from '../games/games.module';
 import { TeamsModule } from '../teams/teams.module';
 import { TournamentsModule } from '../tournaments/tournaments.module';
 import { GameMatchingModule } from '../game-matching/game-matching.module';
+import { OpenAiClientProvider } from './shared/openai-client.provider';
+import { SearchUtilsService } from './shared/search-utils.service';
+import { ManagerSearchService } from './shared/manager-search.service';
+import { WebSearchService } from './shared/web-search.service';
 
 @Module({
   imports: [AuthModule, GamesModule, TeamsModule, TournamentsModule, GameMatchingModule],
   controllers: [RinkLinkGptController],
-  providers: [RinkLinkGptService],
+  providers: [
+    RinkLinkGptService,
+    OpenAiClientProvider,
+    SearchUtilsService,
+    ManagerSearchService,
+    WebSearchService,
+  ],
   exports: [RinkLinkGptService],
 })
 export class RinkLinkGptModule {}

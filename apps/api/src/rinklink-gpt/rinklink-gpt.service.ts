@@ -417,6 +417,25 @@ USER CONTEXT:
     }
   }
 
+  private readonly ageGroups: string[][] = [
+    ['9u', '10u'],
+    ['11u', '12u'],
+    ['13u', '14u'],
+    ['15u', '16u'],
+  ];
+
+  private getCompatibleAges(age: string): string[] {
+    const normalizedAge = age.toLowerCase().replace(/\s+/g, '');
+    const group = this.ageGroups.find((g) => g.includes(normalizedAge));
+    return group || [normalizedAge];
+  }
+
+  private teamMatchesAge(teamName: string, compatibleAges: string[]): boolean {
+    const nameAge = teamName.match(/(\d+U)/i)?.[1]?.toLowerCase();
+    if (!nameAge) return false;
+    return compatibleAges.includes(nameAge);
+  }
+
   /**
    * State/region abbreviation mappings for search expansion.
    */
@@ -997,6 +1016,9 @@ Would you like me to add this game to your schedule?`,
   ): Promise<{ id: number; team_name: string } | null> {
     this.logger.log(`Looking up opponent "${teamName}" in rankings table (age: ${age || 'any'})`);
 
+    const compatibleAges = age ? this.getCompatibleAges(age) : [];
+    this.logger.log(`Compatible ages: ${JSON.stringify(compatibleAges)}`);
+
     // Normalize function to handle whitespace differences
     const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
     const normalizedSearch = normalize(teamName);
@@ -1005,7 +1027,16 @@ Would you like me to add this game to your schedule?`,
     const expandedTerms = this.expandAbbreviations(teamName);
     this.logger.log(`Expanded search terms: ${JSON.stringify(expandedTerms)}`);
 
-    // First, try exact match on team_name (case-insensitive) WITHOUT age filter
+    // Helper: filter results to compatible age group, falling back to all results if none match
+    const filterByAge = (results: { id: number; team_name: string }[]): { id: number; team_name: string }[] => {
+      if (compatibleAges.length === 0) return results;
+      const ageFiltered = results.filter((t) => this.teamMatchesAge(t.team_name, compatibleAges));
+      if (ageFiltered.length > 0) return ageFiltered;
+      this.logger.warn(`No results matched compatible ages ${JSON.stringify(compatibleAges)}, falling back to unfiltered results`);
+      return results;
+    };
+
+    // First, try exact match on team_name (case-insensitive), then filter by age
     for (const term of expandedTerms) {
       const { data: exactData, error: exactError } = await supabase
         .from('rankings')
@@ -1014,13 +1045,13 @@ Would you like me to add this game to your schedule?`,
         .limit(5);
 
       if (!exactError && exactData && exactData.length > 0) {
-        this.logger.log(`Found exact match: ${JSON.stringify(exactData[0])}`);
-        return exactData[0];
+        const filtered = filterByAge(exactData);
+        this.logger.log(`Found exact match (after age filter): ${JSON.stringify(filtered[0])}`);
+        return filtered[0];
       }
     }
 
     // Extract the base team name (without age/level) for partial search
-    // This finds teams like "Cutting Edge King Cobras" when searching for "Cutting Edge King Cobras 16U AA"
     const baseNameMatch = teamName.match(/^(.+?)\s*\d+U/i);
     const baseName = baseNameMatch ? baseNameMatch[1].trim() : teamName;
     this.logger.log(`Base team name for search: "${baseName}"`);
@@ -1030,19 +1061,22 @@ Would you like me to add this game to your schedule?`,
       .from('rankings')
       .select('id, team_name')
       .ilike('team_name', `%${baseName}%`)
-      .limit(20);
+      .limit(50);
 
     this.logger.log(`Partial search for "${baseName}" returned ${data?.length || 0} results`);
 
     if (!error && data && data.length > 0) {
-      // If only one match, return it
-      if (data.length === 1) {
-        this.logger.log(`Single match found: ${JSON.stringify(data[0])}`);
-        return data[0];
+      // Filter by compatible age group first
+      const ageFilteredData = filterByAge(data);
+      this.logger.log(`After age filtering: ${ageFilteredData.length} results`);
+
+      if (ageFilteredData.length === 1) {
+        this.logger.log(`Single match found: ${JSON.stringify(ageFilteredData[0])}`);
+        return ageFilteredData[0];
       }
 
       // Score each result by similarity to the search term
-      const scoredResults = data.map((t) => {
+      const scoredResults = ageFilteredData.map((t) => {
         const normalizedName = normalize(t.team_name);
         let score = 0;
 
@@ -1098,11 +1132,12 @@ Would you like me to add this game to your schedule?`,
         .from('rankings')
         .select('id, team_name')
         .ilike('team_name', `%${keyword}%`)
-        .limit(10);
+        .limit(20);
 
       if (!keywordError && keywordData && keywordData.length > 0) {
-        this.logger.log(`Keyword "${keyword}" found ${keywordData.length} results, returning first: ${JSON.stringify(keywordData[0])}`);
-        return keywordData[0];
+        const filtered = filterByAge(keywordData);
+        this.logger.log(`Keyword "${keyword}" found ${keywordData.length} results, after age filter: ${filtered.length}, returning: ${JSON.stringify(filtered[0])}`);
+        return filtered[0];
       }
     }
 
