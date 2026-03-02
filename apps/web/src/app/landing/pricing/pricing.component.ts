@@ -17,26 +17,13 @@ import {
 } from '@angular/forms';
 import { SubscriptionService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
+import { PRICE_PER_SEAT, PRICING_FEATURES } from '@hockey-team-scheduler/shared-utilities';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SeoService } from '../../shared/services/seo.service';
-
-/**
- * Pricing configuration - single plan with per-seat pricing.
- */
-const PRICE_PER_SEAT = 75; // $75 per seat per year
-
-const FEATURES = [
-  'AI-powered game matching by distance and skill level',
-  'Schedule risk alerts for overlaps, tight turnarounds, and travel conflicts',
-  'Tournament fit analysis based on team rating and schedule',
-  'AI assistant for schedule questions, game planning, and email drafts',
-  'Organization-level admin with master schedule across all teams',
-  'Access to iOS and Android mobile apps for coaches and managers',
-];
 
 /**
  * Pricing page component.
@@ -146,7 +133,7 @@ export class PricingComponent implements OnInit {
 
   // Pricing configuration
   pricePerSeat = PRICE_PER_SEAT;
-  features = FEATURES;
+  features = PRICING_FEATURES;
 
   // Seat selection
   seats = signal(1);

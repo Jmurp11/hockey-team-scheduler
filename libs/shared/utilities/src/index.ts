@@ -56,4 +56,5 @@ export * from './lib/shared-utilities/utilities/dashboard.utility';
 
 // Export all constants
 export * from './lib/shared-utilities/constants/add-game.constants';
+export * from './lib/shared-utilities/constants/pricing.constants';
 export * from './lib/shared-utilities/constants/profile.constants';
