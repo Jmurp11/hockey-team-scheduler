@@ -1,21 +1,13 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "installation": {
-    "version": "22.4.1",
-    "plugins": {
-      "@nx/docker": "22.4.1"
-    }
+    "version": "22.5.3",
+    "plugins": { "@nx/docker": "22.5.3" }
   },
   "targetDefaults": {
-    "build": {
-      "cache": true
-    },
-    "test": {
-      "cache": true
-    },
-    "lint": {
-      "cache": true
-    },
+    "build": { "cache": true },
+    "test": { "cache": true },
+    "lint": { "cache": true },
     "@angular/build:application": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -39,34 +31,15 @@
     {
       "plugin": "@nx/docker",
       "options": {
-        "buildTarget": {
-          "name": "docker:build"
-        },
-        "runTarget": {
-          "name": "docker:run"
-        }
+        "buildTarget": { "name": "docker:build" },
+        "runTarget": { "name": "docker:run" }
       }
     },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    },
-    {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      }
-    }
+    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } },
+    { "plugin": "@nx/jest/plugin", "options": { "targetName": "test" } }
   ],
   "generators": {
-    "@nx/angular:library": {
-      "linter": "eslint",
-      "unitTestRunner": "jest"
-    },
-    "@nx/angular:component": {
-      "style": "scss"
-    }
+    "@nx/angular:library": { "linter": "eslint", "unitTestRunner": "jest" },
+    "@nx/angular:component": { "style": "scss" }
   }
 }
