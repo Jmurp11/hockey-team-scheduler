@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import { ToolCallingAgent, ToolHandler } from '../../shared/tool-calling-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { UserContext } from '../../shared/user-context.service';
 import { AgentContext, AgentResult } from '../../shared/base-agent';
 import { TournamentsService } from '../../../tournaments/tournaments.service';
@@ -21,8 +22,10 @@ export class TournamentsAgent extends ToolCallingAgent implements OnModuleInit {
     @Inject(OPENAI_CLIENT) protected readonly openai: OpenAI,
     private readonly tournamentsService: TournamentsService,
     private readonly registry: AgentRegistryService,
+    tracing: AgentTracingService,
   ) {
     super();
+    this.tracing = tracing;
   }
 
   onModuleInit() {

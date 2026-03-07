@@ -26,6 +26,7 @@ import { arrowBackOutline } from 'ionicons/icons';
 
 import {
   AgentContextService,
+  AiConsentService,
   AuthService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -41,6 +42,7 @@ import { AiEmailPanelComponent } from './ai-email-panel/ai-email-panel.component
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { ButtonComponent } from '../shared/button/button.component';
 import { ToastService } from '../shared/toast/toast.service';
+import { AiConsentDialogComponent } from '../shared/components/ai-consent-dialog/ai-consent-dialog.component';
 
 @Component({
   selector: 'app-contact-scheduler',
@@ -61,6 +63,7 @@ import { ToastService } from '../shared/toast/toast.service';
     ContactContentComponent,
     ContactHeaderComponent,
     AiEmailPanelComponent,
+    AiConsentDialogComponent,
   ],
   template: `
     <ion-modal
@@ -139,6 +142,12 @@ import { ToastService } from '../shared/toast/toast.service';
         }
       </ng-template>
     </ion-modal>
+
+    <app-ai-consent-dialog
+      [isOpen]="showConsentDialog()"
+      (accepted)="onConsentAccepted()"
+      (declined)="onConsentDeclined()"
+    />
   `,
   styles: [
     `
@@ -164,6 +173,7 @@ import { ToastService } from '../shared/toast/toast.service';
 export class ContactSchedulerComponent implements OnInit {
   private authService = inject(AuthService);
   private agentContextService = inject(AgentContextService);
+  private aiConsentService = inject(AiConsentService);
   private router = inject(Router);
   private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
@@ -178,6 +188,7 @@ export class ContactSchedulerComponent implements OnInit {
   userId = signal<string | null>(null);
   userTeamName = signal<string | null>(null);
   aiPanelOpen = signal(false);
+  showConsentDialog = signal(false);
 
   constructor() {
     addIcons({ arrowBackOutline });
@@ -190,8 +201,23 @@ export class ContactSchedulerComponent implements OnInit {
   /**
    * Open the AI email panel.
    */
-  openAiPanel(): void {
+  async openAiPanel(): Promise<void> {
+    const consented = await this.aiConsentService.checkConsent();
+    if (!consented) {
+      this.showConsentDialog.set(true);
+      return;
+    }
     this.aiPanelOpen.set(true);
+  }
+
+  onConsentAccepted(): void {
+    this.aiConsentService.grantConsent();
+    this.showConsentDialog.set(false);
+    this.aiPanelOpen.set(true);
+  }
+
+  onConsentDeclined(): void {
+    this.showConsentDialog.set(false);
   }
 
   /**

@@ -28,3 +28,4 @@ export * from './lib/shared-data-access/services/agent-context.service';
 export * from './lib/shared-data-access/services/ai-email-panel-state.service';
 export * from './lib/shared-data-access/services/game-matching-state.service';
 export * from './lib/shared-data-access/services/bug-report-state.service';
+export * from './lib/shared-data-access/services/ai-consent.service';

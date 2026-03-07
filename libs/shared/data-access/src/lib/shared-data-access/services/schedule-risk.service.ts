@@ -1,4 +1,6 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 import {
   evaluateGameScheduleRisks,
   Game,
@@ -6,13 +8,15 @@ import {
   ScheduleRiskConfig,
   ScheduleRiskEvaluation,
 } from '@hockey-team-scheduler/shared-utilities';
+import { AuthService } from './auth.service';
+import { ScheduleService } from './schedule.service';
 
 /**
  * Service for managing schedule risk evaluation state.
  *
- * This service evaluates games for potential scheduling conflicts and risks.
- * It uses Angular signals for reactive state management, compatible with
- * zoneless change detection.
+ * Automatically subscribes to the current user's games on initialization
+ * and re-evaluates risks on page load and after any schedule mutation
+ * (via Supabase realtime).
  *
  * The service is advisory only - it detects and reports risks but never
  * blocks any actions or auto-fixes issues.
@@ -22,10 +26,7 @@ import {
  * // Inject the service
  * private scheduleRiskService = inject(ScheduleRiskService);
  *
- * // Evaluate risks when games change
- * this.scheduleRiskService.evaluate(games);
- *
- * // Access risk state in template
+ * // Access risk state in template (no manual evaluate() needed)
  * @if (scheduleRiskService.hasRisks()) {
  *   <app-schedule-risk-badge [evaluation]="scheduleRiskService.evaluation()" />
  * }
@@ -33,6 +34,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class ScheduleRiskService {
+  private readonly authService = inject(AuthService);
+  private readonly scheduleService = inject(ScheduleService);
+  private readonly destroyRef = inject(DestroyRef);
   // Private signals for internal state
   private readonly _evaluation = signal<ScheduleRiskEvaluation | null>(null);
   private readonly _isEvaluating = signal(false);
@@ -82,6 +86,23 @@ export class ScheduleRiskService {
   readonly hasWarningsOnly = computed(
     () => !this.hasErrors() && this.warningCount() > 0,
   );
+
+  constructor() {
+    // Auto-subscribe to the current user's games.
+    // gamesFull() includes Supabase realtime, so this fires on initial load
+    // AND after any schedule mutation (INSERT/UPDATE/DELETE).
+    toObservable(this.authService.currentUser)
+      .pipe(
+        switchMap((user) => {
+          if (!user?.user_id) return of([]);
+          return this.scheduleService.gamesFull(user.user_id);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((games) => {
+        this.evaluate(games);
+      });
+  }
 
   /**
    * Evaluate schedule risks for a set of games.

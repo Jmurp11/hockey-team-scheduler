@@ -4,6 +4,7 @@ import { ToolCallingAgent, ToolHandler } from '../../shared/tool-calling-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { SearchUtilsService } from '../../shared/search-utils.service';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { UserContext } from '../../shared/user-context.service';
 import { AgentContext, AgentResult } from '../../shared/base-agent';
 import { TeamsService } from '../../../teams/teams.service';
@@ -23,8 +24,10 @@ export class NearbyTeamsAgent extends ToolCallingAgent implements OnModuleInit {
     private readonly teamsService: TeamsService,
     private readonly searchUtils: SearchUtilsService,
     private readonly registry: AgentRegistryService,
+    tracing: AgentTracingService,
   ) {
     super();
+    this.tracing = tracing;
   }
 
   onModuleInit() {

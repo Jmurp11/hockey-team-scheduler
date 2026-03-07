@@ -15,7 +15,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { RinkLinkGptService } from './rinklink-gpt.service';
+import { SupervisorService } from './supervisor/supervisor.service';
 import { ChatRequestDto, ChatResponseDto } from './rinklink-gpt.types';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 
@@ -29,7 +29,7 @@ import { ApiKeyGuard } from '../auth/api-key.guard';
 })
 @Controller('v1/rinklink-gpt')
 export class RinkLinkGptController {
-  constructor(private readonly rinkLinkGptService: RinkLinkGptService) {}
+  constructor(private readonly supervisorService: SupervisorService) {}
 
   @Post('chat')
   @ApiOperation({
@@ -55,7 +55,7 @@ export class RinkLinkGptController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async chat(@Body() chatRequest: ChatRequestDto): Promise<ChatResponseDto> {
     try {
-      return await this.rinkLinkGptService.chat(chatRequest);
+      return await this.supervisorService.chat(chatRequest);
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to process chat request',
