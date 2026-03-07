@@ -17,7 +17,6 @@ import { BehaviorSubject, Observable, of, switchMap, take, tap } from 'rxjs';
 import {
   AuthService,
   OpenAiService,
-  ScheduleRiskService,
 } from '@hockey-team-scheduler/shared-data-access';
 import { CardComponent } from '../shared/components/card/card.component';
 import { TableComponent } from '../shared/components/table/table.component';
@@ -136,7 +135,6 @@ import { ContactSchedulerDialogService } from '../contact-scheduler/contact-sche
 export class ScheduleComponent implements OnInit {
   private authService = inject(AuthService);
   private scheduleService = inject(ScheduleService);
-  private scheduleRiskService = inject(ScheduleRiskService);
   private addGameDialogService = inject(AddGameDialogService);
   private viewContainerRef = inject(ViewContainerRef);
   private toastService = inject(ToastService);
@@ -215,11 +213,7 @@ export class ScheduleComponent implements OnInit {
       tap(() => this.loading.set(true)),
       switchMap((selection) => {
         return this.dynamicTableData(selection).pipe(
-          tap((games) => {
-            this.loading.set(false);
-            // Evaluate schedule risks whenever games change
-            this.scheduleRiskService.evaluate(games);
-          })
+          tap(() => this.loading.set(false))
         );
       }),
     );

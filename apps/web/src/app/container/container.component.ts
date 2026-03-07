@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, ViewContainerRef } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, HostListener, inject, OnInit, ViewContainerRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { AuthService, ScheduleRiskService, ScheduleService } from '@hockey-team-scheduler/shared-data-access';
+import { AuthService, ScheduleRiskService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService, NavigationService, ScheduleRiskNotificationComponent } from '@hockey-team-scheduler/shared-ui';
-import { switchMap, of } from 'rxjs';
 import { BlockUIModule } from 'primeng/blockui';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -117,17 +115,9 @@ export class ContainerComponent implements OnInit {
   sidebarService = inject(SidebarService);
   gameMatchingDialogService = inject(GameMatchingDialogService);
   private viewContainerRef = inject(ViewContainerRef);
-  private scheduleService = inject(ScheduleService);
-  private scheduleRiskService = inject(ScheduleRiskService);
-  private destroyRef = inject(DestroyRef);
-
-  private riskEvaluation$ = toObservable(this.authService.currentUser).pipe(
-    switchMap((user) => {
-      if (!user?.user_id) return of([]);
-      return this.scheduleService.gamesFull(user.user_id);
-    }),
-    takeUntilDestroyed(this.destroyRef),
-  );
+  // Eager inject to ensure the service is created early and its
+  // constructor subscription starts before change detection settles.
+  private _scheduleRisk = inject(ScheduleRiskService);
 
   isMobile = false;
   hideTitle = false;
@@ -140,9 +130,6 @@ export class ContainerComponent implements OnInit {
   ngOnInit() {
     this.checkScreenSize();
     this.gameMatchingDialogService.setViewContainerRef(this.viewContainerRef);
-    this.riskEvaluation$.subscribe((games) => {
-      this.scheduleRiskService.evaluate(games);
-    });
   }
 
   private checkScreenSize() {

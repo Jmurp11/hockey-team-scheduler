@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import { ToolCallingAgent, ToolHandler } from '../../shared/tool-calling-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { AgentContext, AgentResult } from '../../shared/base-agent';
 import { GameMatchingService } from '../../../game-matching/game-matching.service';
 import { ToolDefinition, PendingAction } from '../../rinklink-gpt.types';
@@ -20,8 +21,10 @@ export class GameMatchingAgent extends ToolCallingAgent implements OnModuleInit 
     @Inject(OPENAI_CLIENT) protected readonly openai: OpenAI,
     private readonly gameMatchingService: GameMatchingService,
     private readonly registry: AgentRegistryService,
+    tracing: AgentTracingService,
   ) {
     super();
+    this.tracing = tracing;
   }
 
   onModuleInit() {

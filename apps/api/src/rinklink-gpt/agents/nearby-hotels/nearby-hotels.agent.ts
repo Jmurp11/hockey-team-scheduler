@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseAgent, AgentContext, AgentResult } from '../../shared/base-agent';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { WebSearchService } from '../../shared/web-search.service';
 import { ToolDefinition } from '../../rinklink-gpt.types';
 import { getNearbyHotelsPrompt } from './nearby-hotels.prompt';
@@ -16,6 +17,7 @@ export class NearbyHotelsAgent extends BaseAgent implements OnModuleInit {
   constructor(
     private readonly webSearchService: WebSearchService,
     private readonly registry: AgentRegistryService,
+    private readonly tracing: AgentTracingService,
   ) {
     super();
   }

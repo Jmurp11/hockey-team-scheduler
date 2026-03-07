@@ -1,12 +1,12 @@
 PODS:
-  - Capacitor (7.4.5):
+  - Capacitor (7.5.0):
     - CapacitorCordova
-  - CapacitorClipboard (7.0.3):
+  - CapacitorClipboard (7.0.4):
     - Capacitor
-  - CapacitorCordova (7.4.5)
-  - CapacitorPreferences (7.0.3):
+  - CapacitorCordova (7.5.0)
+  - CapacitorPreferences (7.0.4):
     - Capacitor
-  - CapacitorSplashScreen (7.0.4):
+  - CapacitorSplashScreen (7.0.5):
     - Capacitor
 
 DEPENDENCIES:
@@ -29,11 +29,11 @@ EXTERNAL SOURCES:
     :path: "../../../../node_modules/@capacitor/splash-screen"
 
 SPEC CHECKSUMS:
-  Capacitor: 12914e6f1b7835e161a74ebd19cb361efa37a7dd
-  CapacitorClipboard: 2a282bc14e8f47d430f2f9698ed95fbe25dcc21c
-  CapacitorCordova: 31bbe4466000c6b86d9b7f1181ee286cff0205aa
-  CapacitorPreferences: 913eef88272c13eb6445b21e51fe8ef6635412cc
-  CapacitorSplashScreen: 000f7591d546907dda5cbb514bd6b6d9e6048cf8
+  Capacitor: 0a78ec6b54580fa055c11744a4e83cd7942d98ca
+  CapacitorClipboard: d1f123674cf413125db816a45e8f70e8770972fc
+  CapacitorCordova: ae35646a9b46cfd00d637f195509c86594026aad
+  CapacitorPreferences: 69d9991307507aeab8ef8019c10b9babfda0e9ca
+  CapacitorSplashScreen: 409eeaaeac603d264f209c0fcb718aa22fe1f7bb
 
 PODFILE CHECKSUM: 72b7feea355c423def2f450e89c50eaa3b8cf922
 

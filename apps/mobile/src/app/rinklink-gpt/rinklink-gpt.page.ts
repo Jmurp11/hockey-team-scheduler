@@ -25,6 +25,7 @@ import { arrowBackOutline } from 'ionicons/icons';
 
 import {
   AgentContextService,
+  AiConsentService,
   AuthService,
   ChatResponse,
   PendingAction,
@@ -48,6 +49,7 @@ import {
 } from './components';
 import { DisplayMessage } from './rinklink-gpt.types';
 import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/toolbar-actions.component';
+import { AiConsentDialogComponent } from '../shared/components/ai-consent-dialog/ai-consent-dialog.component';
 
 @Component({
   selector: 'app-rinklink-gpt',
@@ -66,6 +68,7 @@ import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/to
     ChatTypingIndicatorComponent,
     ChatInputComponent,
     ToolbarActionsComponent,
+    AiConsentDialogComponent,
   ],
   template: `
     <ion-header>
@@ -87,44 +90,54 @@ import { ToolbarActionsComponent } from '../shared/components/toolbar-actions/to
     </ion-header>
 
     <ion-content class="rinklink-gpt__content" #content>
-      <div class="rinklink-gpt__messages">
-        @if (messages().length === 0) {
-          <app-chat-welcome
-            [disabled]="loading()"
-            (suggestionClick)="sendSuggestion($event)"
-          />
-        }
+      @if (consentGranted()) {
+        <div class="rinklink-gpt__messages">
+          @if (messages().length === 0) {
+            <app-chat-welcome
+              [disabled]="loading()"
+              (suggestionClick)="sendSuggestion($event)"
+            />
+          }
 
-        <!-- Context restoration banner -->
-        @if (restoredContext()) {
-          <div class="rinklink-gpt__context-banner">
-            <ion-icon name="information-circle-outline"></ion-icon>
-            <span>
-              Continuing conversation about
-              <strong>{{ restoredContext()?.contact?.team || restoredContext()?.contact?.name }}</strong>
-            </span>
-          </div>
-        }
+          <!-- Context restoration banner -->
+          @if (restoredContext()) {
+            <div class="rinklink-gpt__context-banner">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <span>
+                Continuing conversation about
+                <strong>{{ restoredContext()?.contact?.team || restoredContext()?.contact?.name }}</strong>
+              </span>
+            </div>
+          }
 
-        @for (message of messages(); track $index) {
-          <app-chat-message
-            [message]="message"
-            [disabled]="loading()"
-            (confirm)="confirmAction($event)"
-            (decline)="declineAction()"
-          />
-        }
+          @for (message of messages(); track $index) {
+            <app-chat-message
+              [message]="message"
+              [disabled]="loading()"
+              (confirm)="confirmAction($event)"
+              (decline)="declineAction()"
+            />
+          }
 
-        @if (loading()) {
-          <app-chat-typing-indicator />
-        }
-      </div>
+          @if (loading()) {
+            <app-chat-typing-indicator />
+          }
+        </div>
+      }
     </ion-content>
 
-    <app-chat-input
-      [(message)]="inputMessage"
-      [disabled]="loading()"
-      (send)="sendMessage()"
+    @if (consentGranted()) {
+      <app-chat-input
+        [(message)]="inputMessage"
+        [disabled]="loading()"
+        (send)="sendMessage()"
+      />
+    }
+
+    <app-ai-consent-dialog
+      [isOpen]="showConsentDialog()"
+      (accepted)="onConsentAccepted()"
+      (declined)="onConsentDeclined()"
     />
   `,
   styles: [
@@ -177,6 +190,7 @@ export class RinkLinkGptPage implements OnInit {
 
   private authService = inject(AuthService);
   private agentContextService = inject(AgentContextService);
+  private aiConsentService = inject(AiConsentService);
   private rinkLinkGptService = inject(RinkLinkGptService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
@@ -187,6 +201,10 @@ export class RinkLinkGptPage implements OnInit {
   messages = signal<DisplayMessage[]>([]);
   inputMessage = signal('');
   loading = signal(false);
+
+  // Consent state
+  consentGranted = this.aiConsentService.hasConsented;
+  showConsentDialog = signal(false);
 
   // Context restoration state
   restoredContext = signal<AgentInvocationContext | null>(null);
@@ -199,6 +217,7 @@ export class RinkLinkGptPage implements OnInit {
   ngOnInit(): void {
     this.initializeUserSubscription();
     this.restoreContextIfAvailable();
+    this.checkAiConsent();
   }
 
   sendMessage(): void {
@@ -234,6 +253,17 @@ export class RinkLinkGptPage implements OnInit {
   /**
    * Navigate back to the return route (if set from modal context).
    */
+  onConsentAccepted(): void {
+    this.aiConsentService.grantConsent();
+    this.showConsentDialog.set(false);
+  }
+
+  onConsentDeclined(): void {
+    this.showConsentDialog.set(false);
+    const route = this.returnRoute();
+    this.router.navigateByUrl(route ?? '/app/home');
+  }
+
   navigateBack(): void {
     const route = this.returnRoute();
     if (route) {
@@ -242,6 +272,13 @@ export class RinkLinkGptPage implements OnInit {
   }
 
   // --- Private Methods ---
+
+  private async checkAiConsent(): Promise<void> {
+    const consented = await this.aiConsentService.checkConsent();
+    if (!consented) {
+      this.showConsentDialog.set(true);
+    }
+  }
 
   private initializeUserSubscription(): void {
     this.user$
