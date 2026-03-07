@@ -4,6 +4,7 @@ import { GamesService } from '../../../games/games.service';
 import { BaseAgent, AgentContext, AgentResult } from '../../shared/base-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService, TraceContext } from '../../shared/agent-tracing.service';
 import { ManagerSearchService } from '../../shared/manager-search.service';
 import { ToolDefinition, EmailDraft, PendingAction } from '../../rinklink-gpt.types';
 import { EMAIL_TOOLS } from './email.tools';
@@ -16,12 +17,15 @@ export class EmailAgent extends BaseAgent implements OnModuleInit {
     'Drafts and prepares emails to other team managers for scheduling, rescheduling, canceling games, or general communication';
 
   private readonly logger = new Logger(EmailAgent.name);
+  private _traceContext?: TraceContext;
+  private _parentSpanId?: string;
 
   constructor(
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     private readonly gamesService: GamesService,
     private readonly managerSearchService: ManagerSearchService,
     private readonly registry: AgentRegistryService,
+    private readonly tracing: AgentTracingService,
   ) {
     super();
   }
@@ -47,6 +51,9 @@ export class EmailAgent extends BaseAgent implements OnModuleInit {
   }
 
   async execute(context: AgentContext): Promise<AgentResult> {
+    this._traceContext = context.inputData?._traceContext as TraceContext | undefined;
+    this._parentSpanId = context.inputData?._parentSpanId as string | undefined;
+
     const args = (context.inputData || {}) as {
       recipientTeamName?: string;
       recipientTeamId?: number;
@@ -278,6 +285,23 @@ CRITICAL GUIDELINES:
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
       });
+
+      if (this._traceContext) {
+        const usage = response.usage;
+        this.tracing.logEvent({
+          trace_id: this._traceContext.traceId,
+          parent_span_id: this._parentSpanId,
+          span_id: this.tracing.startSpan().spanId,
+          event_type: 'agent_llm_call',
+          user_id: this._traceContext.userId,
+          agent_name: this.agentName,
+          model: 'gpt-4o',
+          prompt_tokens: usage?.prompt_tokens,
+          completion_tokens: usage?.completion_tokens,
+          total_tokens: usage?.total_tokens,
+          finish_reason: response.choices[0].finish_reason,
+        });
+      }
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
       return {

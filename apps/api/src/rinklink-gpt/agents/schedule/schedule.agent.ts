@@ -4,6 +4,7 @@ import { ToolCallingAgent, ToolHandler } from '../../shared/tool-calling-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { SearchUtilsService } from '../../shared/search-utils.service';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { UserContext } from '../../shared/user-context.service';
 import { AgentContext, AgentResult } from '../../shared/base-agent';
 import { GamesService } from '../../../games/games.service';
@@ -27,8 +28,10 @@ export class ScheduleAgent extends ToolCallingAgent implements OnModuleInit {
     private readonly teamsService: TeamsService,
     private readonly searchUtils: SearchUtilsService,
     private readonly registry: AgentRegistryService,
+    tracing: AgentTracingService,
   ) {
     super();
+    this.tracing = tracing;
   }
 
   onModuleInit() {
@@ -66,6 +69,7 @@ export class ScheduleAgent extends ToolCallingAgent implements OnModuleInit {
     if (result.pendingAction?.type === 'create_game') {
       const gameData = result.pendingAction.data;
       const proposedDate = gameData.date as string;
+      const proposedTime = gameData.time as string;
 
       if (proposedDate && context.userContext.teamId) {
         try {
@@ -73,15 +77,54 @@ export class ScheduleAgent extends ToolCallingAgent implements OnModuleInit {
             teamId: context.userContext.teamId,
           } as any);
 
-          const conflicting = games.filter((g) => {
-            const gameDate = new Date(g.date).toISOString().split('T')[0];
-            return gameDate === proposedDate;
-          });
+          const proposedDateTime = this.parseGameDateTime(proposedDate, proposedTime);
+          const proposedCity = (gameData.city as string) || '';
+          const proposedState = (gameData.state as string) || '';
 
-          if (conflicting.length > 0) {
-            issues.push(
-              `Schedule conflict: You already have ${conflicting.length} game(s) on ${proposedDate}. Please verify this is intentional.`,
-            );
+          for (const game of games) {
+            const gameDate = new Date(game.date).toISOString().split('T')[0];
+            if (gameDate !== proposedDate) continue;
+
+            const existingDateTime = this.parseGameDateTime(gameDate, game.time);
+            if (!proposedDateTime || !existingDateTime) {
+              // Fall back to same-day warning if we can't parse times
+              issues.push(
+                `Schedule conflict: You already have a game on ${proposedDate}. Please verify this is intentional.`,
+              );
+              continue;
+            }
+
+            const hoursBetween =
+              Math.abs(proposedDateTime.getTime() - existingDateTime.getTime()) /
+              (1000 * 60 * 60);
+
+            if (hoursBetween === 0) {
+              issues.push(
+                `Schedule conflict: You already have a game at ${game.time} on ${proposedDate} at ${game.rink || 'an unspecified rink'}.`,
+              );
+            } else if (hoursBetween <= 3) {
+              const isDifferentLocation =
+                this.areDifferentLocations(
+                  proposedCity,
+                  proposedState,
+                  game.city,
+                  game.state,
+                );
+
+              if (isDifferentLocation) {
+                issues.push(
+                  `Travel risk: You have a game at ${game.time} on ${proposedDate} at ${game.rink || 'a rink'} in ${game.city}, ${game.state}. ` +
+                  `The proposed game is only ${hoursBetween.toFixed(1)} hours later in ${proposedCity || 'another city'}, ${proposedState || 'another state'}. ` +
+                  `This may not allow enough travel time between rinks.`,
+                );
+              } else if (hoursBetween < 2) {
+                issues.push(
+                  `Tight schedule: You have a game at ${game.time} on ${proposedDate} at ${game.rink || 'the same area'}. ` +
+                  `The proposed game is only ${hoursBetween.toFixed(1)} hours later. ` +
+                  `Please verify there is enough time between games.`,
+                );
+              }
+            }
           }
         } catch (error) {
           this.logger.warn('Could not check for schedule conflicts:', error);
@@ -90,6 +133,65 @@ export class ScheduleAgent extends ToolCallingAgent implements OnModuleInit {
     }
 
     return { valid: issues.length === 0, issues };
+  }
+
+  private parseGameDateTime(date: string, time: string): Date | null {
+    if (!date || !time) return null;
+
+    try {
+      // Handle "7:00 PM" style times
+      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1], 10);
+        const minutes = parseInt(timeMatch[2], 10);
+        const period = timeMatch[3].toUpperCase();
+
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+
+        const dt = new Date(`${date}T00:00:00`);
+        dt.setHours(hours, minutes, 0, 0);
+        return dt;
+      }
+
+      // Handle "19:00:00-05:00" or "19:00:00" style times
+      const militaryMatch = time.match(/^(\d{2}):(\d{2})/);
+      if (militaryMatch) {
+        const dt = new Date(`${date}T00:00:00`);
+        dt.setHours(parseInt(militaryMatch[1], 10), parseInt(militaryMatch[2], 10), 0, 0);
+        return dt;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private areDifferentLocations(
+    city1: string,
+    state1: string,
+    city2: string,
+    state2: string,
+  ): boolean {
+    const normalize = (s: string) => (s || '').trim().toLowerCase();
+
+    const c1 = normalize(city1);
+    const c2 = normalize(city2);
+    const s1 = normalize(state1);
+    const s2 = normalize(state2);
+
+    // If we don't have location info for either game, assume different locations
+    // to err on the side of caution
+    if ((!c1 && !s1) || (!c2 && !s2)) return true;
+
+    // Different states are definitely different locations
+    if (s1 && s2 && s1 !== s2) return true;
+
+    // Same state but different cities
+    if (c1 && c2 && c1 !== c2) return true;
+
+    return false;
   }
 
   private async executeGetUserSchedule(

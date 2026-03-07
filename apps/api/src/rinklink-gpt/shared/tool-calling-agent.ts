@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { Logger } from '@nestjs/common';
 import { BaseAgent, AgentContext, AgentResult } from './base-agent';
+import { AgentTracingService, TraceContext } from './agent-tracing.service';
 import { ToolDefinition } from '../rinklink-gpt.types';
 
 export type ToolHandler = (
@@ -11,6 +12,7 @@ export type ToolHandler = (
 export abstract class ToolCallingAgent extends BaseAgent {
   protected abstract readonly openai: OpenAI;
   protected abstract readonly logger: Logger;
+  protected tracing?: AgentTracingService;
 
   abstract getToolHandlers(): Record<string, ToolHandler>;
 
@@ -25,6 +27,8 @@ export abstract class ToolCallingAgent extends BaseAgent {
       };
     }
 
+    const traceCtx = context.inputData?._traceContext as TraceContext | undefined;
+
     try {
       const messages = this.buildMessages(context);
 
@@ -36,6 +40,24 @@ export abstract class ToolCallingAgent extends BaseAgent {
       });
 
       const choice = response.choices[0];
+      const usage = response.usage;
+
+      if (traceCtx && this.tracing) {
+        const parentSpanId = context.inputData?._parentSpanId as string | undefined;
+        this.tracing.logEvent({
+          trace_id: traceCtx.traceId,
+          parent_span_id: parentSpanId,
+          span_id: this.tracing.startSpan().spanId,
+          event_type: 'agent_llm_call',
+          user_id: traceCtx.userId,
+          agent_name: this.agentName,
+          model: 'gpt-4o',
+          prompt_tokens: usage?.prompt_tokens,
+          completion_tokens: usage?.completion_tokens,
+          total_tokens: usage?.total_tokens,
+          finish_reason: choice.finish_reason,
+        });
+      }
 
       if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
         const fnCalls = choice.message.tool_calls.filter(
@@ -51,6 +73,19 @@ export abstract class ToolCallingAgent extends BaseAgent {
       };
     } catch (error) {
       this.logger.error(`Error in ${this.agentName}.execute:`, error);
+
+      if (traceCtx && this.tracing) {
+        this.tracing.logEvent({
+          trace_id: traceCtx.traceId,
+          span_id: this.tracing.startSpan().spanId,
+          event_type: 'error',
+          user_id: traceCtx.userId,
+          agent_name: this.agentName,
+          success: false,
+          error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+
       return {
         success: false,
         error: `Failed to process ${this.agentName} request. Please try again.`,
@@ -92,11 +127,33 @@ export abstract class ToolCallingAgent extends BaseAgent {
       `Executing tool: ${functionName} with args: ${JSON.stringify(args)}`,
     );
 
+    const traceCtx = context.inputData?._traceContext as TraceContext | undefined;
+    const parentSpanId = context.inputData?._parentSpanId as string | undefined;
+    const toolSpan = this.tracing?.startSpan();
+
     const handlers = this.getToolHandlers();
     const handler = handlers[functionName];
 
     if (handler) {
-      return handler(args, context);
+      const result = await handler(args, context);
+
+      if (traceCtx && this.tracing && toolSpan) {
+        this.tracing.logEvent({
+          trace_id: traceCtx.traceId,
+          parent_span_id: parentSpanId,
+          span_id: toolSpan.spanId,
+          event_type: 'agent_tool_call',
+          duration_ms: Date.now() - toolSpan.startTime,
+          user_id: traceCtx.userId,
+          agent_name: this.agentName,
+          tool_name: functionName,
+          tool_args: this.tracing.truncateArgs(args),
+          tool_result_summary: this.tracing.summarizeResult(result),
+          success: result.success,
+        });
+      }
+
+      return result;
     }
 
     return {

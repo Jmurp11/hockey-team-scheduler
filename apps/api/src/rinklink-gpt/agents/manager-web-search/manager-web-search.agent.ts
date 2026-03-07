@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import { BaseAgent, AgentContext, AgentResult } from '../../shared/base-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService, TraceContext } from '../../shared/agent-tracing.service';
 import { ManagerSearchService } from '../../shared/manager-search.service';
 import { cleanCitations } from '../../shared/web-search.service';
 import { ToolDefinition } from '../../rinklink-gpt.types';
@@ -21,6 +22,7 @@ export class ManagerWebSearchAgent extends BaseAgent implements OnModuleInit {
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     private readonly managerSearchService: ManagerSearchService,
     private readonly registry: AgentRegistryService,
+    private readonly tracing: AgentTracingService,
   ) {
     super();
   }
@@ -41,6 +43,8 @@ export class ManagerWebSearchAgent extends BaseAgent implements OnModuleInit {
     const inputData = context.inputData || {};
     const teamName = (inputData.teamName as string) || '';
     const associationUrl = inputData.associationUrl as string | undefined;
+    const traceCtx = inputData._traceContext as TraceContext | undefined;
+    const parentSpanId = inputData._parentSpanId as string | undefined;
 
     if (!teamName) {
       return {
@@ -51,12 +55,14 @@ export class ManagerWebSearchAgent extends BaseAgent implements OnModuleInit {
       };
     }
 
-    return this.searchManagerOnWeb(teamName, associationUrl);
+    return this.searchManagerOnWeb(teamName, associationUrl, traceCtx, parentSpanId);
   }
 
   private async searchManagerOnWeb(
     teamName: string,
     associationUrl?: string,
+    traceCtx?: TraceContext,
+    parentSpanId?: string,
   ): Promise<AgentResult> {
     try {
       const associationUrlInstruction = associationUrl
@@ -92,6 +98,22 @@ Return a JSON object with an array of managers found:
 
 If nothing is found, return: { "managers": [] }`,
       });
+
+      if (traceCtx) {
+        const usage = response.usage;
+        this.tracing.logEvent({
+          trace_id: traceCtx.traceId,
+          parent_span_id: parentSpanId,
+          span_id: this.tracing.startSpan().spanId,
+          event_type: 'agent_llm_call',
+          user_id: traceCtx.userId,
+          agent_name: this.agentName,
+          model: 'gpt-5-mini',
+          prompt_tokens: usage?.input_tokens,
+          completion_tokens: usage?.output_tokens,
+          total_tokens: (usage?.input_tokens || 0) + (usage?.output_tokens || 0),
+        });
+      }
 
       const result = JSON.parse(response.output_text);
       const managers = result.managers || [];

@@ -4,6 +4,7 @@ import { supabase } from '../../../supabase';
 import { BaseAgent, AgentContext, AgentResult } from '../../shared/base-agent';
 import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
+import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { ManagerSearchService } from '../../shared/manager-search.service';
 import { ToolDefinition } from '../../rinklink-gpt.types';
 import { MANAGER_LOOKUP_TOOLS } from './manager-lookup.tools';
@@ -21,6 +22,7 @@ export class ManagerLookupAgent extends BaseAgent implements OnModuleInit {
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     private readonly managerSearchService: ManagerSearchService,
     private readonly registry: AgentRegistryService,
+    private readonly tracing: AgentTracingService,
   ) {
     super();
   }

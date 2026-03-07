@@ -7,7 +7,6 @@ import {
   AssociationsService,
   AuthService,
   OpenAiService,
-  ScheduleRiskService,
   ScheduleService,
 } from '@hockey-team-scheduler/shared-data-access';
 import {
@@ -199,7 +198,6 @@ export class SchedulePage implements OnInit {
   private router = inject(Router);
   private openAiService = inject(OpenAiService);
   private contactSchedulerService = inject(ContactSchedulerDialogService);
-  scheduleRiskService = inject(ScheduleRiskService);
   private destroyRef = inject(DestroyRef);
 
   contactingScheduler = signal<boolean>(false);
@@ -263,12 +261,7 @@ export class SchedulePage implements OnInit {
             return this.scheduleService.gamesFull(selection.id);
         }
       }),
-      tap((games) => {
-        this.loading.set(false);
-        if (games) {
-          this.scheduleRiskService.evaluate(games);
-        }
-      }),
+      tap(() => this.loading.set(false)),
       map((games) => games?.sort((a, b) => (a.date < b.date ? -1 : 1))),
     );
   }

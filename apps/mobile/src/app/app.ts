@@ -1,13 +1,10 @@
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import {
   AuthService,
   ScheduleRiskService,
-  ScheduleService,
   UserService,
 } from '@hockey-team-scheduler/shared-data-access';
-import { of, switchMap } from 'rxjs';
 import {
   IonApp,
   IonContent,
@@ -77,17 +74,9 @@ export class App implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private router = inject(Router);
-  private scheduleService = inject(ScheduleService);
-  private scheduleRiskService = inject(ScheduleRiskService);
-  private destroyRef = inject(DestroyRef);
-
-  private riskEvaluation$ = toObservable(this.authService.currentUser).pipe(
-    switchMap((user) => {
-      if (!user?.user_id) return of([]);
-      return this.scheduleService.gamesFull(user.user_id);
-    }),
-    takeUntilDestroyed(this.destroyRef),
-  );
+  // Eager inject to ensure the service is created early and its
+  // constructor subscription starts before change detection settles.
+  private _scheduleRisk = inject(ScheduleRiskService);
 
   protected title = 'RinkLink.ai (Mobile)';
 
@@ -160,11 +149,7 @@ export class App implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.riskEvaluation$.subscribe((games) => {
-      this.scheduleRiskService.evaluate(games);
-    });
-  }
+  ngOnInit(): void {}
 
   async logout() {
     try {
