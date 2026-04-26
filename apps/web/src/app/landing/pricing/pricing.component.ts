@@ -205,7 +205,7 @@ export class PricingComponent implements OnInit {
         {
           question: 'How much does RinkLink.ai cost?',
           answer:
-            'RinkLink.ai costs $75 per seat per year. You can select the number of seats you need based on your organization size.',
+            'RinkLink.ai costs $50 per seat per year. You can select the number of seats you need based on your organization size.',
         },
         {
           question: 'Can I cancel my subscription anytime?',

@@ -1,5 +1,5 @@
 /** Price per seat per year in USD. */
-export const PRICE_PER_SEAT = 75;
+export const PRICE_PER_SEAT = 50;
 
 /** Feature list displayed on the pricing page. */
 export const PRICING_FEATURES = [
