@@ -164,7 +164,7 @@ export class PricingComponent implements OnInit {
     this.seoService.updateTags({
       title: 'Pricing - RinkLink.ai Hockey Scheduling Plans',
       description:
-        'Choose the perfect plan for your youth hockey team. Flexible pricing for AI-powered scheduling, tournament discovery, and team management. Free trial available.',
+        'Choose the perfect plan for your youth hockey team. Flexible pricing for AI-powered scheduling, tournament discovery, and team management. 30-day money-back guarantee.',
       url: 'https://rinklink.ai/pricing',
       keywords:
         'hockey scheduling pricing, youth hockey plans, sports management pricing, hockey team subscription, tournament management cost',
@@ -184,11 +184,11 @@ export class PricingComponent implements OnInit {
         },
         offers: {
           '@type': 'Offer',
-          price: '75.00',
+          price: '50.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '75.00',
+            price: '50.00',
             priceCurrency: 'USD',
             unitText: 'per seat per year',
           },
@@ -218,9 +218,9 @@ export class PricingComponent implements OnInit {
             'All plans include AI-powered game matching, schedule risk monitoring, tournament fit analysis, an AI assistant for scheduling and emails, and organization-level administration.',
         },
         {
-          question: 'Is there a free trial?',
+          question: 'Can I try RinkLink.ai risk-free?',
           answer:
-            'We offer a 30-day money-back guarantee, allowing you to try RinkLink.ai risk-free.',
+            'Yes. We offer a 30-day money-back guarantee, so you can try RinkLink.ai risk-free.',
         },
       ]),
     ]);

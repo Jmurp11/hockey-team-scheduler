@@ -6,12 +6,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiExcludeController, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 import { DashboardService, DashboardSummary } from './dashboard.service';
 
 @ApiTags('dashboard')
 @ApiExcludeController()
-@UseGuards(ApiKeyGuard)
+@UseGuards(SupabaseAuthGuard)
 @Controller('v1/dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}

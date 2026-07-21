@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { DeveloperPortalController } from './developer-portal.controller';
 import { DeveloperPortalService } from './developer-portal.service';
 import { DeveloperAuthGuard } from './developer-auth.guard';
@@ -18,6 +18,7 @@ import { EmailModule } from '../email/email.module';
  * NOT Supabase Auth. API users are stored in the api_users table
  * and authenticate via magic link emails.
  */
+@Global()
 @Module({
   imports: [EmailModule],
   controllers: [DeveloperPortalController],

@@ -36,7 +36,16 @@ export class SupervisorService {
     try {
       if (request.confirmAction && request.pendingAction) {
         const confirmSpan = this.tracing.startSpan();
-        const result = await this.confirmationService.executeConfirmedAction(request);
+        // Resolve identity/ownership server-side from the authenticated user id
+        // (request.userId is set from the verified token by the controller) so
+        // the confirmed action cannot act on another user's team or contacts.
+        const confirmUserContext = await this.userContextService.getUserContext(
+          request.userId,
+        );
+        const result = await this.confirmationService.executeConfirmedAction(
+          request,
+          confirmUserContext,
+        );
 
         this.tracing.logEvent({
           trace_id: trace.traceId,

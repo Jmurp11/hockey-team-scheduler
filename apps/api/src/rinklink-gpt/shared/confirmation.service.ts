@@ -14,6 +14,8 @@ import {
   EmailDraft,
 } from '../rinklink-gpt.types';
 import { AuditLogService } from './audit-log.service';
+import { ManagerSearchService } from './manager-search.service';
+import { UserContext } from './user-context.service';
 
 @Injectable()
 export class ConfirmationService {
@@ -23,10 +25,21 @@ export class ConfirmationService {
     private readonly gamesService: GamesService,
     private readonly emailService: EmailService,
     private readonly auditLogService: AuditLogService,
+    private readonly managerSearchService: ManagerSearchService,
   ) {}
 
+  /**
+   * Executes a user-confirmed write action.
+   *
+   * SECURITY: ownership/identity fields (team, association, user) are taken from
+   * the server-resolved `userContext` (derived from the authenticated token) —
+   * NEVER from the client-echoed `pendingAction.data`, which is untrusted. This
+   * prevents a caller from acting on another user's team or emailing arbitrary
+   * addresses by tampering with the confirmation payload.
+   */
   async executeConfirmedAction(
     request: ChatRequestDto,
+    userContext: UserContext,
   ): Promise<ChatResponseDto> {
     const { pendingAction } = request;
 
@@ -51,12 +64,13 @@ export class ConfirmationService {
             city: (data.city as string) || '',
             state: (data.state as string) || '',
             country: (data.country as string) || 'USA',
-            team: data.team as number,
-            association: data.association as number,
-            user: data.user as number,
+            // Ownership derived from the authenticated user context, not the client.
+            team: userContext.teamId,
+            association: userContext.associationId,
+            user: userContext.userDbId,
           };
 
-          const createdGames = await this.gamesService.create([gameData as CreateGameDto]);
+          const createdGames = await this.gamesService.create([gameData as unknown as CreateGameDto]);
 
           await this.auditLogService.logChatAction(request.userId, 'create_game', {
             gameId: createdGames[0]?.id,
@@ -90,9 +104,10 @@ You can view and manage this game in your Schedule.`,
             city: '',
             state: '',
             country: 'USA',
-            team: tournamentData.team as number,
-            association: tournamentData.team as number,
-            user: tournamentData.user as number,
+            // Ownership derived from the authenticated user context, not the client.
+            team: userContext.teamId,
+            association: userContext.associationId,
+            user: userContext.userDbId,
           };
 
           const createdGames = await this.gamesService.create([tournamentGame as unknown as CreateGameDto]);
@@ -120,8 +135,28 @@ You can view this in your Schedule.`,
         case 'send_email': {
           const emailData = pendingAction.data as EmailDraft;
 
+          // Anti-abuse: only allow sending to a manager contact the platform has
+          // already discovered — never an arbitrary client-supplied address.
+          const recipientAllowed = await this.managerSearchService.isKnownManagerEmail(
+            emailData.to,
+          );
+          if (!recipientAllowed) {
+            this.logger.warn(
+              `Blocked send_email to non-contact address for user ${userContext.userId}`,
+            );
+            return {
+              message:
+                'I can only send emails to team manager contacts discovered through RinkLink. This recipient is not a known contact, so I did not send the message.',
+              error: 'Recipient is not a known manager contact',
+            };
+          }
+
+          // Sender identity comes from the authenticated user context, not the client.
+          const fromName = userContext.userName || 'RinkLink Team Manager';
+          const replyTo = userContext.email;
+
           const htmlBody = `
-            ${buildHeading('Message from ' + (emailData.fromName || 'Team Manager'), 2)}
+            ${buildHeading('Message from ' + fromName, 2)}
             ${buildParagraph(emailData.body.replace(/\n/g, '<br />'))}
             ${buildHighlightBox(emailData.signature.replace(/\n/g, '<br />'), 'info')}
           `;
@@ -131,8 +166,8 @@ You can view this in your Schedule.`,
             subject: emailData.subject,
             body: htmlBody,
             textBody: `${emailData.body}\n\n${emailData.signature}`,
-            fromName: emailData.fromName || 'RinkLink Team Manager',
-            replyTo: emailData.fromEmail,
+            fromName,
+            replyTo,
           });
 
           if (!emailSent) {

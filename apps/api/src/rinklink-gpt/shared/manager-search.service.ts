@@ -77,6 +77,27 @@ export class ManagerSearchService {
     return { managers, searchResult };
   }
 
+  /**
+   * Returns true if the given email belongs to a manager contact already known
+   * to the platform (i.e. previously discovered and saved). Used to gate
+   * outbound email so the AI can only send to discovered contacts, not to
+   * arbitrary attacker-supplied addresses.
+   */
+  async isKnownManagerEmail(email: string): Promise<boolean> {
+    const normalized = email?.trim();
+    if (!normalized) {
+      return false;
+    }
+
+    const { data, error } = await supabase
+      .from('managers')
+      .select('id')
+      .ilike('email', normalized)
+      .limit(1);
+
+    return !error && !!data && data.length > 0;
+  }
+
   async saveWebSearchResults(
     managers: Array<{
       name: string;
