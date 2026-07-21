@@ -93,7 +93,9 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         apiUrl: environment.apiUrl,
         supabaseUrl: environment.PUBLIC_SUPABASE_URL,
-        supabaseAnonKey: environment.PUBLIC_SUPABASE_SERVICE_ROLE,
+        // Browser-safe Supabase publishable key (sb_publishable_...).
+        // NEVER the service_role/secret key — this ships in the mobile bundle.
+        supabaseAnonKey: environment.PUBLIC_SUPABASE_KEY,
         appName: 'mobile', // Differentiates from web app storage
       },
     },
