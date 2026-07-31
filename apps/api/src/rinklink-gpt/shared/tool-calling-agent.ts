@@ -2,7 +2,9 @@ import OpenAI from 'openai';
 import { Logger } from '@nestjs/common';
 import { BaseAgent, AgentContext, AgentResult } from './base-agent';
 import { AgentTracingService, TraceContext } from './agent-tracing.service';
-import { ToolDefinition } from '../rinklink-gpt.types';
+import { chatCompletion, safeParseJson } from './llm';
+import { AGENT_MODEL } from './llm.config';
+import { RequestBudget } from './request-budget';
 
 export type ToolHandler = (
   args: Record<string, unknown>,
@@ -29,15 +31,21 @@ export abstract class ToolCallingAgent extends BaseAgent {
 
     const traceCtx = context.inputData?._traceContext as TraceContext | undefined;
 
+    const budget = context.inputData?._budget as RequestBudget | undefined;
+
     try {
       const messages = this.buildMessages(context);
 
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages,
-        tools: this.getTools() as OpenAI.ChatCompletionTool[],
-        tool_choice: 'auto',
-      });
+      const response = await chatCompletion(
+        this.openai,
+        {
+          model: AGENT_MODEL,
+          messages,
+          tools: this.getTools() as OpenAI.ChatCompletionTool[],
+          tool_choice: 'auto',
+        },
+        { budget },
+      );
 
       const choice = response.choices[0];
       const usage = response.usage;
@@ -51,7 +59,7 @@ export abstract class ToolCallingAgent extends BaseAgent {
           event_type: 'agent_llm_call',
           user_id: traceCtx.userId,
           agent_name: this.agentName,
-          model: 'gpt-4o',
+          model: AGENT_MODEL,
           prompt_tokens: usage?.prompt_tokens,
           completion_tokens: usage?.completion_tokens,
           total_tokens: usage?.total_tokens,
@@ -119,23 +127,46 @@ export abstract class ToolCallingAgent extends BaseAgent {
     toolCalls: OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall[],
     context: AgentContext,
   ): Promise<AgentResult> {
-    const toolCall = toolCalls[0];
-    const functionName = toolCall.function.name;
-    const args = JSON.parse(toolCall.function.arguments);
-
-    this.logger.log(
-      `Executing tool: ${functionName} with args: ${JSON.stringify(args)}`,
-    );
-
     const traceCtx = context.inputData?._traceContext as TraceContext | undefined;
     const parentSpanId = context.inputData?._parentSpanId as string | undefined;
-    const toolSpan = this.tracing?.startSpan();
-
     const handlers = this.getToolHandlers();
-    const handler = handlers[functionName];
 
-    if (handler) {
+    let lastResult: AgentResult = {
+      success: false,
+      error: 'No tool produced a result.',
+    };
+
+    // Execute every tool call the model emitted (not just toolCalls[0]),
+    // guarding each parse and short-circuiting on a terminal result.
+    for (const toolCall of toolCalls) {
+      const functionName = toolCall.function.name;
+
+      const parsed = safeParseJson(toolCall.function.arguments);
+      if (!parsed.ok) {
+        this.logger.warn(
+          `${this.agentName}: invalid JSON args for tool ${functionName}; skipping.`,
+        );
+        lastResult = {
+          success: false,
+          error: `Invalid JSON arguments for tool ${functionName}.`,
+        };
+        continue;
+      }
+      const args = parsed.value;
+
+      const handler = handlers[functionName];
+      if (!handler) {
+        lastResult = { success: false, error: `Unknown tool: ${functionName}` };
+        continue;
+      }
+
+      this.logger.log(
+        `Executing tool: ${functionName} with args: ${JSON.stringify(args)}`,
+      );
+
+      const toolSpan = this.tracing?.startSpan();
       const result = await handler(args, context);
+      lastResult = result;
 
       if (traceCtx && this.tracing && toolSpan) {
         this.tracing.logEvent({
@@ -153,12 +184,12 @@ export abstract class ToolCallingAgent extends BaseAgent {
         });
       }
 
-      return result;
+      // A terminal result (needs more info / requires confirmation) stops here.
+      if (result.needsMoreInfo || result.requiresConfirmation) {
+        return result;
+      }
     }
 
-    return {
-      success: false,
-      error: `Unknown tool: ${functionName}`,
-    };
+    return lastResult;
   }
 }

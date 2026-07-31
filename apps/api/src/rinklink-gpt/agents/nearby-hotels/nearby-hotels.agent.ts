@@ -3,6 +3,7 @@ import { BaseAgent, AgentContext, AgentResult } from '../../shared/base-agent';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
 import { AgentTracingService } from '../../shared/agent-tracing.service';
 import { WebSearchService } from '../../shared/web-search.service';
+import { RequestBudget } from '../../shared/request-budget';
 import { ToolDefinition } from '../../rinklink-gpt.types';
 import { getNearbyHotelsPrompt } from './nearby-hotels.prompt';
 
@@ -37,6 +38,7 @@ export class NearbyHotelsAgent extends BaseAgent implements OnModuleInit {
   async execute(context: AgentContext): Promise<AgentResult> {
     const inputData = context.inputData || {};
     const maxResults = (inputData.maxResults as number) || 5;
+    const budget = inputData._budget as RequestBudget | undefined;
 
     const location = await this.webSearchService.resolveLocation(inputData);
 
@@ -51,12 +53,13 @@ export class NearbyHotelsAgent extends BaseAgent implements OnModuleInit {
       };
     }
 
-    return this.searchNearbyHotels(location, maxResults);
+    return this.searchNearbyHotels(location, maxResults, budget);
   }
 
   private async searchNearbyHotels(
     location: string,
     maxResults: number,
+    budget?: RequestBudget,
   ): Promise<AgentResult> {
     try {
       this.logger.log(`Starting web search for hotels near ${location}`);
@@ -90,6 +93,7 @@ Return a JSON object with an array of places:
 IMPORTANT: Include the approximate distance from the rink/arena for each hotel in the "distanceFromRink" field (e.g., "0.5 miles", "2.3 miles").
 
 Return up to ${maxResults} results. If nothing is found, return: { "places": [] }`,
+        budget,
       );
 
       if (places.length === 0) {

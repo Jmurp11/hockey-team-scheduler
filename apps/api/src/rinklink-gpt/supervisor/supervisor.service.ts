@@ -8,11 +8,16 @@ import { ConfirmationService } from '../shared/confirmation.service';
 import { AgentTracingService, TraceContext } from '../shared/agent-tracing.service';
 import { AgentContext, AgentResult } from '../shared/base-agent';
 import {
+  ChatMessage,
   ChatRequestDto,
   ChatResponseDto,
 } from '../rinklink-gpt.types';
 import { SUPERVISOR_TOOLS } from './supervisor.tools';
 import { getSupervisorPrompt } from './supervisor.prompt';
+import { ConversationWindowService } from '../shared/conversation-window.service';
+import { RequestBudget, BudgetExceededError } from '../shared/request-budget';
+import { chatCompletion, safeParseJson } from '../shared/llm';
+import { SUPERVISOR_MODEL, PROMPT_VERSIONS } from '../shared/llm.config';
 
 type MessageParam = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 type CompletionMessage = OpenAI.Chat.Completions.ChatCompletionMessage;
@@ -27,6 +32,7 @@ export class SupervisorService {
     private readonly userContextService: UserContextService,
     private readonly confirmationService: ConfirmationService,
     private readonly tracing: AgentTracingService,
+    private readonly conversationWindow: ConversationWindowService,
   ) {}
 
   async chat(request: ChatRequestDto): Promise<ChatResponseDto> {
@@ -62,12 +68,23 @@ export class SupervisorService {
         return result;
       }
 
+      // One token budget per request; threaded into every LLM call (supervisor,
+      // history summarization, and each delegated agent) so runaway fan-out aborts.
+      const budget = new RequestBudget();
+
       const userContext = await this.userContextService.getUserContext(request.userId);
       const agentDescriptions = this.agentRegistry.getAgentDescriptions();
       const systemPrompt = getSupervisorPrompt(agentDescriptions, userContext);
 
-      const currentMessages = this.buildMessages(request, systemPrompt);
-      let currentMessage = await this.callSupervisor(currentMessages, trace, requestSpan.spanId, 0);
+      // Bound the replayed conversation history (window + rolling summary) once,
+      // then reuse it for both the supervisor and every delegated agent.
+      const windowed = await this.conversationWindow.buildWindowedHistory(
+        request.conversationHistory,
+        budget,
+      );
+
+      const currentMessages = this.buildMessages(request, systemPrompt, windowed);
+      let currentMessage = await this.callSupervisor(currentMessages, trace, requestSpan.spanId, 0, budget);
 
       const MAX_ITERATIONS = 5;
       for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
@@ -98,6 +115,8 @@ export class SupervisorService {
           trace,
           requestSpan.spanId,
           iteration,
+          windowed.messages,
+          budget,
         );
         if (earlyResponse) {
           this.logSupervisorRequest(trace, requestSpan, true);
@@ -105,7 +124,7 @@ export class SupervisorService {
         }
 
         this.logger.log('Getting next supervisor response after agent execution');
-        currentMessage = await this.callSupervisor(currentMessages, trace, requestSpan.spanId, iteration + 1);
+        currentMessage = await this.callSupervisor(currentMessages, trace, requestSpan.spanId, iteration + 1, budget);
       }
 
       this.logger.warn('Supervisor hit max iterations');
@@ -114,6 +133,15 @@ export class SupervisorService {
         message: 'I processed your request but reached the maximum number of steps. Please try a simpler request.',
       };
     } catch (error) {
+      if (error instanceof BudgetExceededError) {
+        this.logger.warn(`Supervisor aborted: ${error.message}`);
+        this.logSupervisorRequest(trace, requestSpan, true);
+        return {
+          message:
+            'This request grew too large to process in one step. Please try breaking it into a smaller or simpler request.',
+        };
+      }
+
       this.logger.error('Error in supervisor chat:', error);
 
       this.tracing.logEvent({
@@ -154,12 +182,21 @@ export class SupervisorService {
   private buildMessages(
     request: ChatRequestDto,
     systemPrompt: string,
+    windowed: { summaryNote?: string; messages: ChatMessage[] },
   ): MessageParam[] {
     const messages: MessageParam[] = [
       { role: 'system', content: systemPrompt },
     ];
 
-    for (const msg of request.conversationHistory || []) {
+    // Older turns that were trimmed are represented by a single summary note.
+    if (windowed.summaryNote) {
+      messages.push({
+        role: 'system',
+        content: `Summary of earlier conversation:\n${windowed.summaryNote}`,
+      });
+    }
+
+    for (const msg of windowed.messages) {
       messages.push({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
@@ -175,15 +212,20 @@ export class SupervisorService {
     trace: TraceContext,
     parentSpanId: string,
     iteration: number,
+    budget: RequestBudget,
   ): Promise<CompletionMessage> {
     const span = this.tracing.startSpan();
 
-    const response = await this.client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-      tools: SUPERVISOR_TOOLS,
-      tool_choice: 'auto',
-    });
+    const response = await chatCompletion(
+      this.client,
+      {
+        model: SUPERVISOR_MODEL,
+        messages,
+        tools: SUPERVISOR_TOOLS as OpenAI.Chat.Completions.ChatCompletionTool[],
+        tool_choice: 'auto',
+      },
+      { budget },
+    );
 
     const usage = response.usage;
     this.tracing.logEvent({
@@ -194,11 +236,12 @@ export class SupervisorService {
       duration_ms: Date.now() - span.startTime,
       user_id: trace.userId,
       iteration,
-      model: 'gpt-4o-mini',
+      model: SUPERVISOR_MODEL,
       prompt_tokens: usage?.prompt_tokens,
       completion_tokens: usage?.completion_tokens,
       total_tokens: usage?.total_tokens,
       finish_reason: response.choices[0].finish_reason,
+      metadata: { prompt_version: PROMPT_VERSIONS.supervisor },
     });
 
     return response.choices[0].message;
@@ -212,30 +255,81 @@ export class SupervisorService {
     trace: TraceContext,
     parentSpanId: string,
     iteration: number,
+    windowedHistory: ChatMessage[],
+    budget: RequestBudget,
   ): Promise<ChatResponseDto | null> {
+    // Process EVERY tool call in the turn (multi-intent handling) and append a
+    // tool message per tool_call_id, surfacing the first terminal response. The
+    // previous version returned on the first tool call, silently dropping a
+    // second intent emitted in the same assistant message.
+    let terminal: ChatResponseDto | null = null;
+
     for (const toolCall of toolCalls) {
-      const args = JSON.parse(toolCall.function.arguments);
+      const parsed = safeParseJson(toolCall.function.arguments);
+      if (!parsed.ok) {
+        // Malformed model output: don't crash the chat — record an error result
+        // so the supervisor loop re-prompts the model (up to MAX_ITERATIONS).
+        this.logger.warn(
+          `Invalid JSON arguments for tool ${toolCall.function.name}; requesting retry.`,
+        );
+        currentMessages.push({
+          role: 'tool' as const,
+          tool_call_id: toolCall.id,
+          content: JSON.stringify({
+            error:
+              'Invalid JSON in tool arguments. Please call the tool again with valid JSON.',
+          }),
+        });
+        continue;
+      }
+      const args = parsed.value;
 
       if (toolCall.function.name === 'request_clarification') {
-        return this.handleClarification(args);
+        currentMessages.push({
+          role: 'tool' as const,
+          tool_call_id: toolCall.id,
+          content: JSON.stringify({ clarificationRequested: args.question }),
+        });
+        if (!terminal) {
+          terminal = this.handleClarification(args as { question: string });
+        }
+        continue;
       }
 
       if (toolCall.function.name === 'delegate_to_agent') {
         const result = await this.handleAgentDelegation(
           toolCall,
-          args,
+          args as {
+            agentName: string;
+            taskDescription: string;
+            inputData?: Record<string, unknown>;
+          },
           request,
           userContext,
           currentMessages,
           trace,
           parentSpanId,
           iteration,
+          windowedHistory,
+          budget,
         );
-        if (result) return result;
+        if (result && !terminal) {
+          terminal = result;
+        }
+        continue;
       }
+
+      // Unknown tool — still record a tool result so the message protocol stays valid.
+      currentMessages.push({
+        role: 'tool' as const,
+        tool_call_id: toolCall.id,
+        content: JSON.stringify({
+          error: `Unknown tool: ${toolCall.function.name}`,
+        }),
+      });
     }
 
-    return null;
+    return terminal;
   }
 
   private handleClarification(args: { question: string }): ChatResponseDto {
@@ -251,6 +345,8 @@ export class SupervisorService {
     trace: TraceContext,
     parentSpanId: string,
     iteration: number,
+    windowedHistory: ChatMessage[],
+    budget: RequestBudget,
   ): Promise<ChatResponseDto | null> {
     const { agentName, taskDescription, inputData } = args;
 
@@ -267,7 +363,7 @@ export class SupervisorService {
     }
 
     const agentSpan = this.tracing.startSpan();
-    const agentContext = this.buildAgentContext(request, userContext, taskDescription, inputData, trace, agentSpan.spanId);
+    const agentContext = this.buildAgentContext(request, userContext, taskDescription, windowedHistory, budget, inputData, trace, agentSpan.spanId);
 
     const missingInfo = agent.checkRequiredInfo(agentContext);
     if (missingInfo) {
@@ -340,6 +436,8 @@ export class SupervisorService {
     request: ChatRequestDto,
     userContext: UserContext,
     taskDescription: string,
+    windowedHistory: ChatMessage[],
+    budget: RequestBudget,
     inputData?: Record<string, unknown>,
     trace?: TraceContext,
     parentSpanId?: string,
@@ -348,12 +446,15 @@ export class SupervisorService {
       userId: request.userId,
       userContext,
       message: taskDescription,
-      conversationHistory: request.conversationHistory?.map(m => ({
+      // Reuse the already-windowed history so agents inherit the trimmed/
+      // summarized context instead of re-replaying the full client history.
+      conversationHistory: windowedHistory.map(m => ({
         role: m.role,
         content: m.content,
       })),
       inputData: {
         ...(inputData || {}),
+        _budget: budget,
         ...(trace ? { _traceContext: trace, _parentSpanId: parentSpanId } : {}),
       },
     };

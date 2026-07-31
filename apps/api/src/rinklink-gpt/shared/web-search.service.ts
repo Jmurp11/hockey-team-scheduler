@@ -2,6 +2,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import { GamesService } from '../../games/games.service';
 import { OPENAI_CLIENT } from './openai-client.provider';
+import { responsesCreate } from './llm';
+import { WEB_SEARCH_MODEL } from './llm.config';
+import { RequestBudget } from './request-budget';
 
 export interface WebSearchPlace {
   name: string;
@@ -56,13 +59,20 @@ export class WebSearchService {
     return location || null;
   }
 
-  async searchPlaces(searchPrompt: string): Promise<WebSearchPlace[]> {
-    const response = await this.openai.responses.create({
-      model: 'gpt-5-mini',
-      tools: [{ type: 'web_search', search_context_size: 'low' } as any],
-      store: false,
-      input: searchPrompt,
-    });
+  async searchPlaces(
+    searchPrompt: string,
+    budget?: RequestBudget,
+  ): Promise<WebSearchPlace[]> {
+    const response = await responsesCreate(
+      this.openai,
+      {
+        model: WEB_SEARCH_MODEL,
+        tools: [{ type: 'web_search', search_context_size: 'low' } as any],
+        store: false,
+        input: searchPrompt,
+      },
+      { budget },
+    );
 
     const result = JSON.parse(response.output_text);
     const places = result.places || [];

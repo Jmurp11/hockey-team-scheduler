@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { RinkLinkGptController } from './rinklink-gpt.controller';
-import { RinkLinkGptService } from './rinklink-gpt.service';
 import { AuthModule } from '../auth/auth.module';
 import { GamesModule } from '../games/games.module';
 import { TeamsModule } from '../teams/teams.module';
@@ -15,6 +14,7 @@ import { AgentRegistryService } from './shared/agent-registry.service';
 import { UserContextService } from './shared/user-context.service';
 import { ConfirmationService } from './shared/confirmation.service';
 import { AuditLogService } from './shared/audit-log.service';
+import { ConversationWindowService } from './shared/conversation-window.service';
 import { SupervisorService } from './supervisor/supervisor.service';
 import { ScheduleAgent } from './agents/schedule/schedule.agent';
 import { TournamentsAgent } from './agents/tournaments/tournaments.agent';
@@ -30,7 +30,6 @@ import { NearbyRestaurantsAgent } from './agents/nearby-restaurants/nearby-resta
   imports: [AuthModule, GamesModule, TeamsModule, TournamentsModule, GameMatchingModule],
   controllers: [RinkLinkGptController],
   providers: [
-    RinkLinkGptService,
     OpenAiClientProvider,
     SearchUtilsService,
     ManagerSearchService,
@@ -40,6 +39,7 @@ import { NearbyRestaurantsAgent } from './agents/nearby-restaurants/nearby-resta
     UserContextService,
     ConfirmationService,
     AuditLogService,
+    ConversationWindowService,
     SupervisorService,
     ScheduleAgent,
     TournamentsAgent,
@@ -51,6 +51,6 @@ import { NearbyRestaurantsAgent } from './agents/nearby-restaurants/nearby-resta
     NearbyHotelsAgent,
     NearbyRestaurantsAgent,
   ],
-  exports: [RinkLinkGptService, AgentTracingService],
+  exports: [AgentTracingService],
 })
 export class RinkLinkGptModule {}
