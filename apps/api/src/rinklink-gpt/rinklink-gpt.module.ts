@@ -8,6 +8,7 @@ import { GameMatchingModule } from '../game-matching/game-matching.module';
 import { OpenAiClientProvider } from './shared/openai-client.provider';
 import { SearchUtilsService } from './shared/search-utils.service';
 import { ManagerSearchService } from './shared/manager-search.service';
+import { EmailVerificationService } from './shared/email-verification.service';
 import { WebSearchService } from './shared/web-search.service';
 import { AgentTracingService } from './shared/agent-tracing.service';
 import { AgentRegistryService } from './shared/agent-registry.service';
@@ -33,6 +34,7 @@ import { NearbyRestaurantsAgent } from './agents/nearby-restaurants/nearby-resta
     OpenAiClientProvider,
     SearchUtilsService,
     ManagerSearchService,
+    EmailVerificationService,
     WebSearchService,
     AgentTracingService,
     AgentRegistryService,

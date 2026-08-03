@@ -5,6 +5,7 @@ import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
 import { AgentTracingService, TraceContext } from '../../shared/agent-tracing.service';
 import { ManagerSearchService } from '../../shared/manager-search.service';
+import { EmailVerificationService } from '../../shared/email-verification.service';
 import { cleanCitations } from '../../shared/web-search.service';
 import { ToolDefinition } from '../../rinklink-gpt.types';
 import { MANAGER_WEB_SEARCH_TOOLS } from './manager-web-search.tools';
@@ -24,6 +25,7 @@ export class ManagerWebSearchAgent extends BaseAgent implements OnModuleInit {
   constructor(
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     private readonly managerSearchService: ManagerSearchService,
+    private readonly emailVerification: EmailVerificationService,
     private readonly registry: AgentRegistryService,
     private readonly tracing: AgentTracingService,
   ) {
@@ -149,29 +151,79 @@ If nothing is found, return: { "managers": [] }`,
         };
       }
 
-      this.managerSearchService.saveWebSearchResults(cleanedManagers).then(
-        (savedCount) => {
-          if (savedCount > 0) {
-            this.logger.log(
-              `Successfully saved ${savedCount} new manager(s) to database for team "${teamName}"`,
+      // Verify each discovered address before it is trusted (improvements.md #14):
+      // syntax → MX → confidence. A discovered contact is never stored or shown
+      // as fact without passing verification.
+      const teamKnown = await this.managerSearchService.teamExistsInRankings(teamName);
+      const verifiedManagers = await Promise.all(
+        cleanedManagers.map(async (m) => ({
+          ...m,
+          verification: await this.emailVerification.verify(m.email, {
+            sourceUrl: m.sourceUrl,
+            teamKnown,
+          }),
+        })),
+      );
+
+      // Persist only deliverable contacts; saveWebSearchResults also enforces the
+      // confidence threshold and refreshes stale rows (improvements.md #16).
+      const toStore = verifiedManagers
+        .filter((m) => m.verification.deliverable)
+        .map((m) => ({
+          name: m.name,
+          email: m.email,
+          phone: m.phone,
+          team: m.team,
+          sourceUrl: m.sourceUrl,
+          confidence: m.verification.confidence,
+        }));
+
+      if (toStore.length > 0) {
+        this.managerSearchService
+          .saveWebSearchResults(toStore)
+          .then((savedCount) => {
+            if (savedCount > 0) {
+              this.logger.log(
+                `Saved/refreshed ${savedCount} verified manager(s) for team "${teamName}"`,
+              );
+            }
+          })
+          .catch((err) => {
+            this.logger.warn(
+              `Background save of web search results failed for "${teamName}":`,
+              err,
             );
-          }
-        },
-      ).catch((err) => {
-        this.logger.warn(`Background save of web search results failed for "${teamName}":`, err);
+          });
+      }
+
+      const lines = verifiedManagers.map((m, i) => {
+        const badge = m.verification.deliverable
+          ? '✅ verified'
+          : '⚠️ unverified — could not confirm deliverability, not saved';
+        return `${i + 1}. **${m.name}** — ${m.team} (${badge})${m.email ? `\n   Email: ${m.email}` : ''}${m.phone ? `\n   Phone: ${m.phone}` : ''}${m.sourceUrl ? `\n   Source: ${m.sourceUrl}` : ''}`;
       });
 
-      const lines = cleanedManagers.map(
-        (m, i) =>
-          `${i + 1}. **${m.name}** — ${m.team}${m.email ? `\n   Email: ${m.email}` : ''}${m.phone ? `\n   Phone: ${m.phone}` : ''}${m.sourceUrl ? `\n   Source: ${m.sourceUrl}` : ''}`,
-      );
+      const verifiedCount = toStore.length;
+      const caveat =
+        verifiedCount < verifiedManagers.length
+          ? `\n\n_Entries marked unverified could not be confirmed as deliverable and were not saved. Please double-check before contacting them._`
+          : '';
 
       return {
         success: true,
-        formattedResponse: `Here's what I found for "${teamName}" manager contact info:\n\n${lines.join('\n\n')}`,
+        formattedResponse: `Here's what I found for "${teamName}" manager contact info:\n\n${lines.join('\n\n')}${caveat}`,
         data: {
-          managers: cleanedManagers,
-          totalCount: cleanedManagers.length,
+          managers: verifiedManagers.map((m) => ({
+            name: m.name,
+            email: m.email,
+            phone: m.phone,
+            team: m.team,
+            sourceUrl: m.sourceUrl,
+            confidence: m.verification.confidence,
+            deliverable: m.verification.deliverable,
+          })),
+          totalCount: verifiedManagers.length,
+          verifiedCount,
           source: 'web_search',
         },
       };

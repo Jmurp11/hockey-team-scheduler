@@ -6,6 +6,7 @@ import { OPENAI_CLIENT } from '../../shared/openai-client.provider';
 import { AgentRegistryService } from '../../shared/agent-registry.service';
 import { AgentTracingService, TraceContext } from '../../shared/agent-tracing.service';
 import { ManagerSearchService } from '../../shared/manager-search.service';
+import { EmailVerificationService } from '../../shared/email-verification.service';
 import { ToolDefinition, EmailDraft, PendingAction } from '../../rinklink-gpt.types';
 import { EMAIL_TOOLS } from './email.tools';
 import { getEmailPrompt } from './email.prompt';
@@ -28,6 +29,7 @@ export class EmailAgent extends BaseAgent implements OnModuleInit {
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     private readonly gamesService: GamesService,
     private readonly managerSearchService: ManagerSearchService,
+    private readonly emailVerification: EmailVerificationService,
     private readonly registry: AgentRegistryService,
     private readonly tracing: AgentTracingService,
   ) {
@@ -90,17 +92,24 @@ export class EmailAgent extends BaseAgent implements OnModuleInit {
         email: string;
         phone: string;
         team: string;
+        verified_at?: string | null;
       } | null = null;
       let wasFuzzyMatch = false;
 
       if (args.recipientTeamId) {
-        const { managers, searchResult } =
-          await this.managerSearchService.searchByTeam(
-            args.recipientTeamId.toString(),
-          );
-        if (managers.length > 0) {
-          recipientManager = managers[0];
-          wasFuzzyMatch = searchResult.matchType === 'fuzzy';
+        // recipientTeamId is a `rankings.id` (a team). Resolve it to the team
+        // name and search by that — instead of doing an `ilike '%<number>%'` on
+        // the manager-name column, which matched the wrong team or nothing
+        // (improvements.md #17).
+        const resolvedTeamName =
+          await this.managerSearchService.getTeamNameById(args.recipientTeamId);
+        if (resolvedTeamName) {
+          const { managers, searchResult } =
+            await this.managerSearchService.searchByTeam(resolvedTeamName);
+          if (managers.length > 0) {
+            recipientManager = managers[0];
+            wasFuzzyMatch = searchResult.matchType === 'fuzzy';
+          }
         }
       } else if (args.recipientTeamName) {
         const { managers, searchResult } =
@@ -124,6 +133,24 @@ export class EmailAgent extends BaseAgent implements OnModuleInit {
               'Try searching with the full team name or ask the user to confirm the team name.',
           },
         };
+      }
+
+      // Re-verify a stale cached contact before composing (improvements.md #14/#16).
+      // Youth managers rotate and addresses go dead; don't draft to an address we
+      // can no longer confirm is deliverable.
+      if (this.emailVerification.isStale(recipientManager.verified_at)) {
+        const recheck = await this.emailVerification.verify(recipientManager.email);
+        if (!recheck.deliverable) {
+          return {
+            success: false,
+            error: `The stored contact email for "${recipientManager.team}" (${recipientManager.email}) could not be verified as deliverable and may be out of date. Please re-search this team's manager on the web before emailing.`,
+            data: {
+              staleContact: true,
+              team: recipientManager.team,
+              email: recipientManager.email,
+            },
+          };
+        }
       }
 
       const originalSearch = args.recipientTeamName || '';
