@@ -16,6 +16,7 @@
     "build:web": "nx build web",
     "build:mobile": "nx build mobile",
     "build:tournament-etl": "nx build tournament-etl",
+    "build:mhr-etl": "nx build mhr-etl",
     "analyze:web": "nx build web --configuration=production --stats-json && npx webpack-bundle-analyzer dist/apps/web/stats.json",
     "analyze:mobile": "nx build mobile --configuration=production --stats-json && npx webpack-bundle-analyzer dist/apps/mobile/stats.json",
     "size:web": "nx build web --configuration=production && du -sh dist/apps/web && ls -lh dist/apps/web/browser/*.js | awk '{print $5, $9}'",
@@ -29,9 +30,8 @@
     "affected:test": "nx affected:test",
     "affected:lint": "nx affected:lint",
     "etl:start": "nx serve tournament-etl",
-    "etl:leagues": "npx tsx tournament-etl/src/leagues/insertLeagues.ts",
-    "etl:organizations": "npx tsx tournament-etl/src/organizations/insertOrgs.ts",
-    "etl:rankings": "npx tsx tournament-etl/src/rankings/insertRankings.ts"
+    "etl:leagues": "npx tsx mhr-etl/src/leagues/insertLeagues.ts",
+    "etl:rankings": "npx tsx mhr-etl/src/rankings/insertRankings.ts"
   },
   "dependencies": {
     "@angular/animations": "^20.3.0",
@@ -156,7 +156,8 @@
   "workspaces": [
     "apps/*",
     "libs/*",
-    "tournament-etl"
+    "tournament-etl",
+    "mhr-etl"
   ],
   "overrides": {
     "zod": "^4.1.11"

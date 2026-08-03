@@ -12,6 +12,12 @@ on:
         description: "Location to override (optional)"
         required: false
         type: string
+      locationType:
+        description: "Location type, required when overriding location"
+        required: false
+        type: choice
+        default: ""
+        options: ["", "states", "provinces", "territories"]
 
 jobs:
   tournament-etl:
@@ -25,54 +31,54 @@ jobs:
       matrix:
         include:
           # US Hockey Districts
-          - location: “New Jersey, Delaware, and Pennsylvania”
+          - location: "New Jersey, Delaware, and Pennsylvania"
             locationType: "states"
-          - location: “Illinois, Iowa, Kansas, Missouri, Nebraska, and Wisconsin”
+          - location: "Illinois, Iowa, Kansas, Missouri, Nebraska, and Wisconsin"
             locationType: "states"
-          - location: “Indiana, Kentucky, Ohio, Tennessee, and West Virginia”
+          - location: "Indiana, Kentucky, Ohio, Tennessee, and West Virginia"
             locationType: "states"
-          - location: “Massachusetts”
+          - location: "Massachusetts"
             locationType: "states"
-          - location: “Michigan”
+          - location: "Michigan"
             locationType: "states"
-          - location: “Minnesota”
+          - location: "Minnesota"
             locationType: "states"
-          - location: “Connecticut, Maine, New Hampshire, Rhode Island, and Vermont”
+          - location: "Connecticut, Maine, New Hampshire, Rhode Island, and Vermont"
             locationType: "states"
-          - location: “New York”
+          - location: "New York"
             locationType: "states"
-          - location: “Alaska, California, Hawaii, Nevada, Oregon, and Washington”
+          - location: "Alaska, California, Hawaii, Nevada, Oregon, and Washington"
             locationType: "states"
-          - location: “Arizona, Colorado, Idaho, New Mexico, Oklahoma, Texas, and Utah”
+          - location: "Arizona, Colorado, Idaho, New Mexico, Oklahoma, Texas, and Utah"
             locationType: "states"
-          - location: “Alabama, Arkansas, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, and Virginia”
+          - location: "Alabama, Arkansas, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, and Virginia"
             locationType: "states"
           # Canadian Hockey Organizations
-          - location: “British Columbia and Yukon”
+          - location: "British Columbia and Yukon"
             locationType: "provinces"
-          - location: “Alberta”
+          - location: "Alberta"
             locationType: "provinces"
-          - location: “Saskatchewan”
+          - location: "Saskatchewan"
             locationType: "provinces"
-          - location: “Manitoba”
+          - location: "Manitoba"
             locationType: "provinces"
-          - location: “Northwestern Ontario”
+          - location: "Northwestern Ontario"
             locationType: "provinces"
-          - location: “Ontario (Southern and Central Ontario)”
+          - location: "Ontario (Southern and Central Ontario)"
             locationType: "provinces"
-          - location: “Eastern Ontario”
+          - location: "Eastern Ontario"
             locationType: "provinces"
-          - location: “Quebec”
+          - location: "Quebec"
             locationType: "provinces"
-          - location: “New Brunswick”
+          - location: "New Brunswick"
             locationType: "provinces"
-          - location: “Nova Scotia”
+          - location: "Nova Scotia"
             locationType: "provinces"
-          - location: “Prince Edward Island”
+          - location: "Prince Edward Island"
             locationType: "provinces"
-          - location: “Newfoundland and Labrador”
+          - location: "Newfoundland and Labrador"
             locationType: "provinces"
-          - location: “Northwest Territories and Nunavut”
+          - location: "Northwest Territories and Nunavut"
             locationType: "territories"
 
     env:
@@ -89,10 +95,10 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: "tournament-etl/package-lock.json"
 
+      # tournament-etl is an npm workspace; dependencies resolve from the root
+      # lockfile. There is no tournament-etl/package-lock.json.
       - name: Install dependencies
-        working-directory: ./tournament-etl
         run: npm ci
 
       - name: Run ETL for ${{ matrix.location }}

@@ -6,5 +6,6 @@ module.exports = {
     '<rootDir>/apps/**/*.(test|spec).{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     '<rootDir>/libs/**/*.(test|spec).{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     '<rootDir>/tournament-etl/**/*.(test|spec).{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    '<rootDir>/mhr-etl/**/*.(test|spec).{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
   ],
 };
