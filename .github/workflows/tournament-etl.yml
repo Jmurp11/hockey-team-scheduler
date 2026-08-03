@@ -1,15 +1,25 @@
-name: Tournament ETL Monthly Run
+name: Tournament ETL Weekly Run
 
 on:
-  # Run on the 1st of every month at 2 AM UTC
+  # Mondays at 2 AM UTC. Tournament listings are posted continuously and each
+  # run finds only a fraction of them, so a monthly cadence compounded every
+  # miss. Re-runs are cheap: dedup drops anything already stored.
   schedule:
-    - cron: "0 2 1 * *"
+    - cron: "0 2 * * 1"
 
   # Allow manual triggering for testing
   workflow_dispatch:
     inputs:
       location:
         description: "Location to override (optional)"
+        required: false
+        type: string
+      locationType:
+        description: "Location type to override (e.g. states, provinces)"
+        required: false
+        type: string
+      passes:
+        description: "Search passes to union (default 3; use 1 for a cheap run)"
         required: false
         type: string
 
@@ -25,54 +35,54 @@ jobs:
       matrix:
         include:
           # US Hockey Districts
-          - location: “New Jersey, Delaware, and Pennsylvania”
+          - location: "New Jersey, Delaware, and Pennsylvania"
             locationType: "states"
-          - location: “Illinois, Iowa, Kansas, Missouri, Nebraska, and Wisconsin”
+          - location: "Illinois, Iowa, Kansas, Missouri, Nebraska, and Wisconsin"
             locationType: "states"
-          - location: “Indiana, Kentucky, Ohio, Tennessee, and West Virginia”
+          - location: "Indiana, Kentucky, Ohio, Tennessee, and West Virginia"
             locationType: "states"
-          - location: “Massachusetts”
+          - location: "Massachusetts"
             locationType: "states"
-          - location: “Michigan”
+          - location: "Michigan"
             locationType: "states"
-          - location: “Minnesota”
+          - location: "Minnesota"
             locationType: "states"
-          - location: “Connecticut, Maine, New Hampshire, Rhode Island, and Vermont”
+          - location: "Connecticut, Maine, New Hampshire, Rhode Island, and Vermont"
             locationType: "states"
-          - location: “New York”
+          - location: "New York"
             locationType: "states"
-          - location: “Alaska, California, Hawaii, Nevada, Oregon, and Washington”
+          - location: "Alaska, California, Hawaii, Nevada, Oregon, and Washington"
             locationType: "states"
-          - location: “Arizona, Colorado, Idaho, New Mexico, Oklahoma, Texas, and Utah”
+          - location: "Arizona, Colorado, Idaho, New Mexico, Oklahoma, Texas, and Utah"
             locationType: "states"
-          - location: “Alabama, Arkansas, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, and Virginia”
+          - location: "Alabama, Arkansas, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, and Virginia"
             locationType: "states"
           # Canadian Hockey Organizations
-          - location: “British Columbia and Yukon”
+          - location: "British Columbia and Yukon"
             locationType: "provinces"
-          - location: “Alberta”
+          - location: "Alberta"
             locationType: "provinces"
-          - location: “Saskatchewan”
+          - location: "Saskatchewan"
             locationType: "provinces"
-          - location: “Manitoba”
+          - location: "Manitoba"
             locationType: "provinces"
-          - location: “Northwestern Ontario”
+          - location: "Northwestern Ontario"
             locationType: "provinces"
-          - location: “Ontario (Southern and Central Ontario)”
+          - location: "Ontario (Southern and Central Ontario)"
             locationType: "provinces"
-          - location: “Eastern Ontario”
+          - location: "Eastern Ontario"
             locationType: "provinces"
-          - location: “Quebec”
+          - location: "Quebec"
             locationType: "provinces"
-          - location: “New Brunswick”
+          - location: "New Brunswick"
             locationType: "provinces"
-          - location: “Nova Scotia”
+          - location: "Nova Scotia"
             locationType: "provinces"
-          - location: “Prince Edward Island”
+          - location: "Prince Edward Island"
             locationType: "provinces"
-          - location: “Newfoundland and Labrador”
+          - location: "Newfoundland and Labrador"
             locationType: "provinces"
-          - location: “Northwest Territories and Nunavut”
+          - location: "Northwest Territories and Nunavut"
             locationType: "territories"
 
     env:
@@ -100,7 +110,8 @@ jobs:
         run: |
           npx tsx src/run-etl.ts \
             --location "${{ github.event.inputs.location || matrix.location }}" \
-            --locationType "${{ github.event.inputs.locationType || matrix.locationType }}"
+            --locationType "${{ github.event.inputs.locationType || matrix.locationType }}" \
+            --passes "${{ github.event.inputs.passes || 3 }}"
         env:
           # Pass environment variables to the ETL process
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
