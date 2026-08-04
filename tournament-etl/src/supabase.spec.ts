@@ -1,310 +1,144 @@
-import { Tournament } from './types';
+/**
+ * Exercises the real supabase module against a mocked supabase-js client.
+ *
+ * The previous version of this file re-implemented getTournaments and
+ * insertTournaments inside `jest.mock('./supabase', ...)`, so it asserted
+ * against a copy of the code rather than the code itself — the
+ * `registration_link` dedup bug passed these tests for that reason.
+ */
 
-// Mock the supabase module
-const mockIn = jest.fn().mockResolvedValue({ data: [], error: null });
-const mockSelect = jest.fn().mockReturnValue({ in: mockIn });
-const mockFrom = jest.fn().mockReturnValue({ select: mockSelect });
-const mockRpc = jest.fn().mockResolvedValue({ data: { success: true }, error: null });
+const mockIn = jest.fn();
+const mockSelect = jest.fn((_columns: string) => ({ in: mockIn }));
+const mockFrom = jest.fn((_table: string) => ({ select: mockSelect }));
+const mockRpc = jest.fn();
 
-const mockSupabaseClient = {
-  from: mockFrom,
-  rpc: mockRpc,
-};
-
-jest.mock('./supabase', () => ({
-  supabase: mockSupabaseClient,
-  getTournaments: (tournaments: Tournament[]) => {
-    try {
-      return mockSupabaseClient
-        .from("tournaments")
-        .select("*")
-        .in(
-          "registrationUrl",
-          tournaments.map((t: Tournament) => t.registrationUrl)
-        );
-    } catch (error) {
-      throw new Error("Could not get tournaments: " + (error as Error).message);
-    }
-  },
-  insertTournaments: async (tournaments: Tournament[]) => {
-    try {
-      return await mockSupabaseClient.rpc("p_save_tournaments", {
-        _tournaments: tournaments,
-      });
-    } catch (error) {
-      throw new Error(
-        "Could not insert tournaments: " + (error as Error).message
-      );
-    }
-  },
+jest.mock("@supabase/supabase-js", () => ({
+  createClient: () => ({ from: mockFrom, rpc: mockRpc }),
 }));
 
-import { getTournaments, insertTournaments } from './supabase';
+import { makeTournament } from "./fixtures";
+import { getTournaments, insertTournaments } from "./supabase";
 
-describe('supabase', () => {
-  let mockFrom: jest.Mock;
-  let mockSelect: jest.Mock;
-  let mockIn: jest.Mock;
-  let mockRpc: jest.Mock;
-
+describe("getTournaments", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Reset mock implementations
-    mockIn = jest.fn().mockResolvedValue({ data: [], error: null });
-    mockSelect = jest.fn().mockReturnValue({ in: mockIn });
-    mockFrom = jest.fn().mockReturnValue({ select: mockSelect });
-    mockRpc = jest.fn().mockResolvedValue({ data: { success: true }, error: null });
-    
-    // Update the mock client
-    mockSupabaseClient.from = mockFrom;
-    mockSupabaseClient.rpc = mockRpc;
+    mockIn.mockResolvedValue({ data: [], error: null });
   });
 
-  describe('getTournaments', () => {
-    const mockTournaments: Tournament[] = [
-      {
-        name: 'Test Tournament 1',
-        city: 'Buffalo',
-        state: 'NY',
-        country: 'USA',
-        rink: 'Test Rink 1',
-        startDate: '2025-12-01',
-        endDate: '2025-12-03',
-        registrationUrl: 'https://example.com/tournament1',
-        age: ['10U', '12U'],
-        level: ['AAA', 'AA'],
-        latitude: 42.8864,
-        longitude: -78.8784,
-      },
-      {
-        name: 'Test Tournament 2',
-        city: 'Rochester',
-        state: 'NY',
-        country: 'USA',
-        rink: 'Test Rink 2',
-        startDate: '2025-12-10',
-        endDate: '2025-12-12',
-        registrationUrl: 'https://example.com/tournament2',
-        age: ['14U', '16U'],
-        level: ['A'],
-        latitude: 43.1566,
-        longitude: -77.6088,
-      },
+  it("queries the tournaments table by registrationUrl", async () => {
+    const tournaments = [
+      makeTournament({ registrationUrl: "https://example.com/a" }),
+      makeTournament({ registrationUrl: "https://example.com/b" }),
     ];
 
-    it('should query tournaments by registration URLs', () => {
-      // Act
-      getTournaments(mockTournaments);
+    await getTournaments(tournaments);
 
-      // Assert
-      expect(mockFrom).toHaveBeenCalledWith('tournaments');
-      expect(mockSelect).toHaveBeenCalledWith('*');
-      expect(mockIn).toHaveBeenCalledWith('registrationUrl', [
-        'https://example.com/tournament1',
-        'https://example.com/tournament2',
-      ]);
+    expect(mockFrom).toHaveBeenCalledWith("tournaments");
+    expect(mockSelect).toHaveBeenCalledWith("registrationUrl");
+    expect(mockIn).toHaveBeenCalledWith("registrationUrl", [
+      "https://example.com/a",
+      "https://example.com/b",
+    ]);
+  });
+
+  it("returns the matching rows", async () => {
+    mockIn.mockResolvedValue({
+      data: [{ registrationUrl: "https://example.com/a" }],
+      error: null,
     });
 
-    it('should handle single tournament', () => {
-      // Arrange
-      const singleTournament = [mockTournaments[0]];
+    const result = await getTournaments([makeTournament()]);
 
-      // Act
-      getTournaments(singleTournament);
+    expect(result).toEqual([{ registrationUrl: "https://example.com/a" }]);
+  });
 
-      // Assert
-      expect(mockIn).toHaveBeenCalledWith('registrationUrl', [
-        'https://example.com/tournament1',
-      ]);
+  it("short-circuits without querying when given no tournaments", async () => {
+    const result = await getTournaments([]);
+
+    expect(result).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("throws when supabase reports an error", async () => {
+    // supabase-js returns errors rather than throwing. This was previously
+    // unchecked, so a failed query looked like "no existing tournaments" and
+    // the caller re-inserted the whole batch.
+    mockIn.mockResolvedValue({
+      data: null,
+      error: { message: 'column "nope" does not exist' },
     });
 
-    it('should handle empty array', () => {
-      // Act
-      getTournaments([]);
+    await expect(getTournaments([makeTournament()])).rejects.toThrow(
+      /Could not get tournaments: column "nope" does not exist/
+    );
+  });
 
-      // Assert
-      expect(mockFrom).toHaveBeenCalledWith('tournaments');
-      expect(mockIn).toHaveBeenCalledWith('registrationUrl', []);
-    });
+  it("returns an empty array when data is null but no error is reported", async () => {
+    mockIn.mockResolvedValue({ data: null, error: null });
 
-    it('should throw error when database query fails', () => {
-      // Arrange
-      const mockError = new Error('Database connection failed');
-      mockFrom.mockImplementation(() => {
-        throw mockError;
-      });
+    await expect(getTournaments([makeTournament()])).resolves.toEqual([]);
+  });
 
-      // Act & Assert
-      try {
-        getTournaments(mockTournaments);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('Could not get tournaments: Database connection failed');
-      }
-    });
+  it("skips tournaments with no registrationUrl", async () => {
+    await getTournaments([
+      makeTournament({ registrationUrl: "https://example.com/a" }),
+      makeTournament({ registrationUrl: "" }),
+    ]);
 
-    it('should handle tournaments with various registration URLs', () => {
-      // Arrange
-      const tournaments: Tournament[] = [
-        {
-          ...mockTournaments[0],
-          registrationUrl: 'https://test.com/reg1',
-        },
-        {
-          ...mockTournaments[1],
-          registrationUrl: 'https://test.com/reg2',
-        },
-      ];
+    expect(mockIn).toHaveBeenCalledWith("registrationUrl", [
+      "https://example.com/a",
+    ]);
+  });
+});
 
-      // Act
-      getTournaments(tournaments);
+describe("insertTournaments", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRpc.mockResolvedValue({ data: { success: true }, error: null });
+  });
 
-      // Assert
-      expect(mockIn).toHaveBeenCalledWith('registrationUrl', [
-        'https://test.com/reg1',
-        'https://test.com/reg2',
-      ]);
+  it("calls p_save_tournaments with the batch", async () => {
+    const tournaments = [makeTournament()];
+
+    await insertTournaments(tournaments);
+
+    expect(mockRpc).toHaveBeenCalledWith("p_save_tournaments", {
+      _tournaments: tournaments,
     });
   });
 
-  describe('insertTournaments', () => {
-    const mockTournaments: Tournament[] = [
-      {
-        name: 'Test Tournament 1',
-        city: 'Buffalo',
-        state: 'NY',
-        country: 'USA',
-        rink: 'Test Rink 1',
-        startDate: '2025-12-01',
-        endDate: '2025-12-03',
-        registrationUrl: 'https://example.com/tournament1',
-        age: ['10U', '12U'],
-        level: ['AAA', 'AA'],
-        latitude: 42.8864,
-        longitude: -78.8784,
-      },
+  it("returns the RPC data", async () => {
+    await expect(insertTournaments([makeTournament()])).resolves.toEqual({
+      success: true,
+    });
+  });
+
+  it("passes through tournaments with null optional fields", async () => {
+    const sparse = [
+      makeTournament({
+        rink: null,
+        level: null,
+        age: null,
+        latitude: null,
+        longitude: null,
+      }),
     ];
 
-    it('should call RPC function with tournaments data', async () => {
-      // Act
-      await insertTournaments(mockTournaments);
+    await insertTournaments(sparse);
 
-      // Assert
-      expect(mockRpc).toHaveBeenCalledWith('p_save_tournaments', {
-        _tournaments: mockTournaments,
-      });
+    expect(mockRpc).toHaveBeenCalledWith("p_save_tournaments", {
+      _tournaments: sparse,
+    });
+  });
+
+  it("throws when the RPC reports an error", async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "unique constraint violation" },
     });
 
-    it('should handle successful insertion', async () => {
-      // Arrange
-      const mockResponse = { data: { success: true }, error: null };
-      mockRpc.mockResolvedValue(mockResponse);
-
-      // Act
-      const result = await insertTournaments(mockTournaments);
-
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.data).toEqual({ success: true });
-    });
-
-    it('should handle empty array', async () => {
-      // Act
-      await insertTournaments([]);
-
-      // Assert
-      expect(mockRpc).toHaveBeenCalledWith('p_save_tournaments', {
-        _tournaments: [],
-      });
-    });
-
-    it('should handle multiple tournaments', async () => {
-      // Arrange
-      const multipleTournaments: Tournament[] = [
-        mockTournaments[0],
-        {
-          name: 'Test Tournament 2',
-          city: 'Rochester',
-          state: 'NY',
-          country: 'USA',
-          rink: 'Test Rink 2',
-          startDate: '2025-12-10',
-          endDate: '2025-12-12',
-          registrationUrl: 'https://example.com/tournament2',
-          age: ['14U'],
-          level: ['A'],
-          latitude: 43.1566,
-          longitude: -77.6088,
-        },
-      ];
-
-      // Act
-      await insertTournaments(multipleTournaments);
-
-      // Assert
-      expect(mockRpc).toHaveBeenCalledWith('p_save_tournaments', {
-        _tournaments: multipleTournaments,
-      });
-    });
-
-    it('should throw error when RPC call fails', async () => {
-      // Arrange
-      const mockError = new Error('RPC call failed');
-      mockRpc.mockRejectedValue(mockError);
-
-      // Act & Assert
-      try {
-        await insertTournaments(mockTournaments);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('Could not insert tournaments: RPC call failed');
-      }
-    });
-
-    it('should handle tournaments with null values', async () => {
-      // Arrange
-      const tournamentsWithNulls: Tournament[] = [
-        {
-          name: 'Test Tournament',
-          city: 'Buffalo',
-          state: 'NY',
-          country: 'USA',
-          rink: null,
-          startDate: '2025-12-01',
-          endDate: '2025-12-03',
-          registrationUrl: 'https://example.com/tournament',
-          age: [],
-          level: [],
-          latitude: 42.8864,
-          longitude: -78.8784,
-        },
-      ];
-
-      // Act
-      await insertTournaments(tournamentsWithNulls);
-
-      // Assert
-      expect(mockRpc).toHaveBeenCalledWith('p_save_tournaments', {
-        _tournaments: tournamentsWithNulls,
-      });
-    });
-
-    it('should propagate error message correctly', async () => {
-      // Arrange
-      const specificError = new Error('Unique constraint violation');
-      mockRpc.mockRejectedValue(specificError);
-
-      // Act & Assert
-      try {
-        await insertTournaments(mockTournaments);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('Could not insert tournaments: Unique constraint violation');
-      }
-    });
+    await expect(insertTournaments([makeTournament()])).rejects.toThrow(
+      /Could not insert tournaments: unique constraint violation/
+    );
   });
 });

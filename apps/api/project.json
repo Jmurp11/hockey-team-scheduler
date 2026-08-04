@@ -8,6 +8,7 @@
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
       "options": {
         "outputPath": "dist/apps/api",
         "main": "apps/api/src/main.ts",

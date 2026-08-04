@@ -268,10 +268,11 @@ export class ScheduleService {
             : game
         );
 
-      case 'DELETE':
+      case 'DELETE': {
         const deletedId = payload.record?.id ?? this.deletedRecord();
         this.setDeleteRecord(null);
         return state.filter((g) => String(g.id) !== String(deletedId));
+      }
 
       default:
         return state;

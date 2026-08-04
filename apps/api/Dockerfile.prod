@@ -13,8 +13,11 @@ COPY nx.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm install --prefer-offline --no-audit
 
-# Copy only necessary files for Nx build
+# Copy only necessary files for Nx build.
+# `libs/` is required: the API imports @hockey-team-scheduler/shared-domain,
+# a buildable workspace library that Nx compiles before the app.
 COPY apps/api/ ./apps/api/
+COPY libs/ ./libs/
 COPY eslint.config.js ./
 RUN npx nx build api --configuration=production
 
@@ -23,6 +26,10 @@ FROM base AS prod-deps
 COPY --from=builder /app/dist/apps/api/package*.json ./
 # Remove overrides section that conflicts with npm install
 RUN sed -i '/"overrides":/,/},/d' package.json
+# Workspace libraries are listed as dependencies by Nx but do not exist on the
+# registry, so npm would fail trying to fetch them. They are copied into
+# node_modules from the builder output in the production stage instead.
+RUN sed -i '/"@hockey-team-scheduler\//d' package.json
 # Use npm cache mount for production dependencies too
 RUN --mount=type=cache,target=/root/.npm \
     npm install --omit=dev --prefer-offline --no-audit
@@ -38,6 +45,9 @@ RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
 
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist/apps/api ./
+# Workspace libraries, stripped from package.json above, are supplied directly
+# from the build output. Node resolves them from node_modules as normal.
+COPY --from=builder /app/dist/libs/shared/domain ./node_modules/@hockey-team-scheduler/shared-domain
 
 USER nestjs
 EXPOSE 3000

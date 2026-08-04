@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/out-tsc",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "types": [],
+    // Emit CommonJS. The Angular apps consume this library from source via the
+    // tsconfig path mapping, so only the NestJS API loads the built output —
+    // and it is CommonJS. Emitting ESM here makes `require()` throw
+    // "Unexpected token 'export'" at runtime.
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "exclude": [
+    "src/**/*.spec.ts",
+    "jest.config.ts",
+    "src/**/*.test.ts",
+    "jest.config.cts"
+  ],
+  "include": ["src/**/*.ts"]
+}

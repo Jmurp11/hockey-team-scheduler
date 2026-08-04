@@ -1,6 +1,6 @@
 import { FormControl } from '@angular/forms';
 import { gameTimeConflictValidator } from './game-time-conflict.validator';
-import { Game } from '../types/game.type';
+import { Game } from '@hockey-team-scheduler/shared-domain';
 
 describe('gameTimeConflictValidator', () => {
   const createGame = (date: string, time: string, id?: string): Game & { originalTime?: string } => ({

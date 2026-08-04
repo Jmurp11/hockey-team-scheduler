@@ -1,216 +1,150 @@
-// Mock supabase before importing
-jest.mock('./supabase', () => ({
-  supabase: {
-    from: jest.fn(),
-    rpc: jest.fn(),
-  },
+jest.mock("./supabase", () => ({
   getTournaments: jest.fn(),
   insertTournaments: jest.fn(),
 }));
 
-jest.mock('./open-ai');
+jest.mock("./open-ai");
 
-import * as openAI from './open-ai';
-import * as supabase from './supabase';
-import { runETL } from './tournaments';
-import { TournamentProps } from './types';
+import { makeTournament } from "./fixtures";
+import * as openAI from "./open-ai";
+import * as supabase from "./supabase";
+import { runETL } from "./tournaments";
+import { Tournament, TournamentProps } from "./types";
 
-describe('tournaments', () => {
-  describe('runETL', () => {
-    const mockProps: TournamentProps = {
-      location: 'New York',
-      locationType: 'state',
-    };
+const props: TournamentProps = { location: "New York", locationType: "states" };
 
-    const mockTournaments = [
-      {
-        name: 'Test Tournament 1',
-        location: 'Buffalo, NY',
-        startDate: '2025-12-01',
-        endDate: '2025-12-03',
-        registrationUrl: 'https://example.com/tournament1',
-        description: 'Test tournament 1',
-        rink: 'Test Rink 1',
-        age: ['10U', '12U'],
-        level: ['AAA', 'AA'],
-        latitude: 42.8864,
-        longitude: -78.8784,
-      },
-      {
-        name: 'Test Tournament 2',
-        location: 'Rochester, NY',
-        startDate: '2025-12-10',
-        endDate: '2025-12-12',
-        registrationUrl: 'https://example.com/tournament2',
-        description: 'Test tournament 2',
-        rink: 'Test Rink 2',
-        age: ['14U', '16U'],
-        level: ['A'],
-        latitude: 43.1566,
-        longitude: -77.6088,
-      },
-    ];
+const found = jest.mocked(openAI.findTournamentsMultiPass);
+const existing = jest.mocked(supabase.getTournaments);
+const insert = jest.mocked(supabase.insertTournaments);
 
-    beforeEach(() => {
-      jest.clearAllMocks();
-      jest.spyOn(console, 'log').mockImplementation();
-    });
+/**
+ * Stub the multi-pass search with the union it would have produced.
+ * These tests cover what `runETL` does with the results; the union and
+ * per-pass failure handling are `open-ai.spec.ts`'s job.
+ */
+function resolveFound(...tournaments: Tournament[]) {
+  found.mockResolvedValue({ tournaments, passYields: [tournaments.length] });
+}
 
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
+const tournamentA = makeTournament({
+  name: "Tournament A",
+  registrationUrl: "https://example.com/a",
+});
+const tournamentB = makeTournament({
+  name: "Tournament B",
+  registrationUrl: "https://example.com/b",
+});
 
-    it('should successfully run ETL process with new tournaments', async () => {
-      // Arrange
-      const mockFoundTournaments = {
-        data: [
-          {
-            registration_link: 'https://example.com/existing',
-          },
-        ],
-      };
+function insertedBatch() {
+  return insert.mock.calls[0][0];
+}
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockResolvedValue({ success: true });
+describe("runETL", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => undefined);
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    insert.mockResolvedValue({ success: true });
+  });
 
-      // Act
-      await runETL(mockProps);
+  afterEach(() => jest.restoreAllMocks());
 
-      // Assert
-      expect(openAI.findTournaments).toHaveBeenCalledWith(mockProps);
-      expect(supabase.getTournaments).toHaveBeenCalled();
-      expect(supabase.insertTournaments).toHaveBeenCalled();
-    });
+  it("inserts everything on a first run", async () => {
+    resolveFound(tournamentA, tournamentB);
+    existing.mockResolvedValue([]);
 
-    it('should filter out existing tournaments before insertion', async () => {
-      // Arrange
-      const mockFoundTournaments = {
-        data: [
-          {
-            registration_link: 'https://example.com/tournament1',
-          },
-        ],
-      };
+    const result = await runETL(props);
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockResolvedValue({ success: true });
+    expect(insertedBatch()).toHaveLength(2);
+    expect(result).toMatchObject({ found: 2, alreadyPresent: 0, inserted: 2 });
+  });
 
-      // Act
-      await runETL(mockProps);
+  it("inserts nothing on an immediate second run", async () => {
+    // The regression this change exists for: the filter compared
+    // `ft.registration_link`, which is undefined on every row, so a rerun
+    // re-sent the entire batch.
+    resolveFound(tournamentA, tournamentB);
+    existing.mockResolvedValue([
+      { registrationUrl: "https://example.com/a" },
+      { registrationUrl: "https://example.com/b" },
+    ]);
 
-      // Assert
-      const insertCall = (supabase.insertTournaments as jest.Mock).mock.calls[0][0];
-      expect(insertCall.length).toBe(1);
-      expect(insertCall[0].registrationUrl).toBe('https://example.com/tournament2');
-    });
+    const result = await runETL(props);
 
-    it('should insert all tournaments when none exist', async () => {
-      // Arrange
-      const mockFoundTournaments = {
-        data: [],
-      };
+    expect(result.inserted).toBe(0);
+    expect(insert).not.toHaveBeenCalled();
+  });
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockResolvedValue({ success: true });
+  it("inserts only the tournaments that are not already stored", async () => {
+    resolveFound(tournamentA, tournamentB);
+    existing.mockResolvedValue([{ registrationUrl: "https://example.com/a" }]);
 
-      // Act
-      await runETL(mockProps);
+    const result = await runETL(props);
 
-      // Assert
-      const insertCall = (supabase.insertTournaments as jest.Mock).mock.calls[0][0];
-      expect(insertCall.length).toBe(2);
-    });
+    expect(insertedBatch()).toHaveLength(1);
+    expect(insertedBatch()[0].registrationUrl).toBe("https://example.com/b");
+    expect(result).toMatchObject({ alreadyPresent: 1, inserted: 1 });
+  });
 
-    it('should handle when getTournaments returns null data', async () => {
-      // Arrange
-      const mockFoundTournaments = {
-        data: null,
-      };
+  it("does not treat a row keyed on the old column name as a match", async () => {
+    // Guards against reintroducing `registration_link`, which is not a column
+    // on this table.
+    resolveFound(tournamentA);
+    existing.mockResolvedValue([
+      { registration_link: "https://example.com/a" } as never,
+    ]);
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockResolvedValue({ success: true });
+    const result = await runETL(props);
 
-      // Act
-      await runETL(mockProps);
+    expect(result.inserted).toBe(1);
+  });
 
-      // Assert
-      const insertCall = (supabase.insertTournaments as jest.Mock).mock.calls[0][0];
-      expect(insertCall.length).toBe(2);
-    });
+  it("reports tournaments that share a registrationUrl", async () => {
+    const warn = jest.spyOn(console, "warn");
+    const listingUrl = "https://www.hockeyfinder.com/tournaments";
 
-    it('should throw error when findTournaments fails', async () => {
-      // Arrange
-      const mockError = new Error('OpenAI API error');
-      (openAI.findTournaments as jest.Mock).mockRejectedValue(mockError);
+    resolveFound(
+      makeTournament({ name: "First", registrationUrl: listingUrl }),
+      makeTournament({ name: "Second", registrationUrl: listingUrl })
+    );
+    existing.mockResolvedValue([]);
 
-      // Act & Assert
-      try {
-        await runETL(mockProps);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('ETL process failed: OpenAI API error');
-      }
-    });
+    const result = await runETL(props);
 
-    it('should throw error when getTournaments fails', async () => {
-      // Arrange
-      const mockError = new Error('Database error');
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockRejectedValue(mockError);
+    expect(result.sharedUrlGroups).toBe(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(listingUrl));
+    // They are still inserted — dedup cannot tell them apart, so dropping one
+    // would silently lose a real tournament.
+    expect(insertedBatch()).toHaveLength(2);
+  });
 
-      // Act & Assert
-      try {
-        await runETL(mockProps);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('ETL process failed: Database error');
-      }
-    });
+  it("handles the model returning no tournaments", async () => {
+    resolveFound();
+    existing.mockResolvedValue([]);
 
-    it('should throw error when insertTournaments fails', async () => {
-      // Arrange
-      const mockError = new Error('Insert error');
-      const mockFoundTournaments = { data: [] };
+    const result = await runETL(props);
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockRejectedValue(mockError);
+    expect(result).toMatchObject({ found: 0, inserted: 0 });
+    expect(insert).not.toHaveBeenCalled();
+  });
 
-      // Act & Assert
-      try {
-        await runETL(mockProps);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('ETL process failed: Insert error');
-      }
-    });
+  it.each([
+    ["findTournamentsMultiPass", () => found.mockRejectedValue(new Error("OpenAI down"))],
+    ["getTournaments", () => existing.mockRejectedValue(new Error("DB down"))],
+    ["insertTournaments", () => insert.mockRejectedValue(new Error("RPC down"))],
+  ])("wraps a failure from %s", async (_name, arrange) => {
+    resolveFound(tournamentA);
+    existing.mockResolvedValue([]);
+    arrange();
 
-    it('should not insert tournaments when all are duplicates', async () => {
-      // Arrange
-      const mockFoundTournaments = {
-        data: [
-          { registration_link: 'https://example.com/tournament1' },
-          { registration_link: 'https://example.com/tournament2' },
-        ],
-      };
+    await expect(runETL(props)).rejects.toThrow(/ETL process failed:/);
+  });
 
-      (openAI.findTournaments as jest.Mock).mockResolvedValue(mockTournaments);
-      (supabase.getTournaments as jest.Mock).mockResolvedValue(mockFoundTournaments);
-      (supabase.insertTournaments as jest.Mock).mockResolvedValue({ success: true });
+  it("preserves the original error as the cause", async () => {
+    const original = new Error("DB down");
+    resolveFound(tournamentA);
+    existing.mockRejectedValue(original);
 
-      // Act
-      await runETL(mockProps);
-
-      // Assert
-      const insertCall = (supabase.insertTournaments as jest.Mock).mock.calls[0][0];
-      expect(insertCall.length).toBe(0);
-    });
+    await expect(runETL(props)).rejects.toMatchObject({ cause: original });
   });
 });

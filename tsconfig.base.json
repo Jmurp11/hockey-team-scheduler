@@ -26,6 +26,9 @@
       ],
       "@hockey-team-scheduler/shared-utilities": [
         "libs/shared/utilities/src/index.ts"
+      ],
+      "@hockey-team-scheduler/shared-domain": [
+        "libs/shared/domain/src/index.ts"
       ]
     }
   },

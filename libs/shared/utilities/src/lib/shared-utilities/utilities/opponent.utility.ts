@@ -1,5 +1,5 @@
 import { Ranking } from '../types/ranking.type';
-import { SelectOption } from '../types/select-option.type';
+import { SelectOption } from '@hockey-team-scheduler/shared-domain';
 import { setSelect } from './select.utility';
 
 /**

@@ -1,4 +1,7 @@
-import { EmailDraft } from '@hockey-team-scheduler/shared-data-access';
+// Relative import: `EmailDraft` now lives in this project. Importing it from
+// '@hockey-team-scheduler/shared-data-access' pointed the types layer upwards
+// and created a circular dependency between the two libraries.
+import { EmailDraft } from './rinklink-gpt.type';
 
 /**
  * Scoring breakdown for a potential opponent match.

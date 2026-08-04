@@ -1,9 +1,11 @@
-name: Tournament ETL Monthly Run
+name: Tournament ETL Weekly Run
 
 on:
-  # Run on the 1st of every month at 2 AM UTC
+  # Mondays at 2 AM UTC. Tournament listings are posted continuously and each
+  # run finds only a fraction of them, so a monthly cadence compounded every
+  # miss. Re-runs are cheap: dedup drops anything already stored.
   schedule:
-    - cron: "0 2 1 * *"
+    - cron: "0 2 * * 1"
 
   # Allow manual triggering for testing
   workflow_dispatch:
@@ -18,6 +20,10 @@ on:
         type: choice
         default: ""
         options: ["", "states", "provinces", "territories"]
+      passes:
+        description: "Search passes to union (default 3; use 1 for a cheap run)"
+        required: false
+        type: string
 
 jobs:
   tournament-etl:
@@ -106,7 +112,8 @@ jobs:
         run: |
           npx tsx src/run-etl.ts \
             --location "${{ github.event.inputs.location || matrix.location }}" \
-            --locationType "${{ github.event.inputs.locationType || matrix.locationType }}"
+            --locationType "${{ github.event.inputs.locationType || matrix.locationType }}" \
+            --passes "${{ github.event.inputs.passes || 3 }}"
         env:
           # Pass environment variables to the ETL process
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

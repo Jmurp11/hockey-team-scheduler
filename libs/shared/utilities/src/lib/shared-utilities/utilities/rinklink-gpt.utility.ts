@@ -1,4 +1,10 @@
-import { ChatMessage, PendingAction, EmailDraft } from '@hockey-team-scheduler/shared-data-access';
+// Relative import: these types now live in this project. Importing them from
+// '@hockey-team-scheduler/shared-data-access' created a circular dependency.
+import {
+  ChatMessage,
+  PendingAction,
+  EmailDraft,
+} from '../types/rinklink-gpt.type';
 import { DisplayMessage } from '../types/rinklink-gpt.type';
 
 /**

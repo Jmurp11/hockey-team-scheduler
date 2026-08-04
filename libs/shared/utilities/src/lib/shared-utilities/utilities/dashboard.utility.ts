@@ -76,7 +76,7 @@ export function getGoalDifferentialClassification(differential: number): Differe
  * @param differential The average goal differential
  * @param decimals Number of decimal places (default: 1)
  */
-export function formatGoalDifferential(differential: number, decimals: number = 1): string {
+export function formatGoalDifferential(differential: number, decimals = 1): string {
   const formatted = Math.abs(differential).toFixed(decimals);
   if (differential > 0) return `+${formatted}`;
   if (differential < 0) return `-${formatted}`;

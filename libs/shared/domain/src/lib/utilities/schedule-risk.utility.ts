@@ -261,11 +261,12 @@ function generateRiskExplanation(
     case 'CLOSE_START_WARNING':
       return `${eventNames} are scheduled within 2 hours of each other (${times.join(' and ')}) on ${events[0].date}. This may be a tight turnaround.`;
 
-    case 'SAME_DAY_TRAVEL_RISK':
+    case 'SAME_DAY_TRAVEL_RISK': {
       const locations = events.map(
         (e) => `${e.venue} in ${e.city}`.replace(/ in $/g, ''),
       );
       return `${eventNames} are at different venues (${locations.join(' and ')}) on the same day with limited travel time between games.`;
+    }
 
     default:
       return `Schedule concern involving ${eventNames}.`;

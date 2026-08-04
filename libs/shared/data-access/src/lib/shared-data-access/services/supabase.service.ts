@@ -30,7 +30,10 @@ export class SupabaseService {
 
     // Start initialization
     this.initializing = true;
-    this.initPromise = new Promise<void>(async (resolve) => {
+    // Not an async executor: the body contains no `await` (createClient is
+    // synchronous), and an async executor would swallow any rejection thrown
+    // before `resolve()`.
+    this.initPromise = new Promise<void>((resolve) => {
       try {
         if (this.config.supabaseUrl && this.config.supabaseAnonKey) {
           // Determine storage key based on app type
