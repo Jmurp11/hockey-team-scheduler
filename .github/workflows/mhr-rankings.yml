@@ -1,0 +1,228 @@
+name: MHR Rankings Scrape
+
+# Scrapes myhockeyrankings.com for team ratings and their associations, then
+# loads them into Supabase via the p_batch_orgs / p_batch_rankings procedures.
+#
+# Replaces the thirteen per-age workflows that previously lived in the
+# mhr-data-fetch repo. Add or remove an age by editing the matrix below.
+
+on:
+  schedule:
+    # Wednesdays at 12:00 UTC (07:00 ET)
+    - cron: "0 12 * * 3"
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Season year (blank = auto-detect from current date)"
+        required: false
+        default: ""
+      age:
+        description: "Single age to run, e.g. 12u (blank = all)"
+        required: false
+        default: ""
+      gender:
+        description: "Restrict to boys or girls (blank = all)"
+        required: false
+        default: ""
+        type: choice
+        options: ["", "boys", "girls"]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  # Never let a manual dispatch race the scheduled run into the same batch RPCs.
+  group: mhr-rankings
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    name: ${{ matrix.gender }} ${{ matrix.age }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      # Replaces the old approach of staggering thirteen cron schedules seven
+      # minutes apart; same intent (don't hammer MHR), expressed once.
+      max-parallel: 3
+      matrix:
+        include:
+          - { age: "9u", gender: "boys" }
+          - { age: "10u", gender: "boys" }
+          - { age: "11u", gender: "boys" }
+          - { age: "12u", gender: "boys" }
+          - { age: "13u", gender: "boys" }
+          - { age: "14u", gender: "boys" }
+          - { age: "16u", gender: "boys" }
+          - { age: "18u", gender: "boys" }
+          - { age: "10u", gender: "girls" }
+          - { age: "12u", gender: "girls" }
+          - { age: "14u", gender: "girls" }
+          - { age: "16u", gender: "girls" }
+          - { age: "19u", gender: "girls" }
+
+    steps:
+      - name: Decide whether this leg runs
+        id: filter
+        env:
+          INPUT_AGE: ${{ github.event.inputs.age }}
+          INPUT_GENDER: ${{ github.event.inputs.gender }}
+          MATRIX_AGE: ${{ matrix.age }}
+          MATRIX_GENDER: ${{ matrix.gender }}
+        run: |
+          if [ -n "$INPUT_AGE" ] && [ "$INPUT_AGE" != "$MATRIX_AGE" ]; then
+            echo "Skipping: age filter '$INPUT_AGE' does not match '$MATRIX_AGE'"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -n "$INPUT_GENDER" ] && [ "$INPUT_GENDER" != "$MATRIX_GENDER" ]; then
+            echo "Skipping: gender filter '$INPUT_GENDER' does not match '$MATRIX_GENDER'"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        if: steps.filter.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        if: steps.filter.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.filter.outputs.run == 'true'
+        run: npm ci
+
+      - name: Resolve Puppeteer version
+        if: steps.filter.outputs.run == 'true'
+        id: puppeteer
+        run: |
+          VERSION=$(node -p "require('puppeteer/package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Puppeteer browser
+        if: steps.filter.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ steps.puppeteer.outputs.version }}
+
+      - name: Install Chrome for Puppeteer
+        if: steps.filter.outputs.run == 'true'
+        run: npx puppeteer browsers install chrome
+
+      - name: Scrape and load rankings
+        if: steps.filter.outputs.run == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          INPUT_YEAR: ${{ github.event.inputs.year }}
+        run: |
+          set -uo pipefail
+
+          # The season year defaults to resolveSeasonYear() inside the script;
+          # only pass --year when a human has overridden it.
+          YEAR_ARG=""
+          if [ -n "$INPUT_YEAR" ]; then
+            YEAR_ARG="--year $INPUT_YEAR"
+          fi
+
+          # The load is idempotent (p_batch_* are batch upserts), so retrying is
+          # safe and absorbs the transient MHR timeouts that dominate failures.
+          for attempt in 1 2 3; do
+            echo "::group::Attempt $attempt for ${{ matrix.gender }} ${{ matrix.age }}"
+            if npx tsx mhr-etl/src/rankings/insertRankings.ts \
+                 --age "${{ matrix.age }}" \
+                 --gender "${{ matrix.gender }}" \
+                 $YEAR_ARG; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "Attempt $attempt failed."
+            if [ "$attempt" -lt 3 ]; then
+              DELAY=$((attempt * 30))
+              echo "Retrying in ${DELAY}s..."
+              sleep "$DELAY"
+            fi
+          done
+
+          echo "All 3 attempts failed for ${{ matrix.gender }} ${{ matrix.age }}"
+          exit 1
+
+  report-failure:
+    name: Report failures
+    needs: scrape
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = 'MHR rankings scrape failed';
+            const body = [
+              `The scheduled MHR rankings scrape had one or more failing legs.`,
+              ``,
+              `- Run: ${runUrl}`,
+              `- Triggered by: \`${context.eventName}\``,
+              `- Commit: ${context.sha.slice(0, 7)}`,
+              ``,
+              `Open the run to see which age/gender legs failed. Legs are independent`,
+              `(\`fail-fast: false\`), so the others may have succeeded.`,
+              ``,
+              `To re-run a single leg, dispatch this workflow with the \`age\` and`,
+              `\`gender\` inputs set.`,
+            ].join('\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'mhr-etl-failure',
+            });
+
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body,
+              });
+              core.info(`Commented on existing issue #${existing.data[0].number}`);
+              return;
+            }
+
+            // Ensure the label exists before relying on it.
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'mhr-etl-failure',
+              });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'mhr-etl-failure',
+                color: 'B60205',
+                description: 'Automated MHR ETL failure reports',
+              });
+            }
+
+            const created = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['mhr-etl-failure'],
+            });
+            core.info(`Opened issue #${created.data.number}`);

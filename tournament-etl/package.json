@@ -20,10 +20,6 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "start": "npx tsx src/main.ts",
-    "leagues": "npx tsx src/leagues/insertLeagues.ts",
-    "organizations": "npx tsx src/organizations/insertOrgs.ts",
-    "rankings": "npx tsx src/rankings/insertRankings.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx tsx src/run-etl.ts"
   }
 }

@@ -1,0 +1,26 @@
+{
+  "name": "mhr-etl",
+  "version": "1.0.0",
+  "description": "Scrapes myhockeyrankings.com for team rankings, associations, and leagues",
+  "author": "jmurp11",
+  "license": "MIT",
+  "main": "src/rankings/insertRankings.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.52.0",
+    "axios": "^1.9.0",
+    "cheerio": "^1.0.0",
+    "puppeteer": "^24.9.0",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "@types/yargs": "^17.0.33",
+    "dotenv": "^17.1.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "rankings": "npx tsx src/rankings/insertRankings.ts",
+    "leagues": "npx tsx src/leagues/insertLeagues.ts"
+  }
+}

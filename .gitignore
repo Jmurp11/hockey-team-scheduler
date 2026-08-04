@@ -22,9 +22,15 @@ AGENTS.md
 
 CLAUDE.md
 
-# Local-only planning/notes docs (kept out of git history)
+# Local-only planning/notes docs (kept out of git history).
+# Deliberately an explicit list rather than a blanket `*.md`: several README.md
+# files are tracked and Nx generates one per new library, so a blanket rule
+# would silently block them.
+/database-refactor-analysis.md
 /improvements.md
 /onboarding-pricing-refactor-plan.md
+/post-fix-flags.md
+/postgis-search-path-fix.md
 /pricing.md
 /savior.md
 /supabase-fixes.md
