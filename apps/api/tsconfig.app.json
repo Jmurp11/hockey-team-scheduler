@@ -10,7 +10,11 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": false,
-    "baseUrl": "./",
+    // Deliberately no `baseUrl` override here. It used to be `"./"`, which
+    // repointed the `paths` in tsconfig.base.json at apps/api so they resolved
+    // to nothing — that is why this app had never imported a shared library.
+    // Inheriting the workspace baseUrl lets `@hockey-team-scheduler/*` resolve,
+    // and lets Nx remap it to the built output for buildable libraries.
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,

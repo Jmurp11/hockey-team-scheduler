@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { RinkModule } from './rinks/rink.module';
 import { EmailModule } from './email/email.module';
 import { GameMatchingModule } from './game-matching/game-matching.module';
+import { ScheduleRiskModule } from './schedule-risk/schedule-risk.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { GameMatchingModule } from './game-matching/game-matching.module';
     LeaguesModule,
     OpenAiModule,
     RinkLinkGptModule,
+    ScheduleRiskModule,
     TeamsModule,
     TournamentsModule,
     UserModule,

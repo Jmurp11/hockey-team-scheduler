@@ -1,3 +1,8 @@
+// Framework-free domain logic now lives in `shared-domain` so the NestJS API
+// can import it without pulling @angular/forms in through this barrel.
+// Re-exported here so existing client imports keep working unchanged.
+export * from '@hockey-team-scheduler/shared-domain';
+
 // Export all types
 export * from './lib/shared-utilities/types/api-user.type';
 export * from './lib/shared-utilities/types/association.type';
@@ -8,7 +13,6 @@ export * from './lib/shared-utilities/types/dashboard.type';
 export * from './lib/shared-utilities/types/export-column.type';
 export * from './lib/shared-utilities/types/file-upload.type';
 export * from './lib/shared-utilities/types/form-item.type';
-export * from './lib/shared-utilities/types/game.type';
 export * from './lib/shared-utilities/types/league.type';
 export * from './lib/shared-utilities/types/message.type';
 export * from './lib/shared-utilities/types/nearby-teams.type';
@@ -19,10 +23,8 @@ export * from './lib/shared-utilities/types/table-options.type';
 export * from './lib/shared-utilities/types/team.type';
 export * from './lib/shared-utilities/types/tournament.type';
 export * from './lib/shared-utilities/types/tournament-fit.type';
-export * from './lib/shared-utilities/types/schedule-risk.type';
 export * from './lib/shared-utilities/types/user.type';
 export * from './lib/shared-utilities/types/user-access.type';
-export * from './lib/shared-utilities/types/select-option.type';
 export * from './lib/shared-utilities/types/opponent-search-params.type';
 export * from './lib/shared-utilities/types/ranking.type';
 export * from './lib/shared-utilities/types/manager.type';
@@ -45,9 +47,7 @@ export * from './lib/shared-utilities/utilities/search.utility';
 export * from './lib/shared-utilities/utilities/select.utility';
 export * from './lib/shared-utilities/utilities/sort.utility';
 export * from './lib/shared-utilities/utilities/string.utility';
-export * from './lib/shared-utilities/utilities/time.utility';
 export * from './lib/shared-utilities/utilities/tournament.utility';
-export * from './lib/shared-utilities/utilities/schedule-risk.utility';
 export * from './lib/shared-utilities/utilities/schedule-risk-display.utility';
 export * from './lib/shared-utilities/utilities/tournament-fit-display.utility';
 export * from './lib/shared-utilities/utilities/rinklink-gpt.utility';

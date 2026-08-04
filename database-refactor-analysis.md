@@ -64,9 +64,14 @@ either branch):
 | Tier 0 — `associations` `lower()` index (`002`) | **Applied** 2026-08-03 |
 | Tier 0 — `p_batch_rankings` set-based rewrite (`003`) | **Applied** 2026-08-03 |
 | Tier 0 — `p_batch_orgs` set-based rewrite (`004`) | **Applied** 2026-08-03 |
-| Tier 0 — 64 null-location associations | Monitoring only; geocoding provider deferred |
-| Tier 0 — `p_find_nearby_teams` `ST_DWithin` | Not started |
+| Tier 0 — `p_find_nearby_teams` `ST_DWithin` (`005`) | **Applied** 2026-08-03 |
+| Tier 0 — `association_location_gaps` view (`006`) | **Applied** 2026-08-03 |
+| Tier 0 — geocoding backfill for the 64 gaps | **Open** — tracked in `post-fix-flags.md` |
 | Tiers 1–4 | Not started |
+
+**Tier 0 is complete except the geocoding backfill**, which is deferred by choice:
+monitoring is in place so the gap is visible, but nothing yet populates
+`associations.location` for new rows.
 
 SQL for applied steps, with rollbacks, is in `db/refactor/tier0/`.
 
@@ -76,6 +81,16 @@ payload 10,793 → resolved 10,793 → matched existing keys 10,793 → **value 
 **Verification of 004** (read-only, realistic 8x-duplicated payload):
 9,656 input rows → 1,207 after dedup → **0 associations rewritten, 0 map tuples
 allocated**. Previously both were 9,656 per run, which was the bloat source.
+
+**Verification of 005** (read-only equivalence proof, 40 origins x 6 radii = 240
+combinations): old and new predicates each matched **39,411 rows, 0 disagreements**.
+Live call `p_find_nearby_teams(2983, false, '12u', 0, 100, 50)` returned 313 rows
+with a farthest distance of 49.51 mi, respecting the 50-mile bound.
+
+**Measured by 006:** 64 associations with no location, accounting for **299 teams
+that can never be returned by opponent search** (2.8% of all 10,793 teams). Worst
+single cases: Amherst Youth Hockey (37 teams), Vegas Jr Golden Knights (35),
+The St James Hockey Club (18). All have valid city/state and are geocodable.
 
 Function attributes preserved on both (`RETURNS void`, `plpgsql`,
 `search_path=public, pg_temp`, not `SECURITY DEFINER`), so

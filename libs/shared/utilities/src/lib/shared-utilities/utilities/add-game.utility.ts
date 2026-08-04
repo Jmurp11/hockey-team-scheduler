@@ -1,10 +1,15 @@
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Game } from '../types/game.type';
+import {
+  Game,
+  SelectOption,
+  getCurrentLocalDateTime,
+  transformDateTime,
+} from '@hockey-team-scheduler/shared-domain';
 import { setSelect } from './select.utility';
-import { transformDateTime, getCurrentLocalDateTime } from './time.utility';
 import { opponentValidator } from './form.validators';
-import { SelectOption } from '../types/select-option.type';
-import { Ranking } from '@hockey-team-scheduler/shared-utilities';
+// Relative, not '@hockey-team-scheduler/shared-utilities': this file is *in*
+// that project, and a self-import trips @nx/enforce-module-boundaries.
+import { Ranking } from '../types/ranking.type';
 
 /**
  * Game type options for select inputs
@@ -81,7 +86,7 @@ export function initAddGameForm(gameData: any | null = null): FormGroup {
 
   const currentLocalDateTime = getCurrentLocalDateTime();
 
-  let dateValue =
+  const dateValue =
     gameData && gameData.date
       ? transformDateTime({ date: gameData.date, time: gameData.time })
       : transformDateTime(currentLocalDateTime);
@@ -141,7 +146,7 @@ export function transformAddGameFormData(
   const opponent = formValue['opponent'] as
     | SelectOption<Ranking | string>
     | string;
-  let rink = formValue['rink'] as SelectOption<Partial<Game>>;
+  const rink = formValue['rink'] as SelectOption<Partial<Game>>;
   let apiGameType = formValue['game_type'] as string;
   if (apiGameType && typeof apiGameType === 'string') {
     apiGameType = apiGameType.charAt(0).toUpperCase() + apiGameType.slice(1);

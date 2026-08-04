@@ -3,7 +3,7 @@
  * Handles parsing CSV files containing game schedule data
  */
 
-import { convertTo24HourFormat } from './time.utility';
+import { convertTo24HourFormat } from '@hockey-team-scheduler/shared-domain';
 
 export interface CsvGameRow {
   date: string;
@@ -234,7 +234,9 @@ function parseDate(dateStr: string): string | null {
   }
 
   // Try MM/DD/YYYY or M/D/YYYY format
-  const slashMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  // `/` needs no escape inside a character class, and `-` is literal in the
+  // trailing position.
+  const slashMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (slashMatch) {
     const month = slashMatch[1].padStart(2, '0');
     const day = slashMatch[2].padStart(2, '0');

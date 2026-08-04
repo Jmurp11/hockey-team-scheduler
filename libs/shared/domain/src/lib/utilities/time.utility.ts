@@ -15,9 +15,9 @@ export function formatTime(timeString: string): string {
  */
 export function convertTo24HourFormat(time12h: string): string {
   const [time, modifier] = time12h.split(' ');
-  let [hours, minutes] = time.split(':');
+  const [rawHours, minutes] = time.split(':');
 
-  hours = handleHours(hours);
+  let hours = handleHours(rawHours);
 
   if (modifier === 'PM') {
     hours = (parseInt(hours, 10) + 12).toString();
