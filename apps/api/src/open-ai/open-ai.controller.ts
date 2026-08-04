@@ -17,11 +17,11 @@ import {
 
 import { OpenAiService } from './open-ai.service';
 import { ContactSchedulerDto } from './open-ai.types';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 
 @ApiTags('AI Services')
 @ApiExcludeController()
-@UseGuards(ApiKeyGuard)
+@UseGuards(SupabaseAuthGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key needed to access the endpoints',

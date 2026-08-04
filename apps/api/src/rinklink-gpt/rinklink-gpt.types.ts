@@ -1,4 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsBoolean,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 /**
  * Represents a single message in the chat conversation.
@@ -67,6 +74,7 @@ export class ChatRequestDto {
     description: 'The user message to send to the AI assistant',
     example: 'What games do I have this month?',
   })
+  @IsString()
   message: string;
 
   @ApiProperty({
@@ -74,12 +82,18 @@ export class ChatRequestDto {
     type: [ChatMessage],
     required: false,
   })
+  @IsOptional()
+  @IsArray()
   conversationHistory?: ChatMessage[];
 
   @ApiProperty({
-    description: 'User ID for fetching user-specific data',
+    description:
+      'User ID (ignored — the server derives identity from the auth token)',
     example: 'user-uuid-123',
+    required: false,
   })
+  @IsOptional()
+  @IsString()
   userId: string;
 
   @ApiProperty({
@@ -87,6 +101,8 @@ export class ChatRequestDto {
     required: false,
     example: false,
   })
+  @IsOptional()
+  @IsBoolean()
   confirmAction?: boolean;
 
   @ApiProperty({
@@ -94,6 +110,8 @@ export class ChatRequestDto {
     type: PendingAction,
     required: false,
   })
+  @IsOptional()
+  @IsObject()
   pendingAction?: PendingAction;
 }
 

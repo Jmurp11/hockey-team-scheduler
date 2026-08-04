@@ -9,12 +9,16 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiExcludeController, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import Stripe from 'stripe';
 
 import { UserService } from './user.service';
 import { UserAccessService } from './user-access.service';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
+import { Public } from '../auth/public.decorator';
+import { CurrentAuthUser } from '../auth/current-user.decorator';
 
 // ============ DTOs ============
 
@@ -76,6 +80,8 @@ class CompleteRegistrationDto {
 
 @ApiTags('Users')
 @ApiExcludeController()
+@ApiBearerAuth()
+@UseGuards(SupabaseAuthGuard)
 @Controller('v1/users')
 export class UserController {
   constructor(
@@ -83,9 +89,36 @@ export class UserController {
     private readonly userAccessService: UserAccessService,
   ) {}
 
+  /**
+   * Writes a 403/404 to the response and returns false when the caller is not
+   * an ACTIVE ADMIN of `associationId`. Returns true when authorized.
+   */
+  private async ensureAssociationAdmin(
+    authUserId: string,
+    associationId: number | null,
+    res: Response,
+  ): Promise<boolean> {
+    if (associationId == null) {
+      (res as any).status(404).json({ message: 'Not found' });
+      return false;
+    }
+    const isAdmin = await this.userAccessService.isAssociationAdmin(
+      authUserId,
+      associationId,
+    );
+    if (!isAdmin) {
+      (res as any)
+        .status(403)
+        .json({ message: 'Forbidden: requires association admin' });
+      return false;
+    }
+    return true;
+  }
+
   // ============ STRIPE WEBHOOK ============
 
   @Post('webhook')
+  @Public()
   @ApiOperation({ summary: 'Handle Stripe webhook events' })
   async handleStripeWebhook(
     @Req() req: Request,
@@ -114,6 +147,7 @@ export class UserController {
   // ============ USER REGISTRATION ============
 
   @Post('register')
+  @Public()
   @ApiOperation({
     summary: 'Register a new user',
     description:
@@ -146,6 +180,7 @@ export class UserController {
   }
 
   @Post('register/invited')
+  @Public()
   @ApiOperation({
     summary: 'Register an invited user',
     description:
@@ -192,7 +227,13 @@ export class UserController {
 
   // ============ COMPLETE REGISTRATION ============
 
+  // NOTE: Kept @Public() because this is a registration-bootstrap step that may
+  // run before a Supabase session exists (paid-signup flow). It still trusts
+  // body.userId — a residual account-takeover risk (setting a password for an
+  // arbitrary userId). Fixing safely requires the client registration flow to
+  // authenticate first; tracked as a Phase-1 follow-up.
   @Post('complete-registration')
+  @Public()
   @ApiOperation({
     summary: 'Complete user registration',
     description: `
@@ -299,10 +340,18 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'No seats available' })
   @ApiResponse({ status: 500, description: 'Server error' })
   async createInvitation(
+    @CurrentAuthUser() authUserId: string,
     @Body() body: CreateInvitationDto,
     @Res() res: Response,
   ) {
     try {
+      const associationId = Number(body.associationId);
+      if (
+        !(await this.ensureAssociationAdmin(authUserId, associationId, res))
+      ) {
+        return;
+      }
+
       const result = await this.userService.createInvitation(
         body.subscriptionId,
         body.associationId,
@@ -334,6 +383,7 @@ export class UserController {
   }
 
   @Post('invitations/validate')
+  @Public()
   @ApiOperation({
     summary: 'Validate an invitation token',
     description: 'Checks if an invitation token is valid and not expired.',
@@ -371,6 +421,7 @@ export class UserController {
   }
 
   @Post('invitations/accept')
+  @Public()
   @ApiOperation({
     summary: 'Accept an invitation',
     description:
@@ -421,8 +472,17 @@ export class UserController {
     description: 'Cancels a pending invitation and releases the reserved seat.',
   })
   @ApiResponse({ status: 200, description: 'Invitation cancelled' })
-  async cancelInvitation(@Param('id') id: string, @Res() res: Response) {
+  async cancelInvitation(
+    @CurrentAuthUser() authUserId: string,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
     try {
+      const associationId = await this.userService.getInvitationAssociation(id);
+      if (!(await this.ensureAssociationAdmin(authUserId, associationId, res))) {
+        return;
+      }
+
       await this.userService.cancelInvitation(id);
 
       (res as any).status(200).json({
@@ -443,8 +503,17 @@ export class UserController {
   })
   @ApiResponse({ status: 200, description: 'Invitation resent successfully' })
   @ApiResponse({ status: 404, description: 'Invitation not found' })
-  async resendInvitation(@Param('id') id: string, @Res() res: Response) {
+  async resendInvitation(
+    @CurrentAuthUser() authUserId: string,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
     try {
+      const associationId = await this.userService.getInvitationAssociation(id);
+      if (!(await this.ensureAssociationAdmin(authUserId, associationId, res))) {
+        return;
+      }
+
       const result = await this.userService.resendInvitation(id);
 
       (res as any).status(200).json({
@@ -470,8 +539,17 @@ export class UserController {
   })
   @ApiResponse({ status: 200, description: 'Member removed successfully' })
   @ApiResponse({ status: 404, description: 'Member not found' })
-  async removeMember(@Param('id') id: string, @Res() res: Response) {
+  async removeMember(
+    @CurrentAuthUser() authUserId: string,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
     try {
+      const associationId = await this.userService.getMemberAssociation(id);
+      if (!(await this.ensureAssociationAdmin(authUserId, associationId, res))) {
+        return;
+      }
+
       await this.userService.removeMember(id);
 
       (res as any).status(200).json({
@@ -495,11 +573,17 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'Member not found' })
   @ApiResponse({ status: 400, description: 'Invalid role' })
   async updateMemberRole(
+    @CurrentAuthUser() authUserId: string,
     @Param('id') id: string,
     @Body() body: UpdateMemberRoleDto,
     @Res() res: Response,
   ) {
     try {
+      const associationId = await this.userService.getMemberAssociation(id);
+      if (!(await this.ensureAssociationAdmin(authUserId, associationId, res))) {
+        return;
+      }
+
       const updatedMember = await this.userService.updateMemberRole(id, body.role);
 
       (res as any).status(200).json({
@@ -535,11 +619,13 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'User is an admin' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async cancelAccount(
-    @Body() body: { userId: string },
+    @CurrentAuthUser() authUserId: string,
     @Res() res: Response,
   ) {
     try {
-      await this.userService.cancelAccount(body.userId);
+      // Identity is derived from the verified token, never from the body,
+      // so a caller can only cancel their own account.
+      await this.userService.cancelAccount(authUserId);
 
       (res as any).status(200).json({
         success: true,
@@ -581,8 +667,17 @@ export class UserController {
       'Checks if a user has access based on subscription or association membership.',
   })
   @ApiResponse({ status: 200, description: 'Access check result' })
-  async checkAccess(@Param('userId') userId: string, @Res() res: Response) {
+  async checkAccess(
+    @CurrentAuthUser() authUserId: string,
+    @Param('userId') userId: string,
+    @Res() res: Response,
+  ) {
     try {
+      if (userId !== authUserId) {
+        (res as any).status(403).json({ message: 'Forbidden' });
+        return;
+      }
+
       const hasAccess = await this.userService.userHasAccess(userId);
 
       (res as any).status(200).json({
@@ -606,10 +701,16 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Subscription details' })
   @ApiResponse({ status: 404, description: 'No subscription found' })
   async getUserSubscription(
+    @CurrentAuthUser() authUserId: string,
     @Param('userId') userId: string,
     @Res() res: Response,
   ) {
     try {
+      if (userId !== authUserId) {
+        (res as any).status(403).json({ message: 'Forbidden' });
+        return;
+      }
+
       const subscription = await this.userService.getSubscriptionByUser(userId);
 
       if (!subscription) {
@@ -636,10 +737,22 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Subscription details' })
   @ApiResponse({ status: 404, description: 'No subscription found' })
   async getAssociationSubscription(
+    @CurrentAuthUser() authUserId: string,
     @Param('associationId') associationId: string,
     @Res() res: Response,
   ) {
     try {
+      const isMember = await this.userAccessService.isAssociationMember(
+        authUserId,
+        Number(associationId),
+      );
+      if (!isMember) {
+        (res as any)
+          .status(403)
+          .json({ message: 'Forbidden: not a member of this association' });
+        return;
+      }
+
       const subscription =
         await this.userService.getSubscriptionByAssociation(associationId);
 
@@ -662,6 +775,7 @@ export class UserController {
   // ============ SUBSCRIPTION CHECKOUT ============
 
   @Post('subscriptions/checkout')
+  @Public()
   @ApiOperation({
     summary: 'Create subscription checkout session',
     description:
@@ -737,6 +851,7 @@ export class UserController {
   }
 
   @Get('subscriptions/checkout/:sessionId')
+  @Public()
   @ApiOperation({
     summary: 'Get checkout session status',
     description: 'Retrieves the status of a Stripe Checkout Session.',
@@ -823,33 +938,11 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Invalid or missing auth token' })
   async getCurrentUserAccess(
-    @Headers('authorization') authHeader: string,
+    @CurrentAuthUser() authUserId: string,
     @Res() res: Response,
   ) {
     try {
-      // Extract token from Authorization header
-      const token = authHeader?.replace('Bearer ', '');
-
-      if (!token) {
-        (res as any).status(401).json({
-          success: false,
-          message: 'Missing authorization token',
-        });
-        return;
-      }
-
-      // Validate token and get user ID
-      const authUserId = await this.userAccessService.validateSupabaseToken(token);
-
-      if (!authUserId) {
-        (res as any).status(401).json({
-          success: false,
-          message: 'Invalid or expired token',
-        });
-        return;
-      }
-
-      // Get user access info
+      // authUserId is resolved from the verified Bearer token by SupabaseAuthGuard.
       const access = await this.userAccessService.getUserAccess(authUserId);
 
       (res as any).status(200).json({
@@ -877,10 +970,16 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getUserAccessById(
+    @CurrentAuthUser() callerAuthUserId: string,
     @Param('authUserId') authUserId: string,
     @Res() res: Response,
   ) {
     try {
+      if (authUserId !== callerAuthUserId) {
+        (res as any).status(403).json({ success: false, message: 'Forbidden' });
+        return;
+      }
+
       const access = await this.userAccessService.getUserAccess(authUserId);
 
       (res as any).status(200).json({

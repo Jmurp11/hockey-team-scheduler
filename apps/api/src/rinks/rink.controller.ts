@@ -13,7 +13,7 @@ import {
   ApiOperation,
   ApiProperty,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { ApiAccessGuard } from '../auth/api-access.guard';
 
 export class Rink {
   @ApiProperty({ description: 'Name of the rink' })
@@ -30,7 +30,7 @@ export class Rink {
 }
 
 @ApiTags('Rinks')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiAccessGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key needed to access the endpoints',

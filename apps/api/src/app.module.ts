@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AssociationsModule } from './associations/associations.module';
@@ -18,6 +20,10 @@ import { GameMatchingModule } from './game-matching/game-matching.module';
 
 @Module({
   imports: [
+    // Global rate limiting: 120 requests / minute per client by default.
+    // Sensitive routes (chat, contact discovery, email) apply stricter
+    // per-route limits via @Throttle.
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
     AssociationsModule,
     DashboardModule,
     DeveloperPortalModule,
@@ -34,6 +40,9 @@ import { GameMatchingModule } from './game-matching/game-matching.module';
     RinkModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

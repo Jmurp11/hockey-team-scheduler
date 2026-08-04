@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApiKeyInterceptor } from './shared/api-key.interceptor';
+import { authTokenInterceptor } from './shared/auth-token.interceptor';
 import {
   APP_INITIALIZER,
   ApplicationConfig,
@@ -19,8 +19,6 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
 import { environment } from './environments/environment';
 
-const apiKeyInterceptor = new ApiKeyInterceptor();
-
 function initializeHealthCheck(
   healthCheckService: HealthCheckService,
   router: Router
@@ -34,11 +32,7 @@ function initializeHealthCheck(
 }
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(
-      withInterceptors([
-        (req, next) => apiKeyInterceptor.intercept(req, { handle: next })
-      ])
-    ),
+    provideHttpClient(withInterceptors([authTokenInterceptor])),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
@@ -85,7 +79,8 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         apiUrl: environment.apiUrl,
         supabaseUrl: environment.PUBLIC_SUPABASE_URL,
-        supabaseAnonKey: environment.PUBLIC_SUPABASE_SERVICE_ROLE,
+        // Browser-safe Supabase publishable key (sb_publishable_...).
+        supabaseAnonKey: environment.PUBLIC_SUPABASE_KEY,
         appName: 'web', // Differentiates from mobile app storage
       },
     },

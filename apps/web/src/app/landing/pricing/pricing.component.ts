@@ -17,26 +17,13 @@ import {
 } from '@angular/forms';
 import { SubscriptionService } from '@hockey-team-scheduler/shared-data-access';
 import { LoadingService } from '@hockey-team-scheduler/shared-ui';
+import { PRICE_PER_SEAT, PRICING_FEATURES } from '@hockey-team-scheduler/shared-utilities';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SeoService } from '../../shared/services/seo.service';
-
-/**
- * Pricing configuration - single plan with per-seat pricing.
- */
-const PRICE_PER_SEAT = 75; // $75 per seat per year
-
-const FEATURES = [
-  'AI-powered game matching by distance and skill level',
-  'Schedule risk alerts for overlaps, tight turnarounds, and travel conflicts',
-  'Tournament fit analysis based on team rating and schedule',
-  'AI assistant for schedule questions, game planning, and email drafts',
-  'Organization-level admin with master schedule across all teams',
-  'Access to iOS and Android mobile apps for coaches and managers',
-];
 
 /**
  * Pricing page component.
@@ -146,7 +133,7 @@ export class PricingComponent implements OnInit {
 
   // Pricing configuration
   pricePerSeat = PRICE_PER_SEAT;
-  features = FEATURES;
+  features = PRICING_FEATURES;
 
   // Seat selection
   seats = signal(1);
@@ -177,7 +164,7 @@ export class PricingComponent implements OnInit {
     this.seoService.updateTags({
       title: 'Pricing - RinkLink.ai Hockey Scheduling Plans',
       description:
-        'Choose the perfect plan for your youth hockey team. Flexible pricing for AI-powered scheduling, tournament discovery, and team management. Free trial available.',
+        'Choose the perfect plan for your youth hockey team. Flexible pricing for AI-powered scheduling, tournament discovery, and team management. 30-day money-back guarantee.',
       url: 'https://rinklink.ai/pricing',
       keywords:
         'hockey scheduling pricing, youth hockey plans, sports management pricing, hockey team subscription, tournament management cost',
@@ -197,11 +184,11 @@ export class PricingComponent implements OnInit {
         },
         offers: {
           '@type': 'Offer',
-          price: '75.00',
+          price: '50.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '75.00',
+            price: '50.00',
             priceCurrency: 'USD',
             unitText: 'per seat per year',
           },
@@ -218,7 +205,7 @@ export class PricingComponent implements OnInit {
         {
           question: 'How much does RinkLink.ai cost?',
           answer:
-            'RinkLink.ai costs $75 per seat per year. You can select the number of seats you need based on your organization size.',
+            'RinkLink.ai costs $50 per seat per year. You can select the number of seats you need based on your organization size.',
         },
         {
           question: 'Can I cancel my subscription anytime?',
@@ -231,9 +218,9 @@ export class PricingComponent implements OnInit {
             'All plans include AI-powered game matching, schedule risk monitoring, tournament fit analysis, an AI assistant for scheduling and emails, and organization-level administration.',
         },
         {
-          question: 'Is there a free trial?',
+          question: 'Can I try RinkLink.ai risk-free?',
           answer:
-            'We offer a 30-day money-back guarantee, allowing you to try RinkLink.ai risk-free.',
+            'Yes. We offer a 30-day money-back guarantee, so you can try RinkLink.ai risk-free.',
         },
       ]),
     ]);

@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
-  ApiExcludeController,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -26,7 +25,9 @@ import {
   EvaluateTournamentFitRequestDto,
   EvaluateTournamentFitResponseDto,
 } from '../types';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { ApiAccessGuard } from '../auth/api-access.guard';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
+import { Public } from '../auth/public.decorator';
 import {
   CreateFeaturedCheckoutDto,
   CreateTournamentDto,
@@ -42,7 +43,6 @@ class CheckoutSessionResponse {
 }
 
 @ApiTags('Tournaments')
-@ApiExcludeController()
 @Controller('v1/tournaments')
 export class TournamentsController {
   constructor(private readonly tournamentsService: TournamentsService) {}
@@ -80,7 +80,8 @@ export class TournamentsController {
    * Returns the checkout URL for redirecting the user.
    */
   @Post('featured/checkout')
-  @UseGuards(ApiKeyGuard)
+  // Public director payment flow (pre-auth landing page), like subscription checkout.
+  @Public()
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -128,7 +129,8 @@ export class TournamentsController {
    * Called after successful Stripe checkout redirect.
    */
   @Post('featured/verify-payment')
-  @UseGuards(ApiKeyGuard)
+  // Public post-payment callback (pre-auth success page).
+  @Public()
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -179,7 +181,8 @@ export class TournamentsController {
   }
 
   @Get()
-  @UseGuards(ApiKeyGuard)
+  // Youth-hockey data read: first-party JWT or metered API key.
+  @UseGuards(ApiAccessGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -209,7 +212,8 @@ export class TournamentsController {
    * Supports both free listings and paid featured tournaments.
    */
   @Post()
-  @UseGuards(ApiKeyGuard)
+  // First-party write (admin/director) — requires a logged-in user.
+  @UseGuards(SupabaseAuthGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -254,7 +258,8 @@ export class TournamentsController {
   }
 
   @Get('nearbyTournaments')
-  @UseGuards(ApiKeyGuard)
+  // Youth-hockey data read: first-party JWT or metered API key.
+  @UseGuards(ApiAccessGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -308,7 +313,8 @@ export class TournamentsController {
   }
 
   @Get(':id')
-  @UseGuards(ApiKeyGuard)
+  // Youth-hockey data read: first-party JWT or metered API key.
+  @UseGuards(ApiAccessGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',
@@ -354,7 +360,8 @@ export class TournamentsController {
    * The agent advises; the user decides.
    */
   @Post('evaluate-fit')
-  @UseGuards(ApiKeyGuard)
+  // First-party AI feature (uses the caller's team/user context).
+  @UseGuards(SupabaseAuthGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key needed to access the endpoints',

@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApiKeyInterceptor } from './shared/api-key.interceptor';
+import { authTokenInterceptor } from './shared/auth-token.interceptor';
 import {
   APP_INITIALIZER,
   ApplicationConfig,
@@ -24,8 +24,6 @@ import {
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
-
-const apiKeyInterceptor = new ApiKeyInterceptor();
 
 /**
  * Check API health on app startup
@@ -82,11 +80,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
-    provideHttpClient(
-      withInterceptors([
-        (req, next) => apiKeyInterceptor.intercept(req, { handle: next }),
-      ]),
-    ),
+    provideHttpClient(withInterceptors([authTokenInterceptor])),
     provideIonicAngular({}),
     LoadingService,
     NavigationService,
@@ -99,7 +93,9 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         apiUrl: environment.apiUrl,
         supabaseUrl: environment.PUBLIC_SUPABASE_URL,
-        supabaseAnonKey: environment.PUBLIC_SUPABASE_SERVICE_ROLE,
+        // Browser-safe Supabase publishable key (sb_publishable_...).
+        // NEVER the service_role/secret key — this ships in the mobile bundle.
+        supabaseAnonKey: environment.PUBLIC_SUPABASE_KEY,
         appName: 'mobile', // Differentiates from web app storage
       },
     },

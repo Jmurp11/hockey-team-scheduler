@@ -73,4 +73,23 @@ export class SupabaseService {
     // But just in case, we don't re-initialize here
     return this.client ?? undefined;
   }
+
+  /**
+   * Returns the current Supabase access token (JWT) for the signed-in user, or
+   * null if there is no active session. Used by the HTTP interceptors to attach
+   * an `Authorization: Bearer <token>` header so the API can authenticate the
+   * user (not just the app-level API key).
+   */
+  async getAccessToken(): Promise<string | null> {
+    await this.initializeClient();
+    if (!this.client) {
+      return null;
+    }
+    try {
+      const { data } = await this.client.auth.getSession();
+      return data.session?.access_token ?? null;
+    } catch {
+      return null;
+    }
+  }
 }

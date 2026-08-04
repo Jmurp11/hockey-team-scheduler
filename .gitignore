@@ -21,3 +21,11 @@ AGENTS.md
 .claude/
 
 CLAUDE.md
+
+# Local-only planning/notes docs (kept out of git history)
+/improvements.md
+/onboarding-pricing-refactor-plan.md
+/pricing.md
+/savior.md
+/supabase-fixes.md
+/two-month-plan.md

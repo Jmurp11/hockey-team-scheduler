@@ -4,6 +4,18 @@ import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Route[] = [
   {
+    path: 'pricing',
+    loadComponent: () =>
+      import('./pricing/pricing.page').then((m) => m.PricingPage),
+  },
+  {
+    path: 'pricing/success',
+    loadComponent: () =>
+      import('./pricing/pricing-success/pricing-success.page').then(
+        (m) => m.PricingSuccessPage,
+      ),
+  },
+  {
     path: 'error',
     loadComponent: () =>
       import('./error/api-error.page').then((m) => m.ApiErrorPage),

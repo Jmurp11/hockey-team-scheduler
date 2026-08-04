@@ -14,9 +14,7 @@
     "skipLibCheck": true,
     "target": "ES2022"
   },
-  "include": [
-    "src/**/*.ts"
-, "../../libs/shared/utilities/src/lib/shared-utilities/types/user.type.ts", "../../libs/shared/utilities/src/lib/shared-utilities/utilities/password-match.validator.ts", "../../libs/shared/data-access/src/lib/shared-data-access/services/user.service.ts", "../../libs/shared/data-access/src/lib/shared-data-access/services/auth.service.ts"  ],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "src/**/*.spec.ts"
   ]
