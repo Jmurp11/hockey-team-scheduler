@@ -6,10 +6,10 @@
   "license": "MIT",
   "main": "src/rankings/insertRankings.ts",
   "dependencies": {
-    "@supabase/supabase-js": "^2.52.0",
-    "axios": "^1.9.0",
+    "@supabase/supabase-js": "^2.112.0",
+    "axios": "^1.19.0",
     "cheerio": "^1.0.0",
-    "puppeteer": "^24.9.0",
+    "puppeteer": "^25.5.0",
     "yargs": "^18.0.0"
   },
   "devDependencies": {

@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "main.ts",
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.0",
+    "@supabase/supabase-js": "^2.112.0",
     "esm": "^3.2.25",
     "yargs": "^18.0.0",
     "openai": "^6.0.1",
