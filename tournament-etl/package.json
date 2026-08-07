@@ -13,7 +13,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@types/node": "^22.18.12",
+    "@types/node": "^26.1.2",
     "@types/yargs": "^17.0.33",
     "dotenv": "^16.5.0",
     "tsx": "^4.19.4",

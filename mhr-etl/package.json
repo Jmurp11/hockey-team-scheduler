@@ -13,7 +13,7 @@
     "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.18.12",
+    "@types/node": "^26.1.2",
     "@types/yargs": "^17.0.33",
     "dotenv": "^17.1.0",
     "tsx": "^4.19.4",
