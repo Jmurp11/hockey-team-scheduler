@@ -1,29 +1,33 @@
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { env } from 'node:process';
 
 const supabaseUrl = env.PUBLIC_SUPABASE_URL || '';
 
 /**
- * Service role key for admin operations (e.g., creating users).
- * Falls back to anon key if service role is not available.
+ * Server-side SECRET key. Prefer the new Supabase secret key (sb_secret_...);
+ * fall back to the legacy service_role JWT (PUBLIC_SUPABASE_SERVICE_ROLE) only
+ * during the key-rotation transition. Both authenticate as the `service_role`
+ * Postgres role and bypass RLS, which the API relies on for admin operations
+ * (e.g. supabase.auth.admin.createUser) and for serving the metered API.
+ *
+ * SECURITY: this value must exist ONLY on the server. It must never be placed in
+ * any env consumed by the web/mobile clients — those use the publishable key.
  */
-const supabaseServiceRoleKey = env.PUBLIC_SUPABASE_SERVICE_ROLE || '';
-const supabaseAnonKey = env.PUBLIC_SUPABASE_API_KEY || '';
+const supabaseSecretKey =
+  env.SUPABASE_SECRET_KEY || env.PUBLIC_SUPABASE_SERVICE_ROLE || '';
 
-// Use service role key for admin operations, fall back to anon key
-const supabaseKey = supabaseServiceRoleKey || supabaseAnonKey;
-
-if (!supabaseServiceRoleKey) {
+if (!supabaseSecretKey) {
   console.warn(
-    '[Supabase] PUBLIC_SUPABASE_SERVICE_ROLE not set. Admin operations (like creating users) will not work.',
+    '[Supabase] No SUPABASE_SECRET_KEY set. Admin operations (like creating users) will not work.',
   );
 }
 
 /**
- * Supabase client configured with service role key (preferred) or anon key (fallback).
- * Service role key is required for admin operations like supabase.auth.admin.createUser().
+ * Supabase client configured with the server secret key. Required for admin
+ * operations and to bypass RLS on server-only tables.
  */
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseUrl, supabaseSecretKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,

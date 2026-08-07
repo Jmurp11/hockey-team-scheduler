@@ -15,10 +15,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { ApiAccessGuard } from '../auth/api-access.guard';
 
 @ApiTags('Leagues')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiAccessGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key needed to access the endpoints',

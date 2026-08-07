@@ -1,0 +1,25 @@
+version: 2
+
+updates:
+  # Single root lockfile covers every npm workspace, including mhr-etl and
+  # tournament-etl. Grouped and rate-limited so this does not flood the repo.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      etl-dependencies:
+        patterns:
+          - "puppeteer"
+          - "cheerio"
+          - "axios"
+          - "@supabase/supabase-js"
+      dev-dependencies:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3

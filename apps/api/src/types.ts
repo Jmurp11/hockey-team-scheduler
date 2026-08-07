@@ -375,3 +375,88 @@ export class EvaluateTournamentFitResponseDto {
   @ApiProperty({ type: [TournamentWithFitDto], description: 'Tournaments that are recommended (Good Fit)' })
   recommended: TournamentWithFitDto[];
 }
+
+export class ScheduleEventReferenceDto {
+  @ApiProperty({ description: 'Event ID' })
+  id: string;
+
+  @ApiProperty({ enum: ['game', 'tournament'], description: 'Event type' })
+  type: 'game' | 'tournament';
+
+  @ApiProperty({ description: 'Opponent or tournament name' })
+  displayName: string;
+
+  @ApiProperty({ description: 'Event date (YYYY-MM-DD)' })
+  date: string;
+
+  @ApiProperty({ description: 'Event time (HH:MM)' })
+  time: string;
+
+  @ApiProperty({ description: 'Venue/rink name' })
+  venue: string;
+
+  @ApiProperty({ description: 'Location (city, state)' })
+  location: string;
+}
+
+export class ScheduleRiskDto {
+  @ApiProperty({ description: 'Unique identifier for this risk instance' })
+  id: string;
+
+  @ApiProperty({
+    enum: ['HARD_TIME_CONFLICT', 'CLOSE_START_WARNING', 'SAME_DAY_TRAVEL_RISK'],
+    description: 'Type of risk detected',
+  })
+  riskType: string;
+
+  @ApiProperty({ enum: ['error', 'warning', 'info'], description: 'Severity level for display' })
+  severity: string;
+
+  @ApiProperty({ type: [ScheduleEventReferenceDto], description: 'Events involved in this risk' })
+  affectedEvents: ScheduleEventReferenceDto[];
+
+  @ApiProperty({ description: 'Plain-English explanation of the risk' })
+  explanation: string;
+
+  @ApiProperty({ description: 'Suggested next steps (text only, no auto-actions)' })
+  suggestion: string;
+
+  @ApiProperty({ description: 'When this risk was detected (ISO timestamp)' })
+  detectedAt: string;
+}
+
+export class ScheduleRiskCountBySeverityDto {
+  @ApiProperty()
+  error: number;
+
+  @ApiProperty()
+  warning: number;
+
+  @ApiProperty()
+  info: number;
+}
+
+export class EvaluateScheduleRiskRequestDto {
+  @ApiProperty({
+    description:
+      'Games to evaluate for scheduling conflicts. Sent by the client because ' +
+      'the schedule may include unsaved or filtered-down games.',
+    type: 'array',
+    items: { type: 'object' },
+  })
+  games: unknown[];
+}
+
+export class EvaluateScheduleRiskResponseDto {
+  @ApiProperty({ type: [ScheduleRiskDto], description: 'Detected risks, sorted by severity' })
+  risks: ScheduleRiskDto[];
+
+  @ApiProperty({ description: 'Total count of risks' })
+  totalRisks: number;
+
+  @ApiProperty({ type: ScheduleRiskCountBySeverityDto, description: 'Count by severity level' })
+  countBySeverity: ScheduleRiskCountBySeverityDto;
+
+  @ApiProperty({ description: 'When evaluation was performed (ISO timestamp)' })
+  evaluatedAt: string;
+}

@@ -4,38 +4,18 @@ import { Observable } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
 
 /**
- * Represents a single message in the chat conversation.
+ * `ChatMessage`, `PendingAction`, and `EmailDraft` moved to `shared-utilities`.
+ * They are plain data types, and defining them here forced the types layer to
+ * import upwards, creating a circular dependency between the two libraries.
+ * Re-exported so existing imports from this package keep working.
  */
-export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
+import type {
+  ChatMessage,
+  PendingAction,
+  EmailDraft,
+} from '@hockey-team-scheduler/shared-utilities';
 
-/**
- * Pending action that requires user confirmation before execution.
- */
-export interface PendingAction {
-  type: 'create_game' | 'add_tournament_to_schedule' | 'send_email' | 'game_match_results';
-  description: string;
-  data: Record<string, unknown>;
-}
-
-/**
- * Email draft data structure for the send_email action.
- */
-export interface EmailDraft {
-  to: string;
-  toName: string;
-  toTeam: string;
-  subject: string;
-  body: string;
-  signature: string;
-  intent: 'schedule' | 'reschedule' | 'cancel' | 'general';
-  relatedGameId?: string;
-  fromName?: string;
-  fromEmail?: string;
-  [key: string]: unknown; // Allow indexing for Record<string, unknown> compatibility
-}
+export type { ChatMessage, PendingAction, EmailDraft };
 
 /**
  * Request DTO for the chat endpoint.

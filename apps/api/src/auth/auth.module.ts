@@ -1,12 +1,12 @@
 import { Module, Global } from '@nestjs/common';
-import { ApiKeyService } from './api-key.service';
-import { ApiKeyGuard } from './api-key.guard';
-import { ApiKeyController } from './api-key.controller';
+import { SupabaseAuthGuard } from './supabase-auth.guard';
+import { ApiAccessGuard } from './api-access.guard';
+import { DeveloperPortalModule } from '../developer-portal/developer-portal.module';
 
 @Global()
 @Module({
-  providers: [ApiKeyService, ApiKeyGuard],
-  controllers: [ApiKeyController],
-  exports: [ApiKeyService, ApiKeyGuard],
+  imports: [DeveloperPortalModule],
+  providers: [SupabaseAuthGuard, ApiAccessGuard],
+  exports: [SupabaseAuthGuard, ApiAccessGuard],
 })
 export class AuthModule {}

@@ -88,7 +88,7 @@ export class UserService {
   }
 
   async loginWithMagicLink(email: string) {
-    let { data, error } = await this.supabaseClient!.auth.signInWithOtp({
+    const { data, error } = await this.supabaseClient!.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/callback`,

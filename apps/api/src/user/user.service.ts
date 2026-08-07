@@ -224,9 +224,9 @@ export class UserService {
   // ============ SUBSCRIPTION CHECKOUT ============
 
   /**
-   * Price per seat in cents ($75/seat/year)
+   * Price per seat in cents ($50/seat/year)
    */
-  private readonly PRICE_PER_SEAT_CENTS = 7500;
+  private readonly PRICE_PER_SEAT_CENTS = 5000;
 
   /**
    * Creates a Stripe Checkout Session for a seat-based subscription.
@@ -246,10 +246,13 @@ export class UserService {
       throw new Error('At least 1 seat is required');
     }
 
-    const session = await this.stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
+    // Prefer a reusable Stripe Price ID (enables coupons, price experiments,
+    // and Dashboard-managed pricing). Falls back to the inline price so
+    // checkout keeps working when STRIPE_PRICE_ID is not configured.
+    const priceId = process.env.STRIPE_PRICE_ID;
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = priceId
+      ? { price: priceId, quantity: seats }
+      : {
           price_data: {
             currency: 'usd',
             product_data: {
@@ -262,8 +265,12 @@ export class UserService {
             },
           },
           quantity: seats,
-        },
-      ],
+        };
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [lineItem],
+      allow_promotion_codes: true,
       mode: 'subscription',
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
@@ -1386,6 +1393,34 @@ export class UserService {
     }
 
     return updatedMember;
+  }
+
+  /**
+   * Returns the association id that owns a given member row, or null if the
+   * member does not exist. Used for ownership/authorization checks.
+   */
+  async getMemberAssociation(memberId: string): Promise<number | null> {
+    const { data } = await supabase
+      .from('association_members')
+      .select('association')
+      .eq('id', memberId)
+      .single();
+
+    return data?.association ?? null;
+  }
+
+  /**
+   * Returns the association id that owns a given invitation, or null if the
+   * invitation does not exist. Used for ownership/authorization checks.
+   */
+  async getInvitationAssociation(invitationId: string): Promise<number | null> {
+    const { data } = await supabase
+      .from('invitations')
+      .select('association')
+      .eq('id', invitationId)
+      .single();
+
+    return data?.association ?? null;
   }
 
   private async hashToken(token: string): Promise<string> {

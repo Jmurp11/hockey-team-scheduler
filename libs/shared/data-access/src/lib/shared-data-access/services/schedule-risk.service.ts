@@ -1,16 +1,33 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
 import {
-  evaluateGameScheduleRisks,
   Game,
   ScheduleRisk,
-  ScheduleRiskConfig,
   ScheduleRiskEvaluation,
 } from '@hockey-team-scheduler/shared-utilities';
+import { APP_CONFIG } from '../config/app-config';
+import { AuthService } from './auth.service';
+import { ScheduleService } from './schedule.service';
 
 /**
  * Service for managing schedule risk evaluation state.
  *
- * This service evaluates games for potential scheduling conflicts and risks.
+ * Automatically subscribes to the current user's games on initialization
+ * and re-evaluates risks on page load and after any schedule mutation
+ * (via Supabase realtime).
+ *
+ * Evaluation itself runs on the API (`POST /schedule-risk/evaluate`); this
+ * service only holds the resulting state. The scoring engine used to run in
+ * the browser, which made its thresholds client-manipulable and meant a rule
+ * change needed a new web and mobile bundle. It now sits in `shared-domain`
+ * and is executed server-side, matching tournament-fit.
+ *
+ * The signal surface below is unchanged from the client-side version, so
+ * consumers (`schedule-risk-badge`, `schedule-risk-notification`, and both
+ * schedule screens) did not need to change.
+ *
  * It uses Angular signals for reactive state management, compatible with
  * zoneless change detection.
  *
@@ -22,10 +39,7 @@ import {
  * // Inject the service
  * private scheduleRiskService = inject(ScheduleRiskService);
  *
- * // Evaluate risks when games change
- * this.scheduleRiskService.evaluate(games);
- *
- * // Access risk state in template
+ * // Access risk state in template (no manual evaluate() needed)
  * @if (scheduleRiskService.hasRisks()) {
  *   <app-schedule-risk-badge [evaluation]="scheduleRiskService.evaluation()" />
  * }
@@ -33,6 +47,13 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class ScheduleRiskService {
+  private readonly authService = inject(AuthService);
+  private readonly scheduleService = inject(ScheduleService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly http = inject(HttpClient);
+  private readonly config = inject(APP_CONFIG);
+
+
   // Private signals for internal state
   private readonly _evaluation = signal<ScheduleRiskEvaluation | null>(null);
   private readonly _isEvaluating = signal(false);
@@ -83,28 +104,56 @@ export class ScheduleRiskService {
     () => !this.hasErrors() && this.warningCount() > 0,
   );
 
+  constructor() {
+    // Auto-subscribe to the current user's games.
+    // gamesFull() includes Supabase realtime, so this fires on initial load
+    // AND after any schedule mutation (INSERT/UPDATE/DELETE).
+    toObservable(this.authService.currentUser)
+      .pipe(
+        switchMap((user) => {
+          if (!user?.user_id) return of([]);
+          return this.scheduleService.gamesFull(user.user_id);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((games) => {
+        this.evaluate(games);
+      });
+  }
+
   /**
    * Evaluate schedule risks for a set of games.
    * Call this after any schedule mutation (add, update, delete).
    *
+   * Fire-and-forget by design: callers treat this as a state update, matching
+   * the previous synchronous signature. Thresholds are no longer accepted —
+   * they are server-owned, and no caller ever passed a custom config.
+   *
    * @param games Array of games to evaluate
-   * @param config Optional custom configuration for risk thresholds
    */
-  evaluate(games: Game[], config?: ScheduleRiskConfig): void {
+  evaluate(games: Game[]): void {
     this._isEvaluating.set(true);
 
-    try {
-      const result = evaluateGameScheduleRisks(games, config);
-
-      this._evaluation.set(result);
-      this._lastEvaluatedAt.set(new Date().toISOString());
-    } catch (error) {
-      console.error('Schedule risk evaluation failed:', error);
-      // Graceful degradation - clear risks on error rather than showing stale data
-      this._evaluation.set(null);
-    } finally {
-      this._isEvaluating.set(false);
-    }
+    this.http
+      .post<ScheduleRiskEvaluation>(
+        `${this.config.apiUrl}/schedule-risk/evaluate`,
+        { games },
+      )
+      .pipe(
+        catchError((error: unknown) => {
+          console.error('Schedule risk evaluation failed:', error);
+          // Graceful degradation - clear risks on error rather than showing
+          // stale data. Matches the previous behaviour on a thrown engine error.
+          return of(null);
+        }),
+      )
+      .subscribe((result) => {
+        this._evaluation.set(result);
+        if (result) {
+          this._lastEvaluatedAt.set(new Date().toISOString());
+        }
+        this._isEvaluating.set(false);
+      });
   }
 
   /**

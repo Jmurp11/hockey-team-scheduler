@@ -305,7 +305,7 @@ describe('UserService', () => {
                 description:
                   '3 seats - Team scheduling, tournament discovery, and more',
               },
-              unit_amount: 3000,
+              unit_amount: 5000,
               recurring: {
                 interval: 'year',
               },
@@ -313,6 +313,7 @@ describe('UserService', () => {
             quantity: 3,
           },
         ],
+        allow_promotion_codes: true,
         mode: 'subscription',
         success_url:
           'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',

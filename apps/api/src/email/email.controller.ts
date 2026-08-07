@@ -14,7 +14,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 import { EmailService } from './email.service';
 
 class ContactFormDto {
@@ -25,7 +25,7 @@ class ContactFormDto {
 
 @ApiTags('Email')
 @ApiExcludeController()
-@UseGuards(ApiKeyGuard)
+@UseGuards(SupabaseAuthGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key needed to access the endpoints',

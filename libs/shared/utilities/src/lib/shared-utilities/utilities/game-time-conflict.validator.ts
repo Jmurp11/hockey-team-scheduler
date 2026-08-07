@@ -1,11 +1,11 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { Game } from '../types/game.type';
 import {
+  Game,
   convert24HourToMinutes,
   convertTo24HourFormat,
   formatTimeFromMinutes,
   removeTimeZoneInfo,
-} from './time.utility';
+} from '@hockey-team-scheduler/shared-domain';
 
 /**
  * Validator to check for time conflicts between games

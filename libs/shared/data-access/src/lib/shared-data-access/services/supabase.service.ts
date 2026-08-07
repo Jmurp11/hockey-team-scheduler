@@ -30,7 +30,10 @@ export class SupabaseService {
 
     // Start initialization
     this.initializing = true;
-    this.initPromise = new Promise<void>(async (resolve) => {
+    // Not an async executor: the body contains no `await` (createClient is
+    // synchronous), and an async executor would swallow any rejection thrown
+    // before `resolve()`.
+    this.initPromise = new Promise<void>((resolve) => {
       try {
         if (this.config.supabaseUrl && this.config.supabaseAnonKey) {
           // Determine storage key based on app type
@@ -72,5 +75,24 @@ export class SupabaseService {
     // Client should already be initialized from constructor
     // But just in case, we don't re-initialize here
     return this.client ?? undefined;
+  }
+
+  /**
+   * Returns the current Supabase access token (JWT) for the signed-in user, or
+   * null if there is no active session. Used by the HTTP interceptors to attach
+   * an `Authorization: Bearer <token>` header so the API can authenticate the
+   * user (not just the app-level API key).
+   */
+  async getAccessToken(): Promise<string | null> {
+    await this.initializeClient();
+    if (!this.client) {
+      return null;
+    }
+    try {
+      const { data } = await this.client.auth.getSession();
+      return data.session?.access_token ?? null;
+    } catch {
+      return null;
+    }
   }
 }

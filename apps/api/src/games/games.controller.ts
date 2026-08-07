@@ -27,11 +27,11 @@ import { OmitType } from '@nestjs/swagger';
 // Define a class for Swagger documentation that matches CreateGameDto
 export class CreateGameDtoSwagger extends OmitType(Game, ['id'] as const) {}
 import { GamesService } from './games.service';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 
 @ApiTags('Games')
 @ApiExcludeController()
-@UseGuards(ApiKeyGuard)
+@UseGuards(SupabaseAuthGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key needed to access the endpoints',

@@ -1,4 +1,51 @@
-import { ChatMessage, PendingAction } from '@hockey-team-scheduler/shared-data-access';
+/**
+ * Chat transport types.
+ *
+ * These live here, in the types layer, rather than in `rinklink-gpt.service.ts`.
+ * They are plain data with no Angular dependency, and having them in
+ * `shared-data-access` meant this file imported *upwards* — producing a
+ * circular dependency (shared-utilities -> shared-data-access -> shared-utilities)
+ * that `@nx/enforce-module-boundaries` rejected. `shared-data-access` re-exports
+ * them, so existing imports from that package still work.
+ */
+
+/**
+ * Represents a single message in the chat conversation.
+ */
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+/**
+ * Pending action that requires user confirmation before execution.
+ */
+export interface PendingAction {
+  type:
+    | 'create_game'
+    | 'add_tournament_to_schedule'
+    | 'send_email'
+    | 'game_match_results';
+  description: string;
+  data: Record<string, unknown>;
+}
+
+/**
+ * Email draft data structure for the send_email action.
+ */
+export interface EmailDraft {
+  to: string;
+  toName: string;
+  toTeam: string;
+  subject: string;
+  body: string;
+  signature: string;
+  intent: 'schedule' | 'reschedule' | 'cancel' | 'general';
+  relatedGameId?: string;
+  fromName?: string;
+  fromEmail?: string;
+  [key: string]: unknown; // Allow indexing for Record<string, unknown> compatibility
+}
 
 /**
  * Extended message type for the UI with additional display properties.

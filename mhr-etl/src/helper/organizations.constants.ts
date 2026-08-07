@@ -1,0 +1,15 @@
+export const canadianRegions = [
+  "YT",
+  "SK",
+  "QC",
+  "PE",
+  "NS",
+  "NT",
+  "NL",
+  "NB",
+  "AB",
+  "MB",
+  "BC",
+  "NU",
+  "ON",
+];

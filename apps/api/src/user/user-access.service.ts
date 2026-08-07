@@ -300,6 +300,60 @@ export class UserAccessService {
   }
 
   /**
+   * Checks whether an auth user is an ACTIVE ADMIN of the given association.
+   * Used for ownership/authorization checks on association-scoped operations
+   * (member removal, role changes, invitation management, subscription reads).
+   *
+   * `association_members.user_id` stores the Supabase Auth UUID (the same value
+   * used against `app_users.user_id`), so it is compared directly to authUserId.
+   *
+   * @param authUserId - The Supabase Auth user ID (UUID) of the caller
+   * @param associationId - The association to check admin rights against
+   */
+  async isAssociationAdmin(
+    authUserId: string,
+    associationId: number,
+  ): Promise<boolean> {
+    if (!authUserId || associationId == null) {
+      return false;
+    }
+
+    const { data, error } = await supabase
+      .from('association_members')
+      .select('id')
+      .eq('user_id', authUserId)
+      .eq('association', associationId)
+      .eq('role', 'ADMIN')
+      .eq('status', 'ACTIVE')
+      .limit(1);
+
+    return !error && !!data && data.length > 0;
+  }
+
+  /**
+   * Checks whether an auth user is an ACTIVE member (any role) of the given
+   * association. Used for read authorization on association-scoped data.
+   */
+  async isAssociationMember(
+    authUserId: string,
+    associationId: number,
+  ): Promise<boolean> {
+    if (!authUserId || associationId == null) {
+      return false;
+    }
+
+    const { data, error } = await supabase
+      .from('association_members')
+      .select('id')
+      .eq('user_id', authUserId)
+      .eq('association', associationId)
+      .eq('status', 'ACTIVE')
+      .limit(1);
+
+    return !error && !!data && data.length > 0;
+  }
+
+  /**
    * Validates a Supabase JWT and returns the user ID.
    * Used by guards to authenticate requests.
    */

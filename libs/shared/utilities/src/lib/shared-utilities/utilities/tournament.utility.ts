@@ -1,4 +1,4 @@
-import { CreateGame } from '../types/game.type';
+import { CreateGame } from '@hockey-team-scheduler/shared-domain';
 import { Tournament } from '../types/tournament.type';
 import { SortDirection } from '../types/sort.type';
 

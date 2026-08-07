@@ -1,4 +1,4 @@
-import { SelectOption } from "../types/select-option.type";
+import { SelectOption } from '@hockey-team-scheduler/shared-domain';
 
 /**
  * Checks and normalizes profile field values

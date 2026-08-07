@@ -1,4 +1,4 @@
-import { ScheduleRiskSeverity, ScheduleRiskType } from '../types/schedule-risk.type';
+import { ScheduleRiskSeverity, ScheduleRiskType } from '@hockey-team-scheduler/shared-domain';
 
 /**
  * Shared display helpers for schedule risk badges across web and mobile.
